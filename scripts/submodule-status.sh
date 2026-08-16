@@ -13,7 +13,7 @@ if [[ -z "${submodule_output}" ]]; then
   echo "OPUS has no initialized submodules." >&2
   exit 1
 fi
-if printf '%s\n' "${submodule_output}" | grep -Eq '^[+\-U]'; then
+if printf '%s\n' "${submodule_output}" | grep -Eq '^[-+U]'; then
   printf '%s\n' "${submodule_output}" >&2
   echo "A submodule is missing, conflicted, or not at its pinned commit." >&2
   exit 1

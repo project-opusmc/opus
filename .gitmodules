@@ -1,0 +1,6 @@
+[submodule "launcher"]
+	path = launcher
+	url = https://github.com/project-opusmc/launcher.git
+[submodule "runtime"]
+	path = runtime
+	url = https://github.com/project-opusmc/runtime.git
