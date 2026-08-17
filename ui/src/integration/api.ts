@@ -126,4 +126,55 @@ export const bridge = {
   async closeScreen(): Promise<void> {
     await bridgeFetch<unknown>("/api/v1/client/screen", { method: "DELETE" });
   },
+
+  async getWorlds(): Promise<World[]> {
+    const data = await bridgeFetch<{
+      worlds: { file: string; name: string }[];
+    }>("/api/v1/client/worlds");
+    return data.worlds.map((world) => ({
+      id: world.file,
+      name: world.name,
+      fileName: world.file,
+      mode: "Singleplayer",
+      lastPlayed: "",
+      size: "",
+    }));
+  },
+
+  async loadWorld(file: string): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/worlds/load", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ file }),
+    });
+  },
+
+  async getServers(): Promise<Server[]> {
+    const data = await bridgeFetch<{
+      servers: { name: string; address: string }[];
+    }>("/api/v1/client/servers");
+    return data.servers.map((server) => ({
+      id: server.address,
+      name: server.name || server.address,
+      address: server.address,
+      version: "1.8.9",
+      state: "offline",
+    }));
+  },
+
+  async connectServer(address: string): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/servers/connect", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ address }),
+    });
+  },
+
+  async addServer(name: string, address: string): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/servers", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, address }),
+    });
+  },
 };

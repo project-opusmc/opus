@@ -4,7 +4,8 @@
   import Badge from "../../primitives/Badge.svelte";
   import Button from "../../primitives/Button.svelte";
   import ScrollArea from "../../primitives/ScrollArea.svelte";
-  import { api } from "../../integration/api";
+  import { api, bridge } from "../../integration/api";
+  import { isStandalone } from "../../integration/host";
   import type { World } from "../../integration/types";
 
   let worlds: World[] = $state([]);
@@ -12,9 +13,17 @@
   let selected = $state(0);
 
   onMount(async () => {
-    worlds = await api.getWorlds();
+    worlds = isStandalone ? await api.getWorlds() : await bridge.getWorlds();
     loading = false;
   });
+
+  async function loadWorld(world: World) {
+    if (isStandalone) {
+      console.info("[opus-ui] load world", world.name);
+      return;
+    }
+    await bridge.loadWorld(world.fileName);
+  }
 </script>
 
 <PageShell
@@ -44,7 +53,7 @@
             class="world-entry"
             class:world-entry--selected={selected === index}
             onmouseenter={() => (selected = index)}
-            onclick={() => console.info("[opus-ui] load world", world.name)}
+            onclick={() => loadWorld(world)}
           >
             <div class="world-entry__icon" aria-hidden="true"></div>
             <div class="world-entry__main">

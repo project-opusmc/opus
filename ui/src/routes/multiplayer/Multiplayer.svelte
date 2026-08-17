@@ -7,7 +7,8 @@
   import ScrollArea from "../../primitives/ScrollArea.svelte";
   import SearchInput from "../../primitives/SearchInput.svelte";
   import TextInput from "../../primitives/TextInput.svelte";
-  import { api } from "../../integration/api";
+  import { api, bridge } from "../../integration/api";
+  import { isStandalone } from "../../integration/host";
   import type { Server } from "../../integration/types";
 
   let servers: Server[] = $state([]);
@@ -30,7 +31,7 @@
   );
 
   onMount(async () => {
-    servers = await api.getServers();
+    servers = isStandalone ? await api.getServers() : await bridge.getServers();
     loading = false;
   });
 
@@ -38,8 +39,13 @@
     if (!newName.trim() || !newAddress.trim()) {
       return;
     }
-    const server = await api.addServer(newName.trim(), newAddress.trim());
-    servers = [...servers, server];
+    if (isStandalone) {
+      const server = await api.addServer(newName.trim(), newAddress.trim());
+      servers = [...servers, server];
+    } else {
+      await bridge.addServer(newName.trim(), newAddress.trim());
+      servers = await bridge.getServers();
+    }
     newName = "";
     newAddress = "";
     addOpen = false;
@@ -49,8 +55,14 @@
     if (!direct.trim()) {
       return;
     }
-    const server = await api.addServer(direct.trim(), direct.trim());
-    servers = [...servers, server];
+    if (isStandalone) {
+      const server = await api.addServer(direct.trim(), direct.trim());
+      servers = [...servers, server];
+    } else {
+      await bridge.addServer(direct.trim(), direct.trim());
+      servers = await bridge.getServers();
+      await bridge.connectServer(direct.trim());
+    }
     selected = servers.length - 1;
     direct = "";
   }
@@ -98,7 +110,11 @@
               selected={selected === index}
               onselect={() => {
                 selected = index;
-                console.info("[opus-ui] join", server.address);
+                if (isStandalone) {
+                  console.info("[opus-ui] join", server.address);
+                } else {
+                  void bridge.connectServer(server.address);
+                }
               }}
             />
           {/each}
