@@ -3,11 +3,11 @@
   "productVersion": "0.0.1",
   "launcher": {
     "version": "0.0.1",
-    "commit": "2406c829372db44dd5a8541e2e5760f793911c00"
+    "commit": "a5a2d87b4fce51eb6123472168a756804047078a"
   },
   "runtime": {
     "version": "0.0.1",
-    "commit": "4af1ed0eb553254aa5a206a926b8bd2586d07f8c",
-    "manifestSha256": "cdafb4905e8c2dc770fd4a87e972870d1fb50adc7650f05471b9ef518f218d8d"
+    "commit": "9f9f4f69b400577d8cc63ae264fbd6fe8ec5ed5f",
+    "manifestSha256": "9c9d1aa0db3859d778847286e3937068983522912a096b8e20d5e36d70026dfc"
   }
 }
