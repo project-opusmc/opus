@@ -99,3 +99,13 @@ export interface BridgeHello {
   forge: string;
   optifine: string;
 }
+
+export interface GameOption {
+  key: string;
+  label: string;
+  type: "float" | "boolean" | "enum";
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+}

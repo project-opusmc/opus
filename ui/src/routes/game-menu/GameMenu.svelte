@@ -2,6 +2,7 @@
   import PageShell from "../../components/PageShell.svelte";
   import Button from "../../primitives/Button.svelte";
   import { bridge } from "../../integration/api";
+  import { isStandalone } from "../../integration/host";
   import { navigate } from "../../stores/ui";
 
   async function resume() {
@@ -22,7 +23,17 @@
     <Button full size="lg" onclick={() => navigate("settings")}>
       Game Options
     </Button>
-    <Button full size="lg" onclick={() => navigate("title")}>
+    <Button
+      full
+      size="lg"
+      onclick={async () => {
+        if (isStandalone) {
+          navigate("title");
+        } else {
+          await bridge.leaveWorld();
+        }
+      }}
+    >
       Disconnect
     </Button>
   </div>

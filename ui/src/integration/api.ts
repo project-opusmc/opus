@@ -2,6 +2,7 @@ import type {
   Account,
   BridgeHello,
   ClientInfo,
+  GameOption,
   Module,
   Server,
   VirtualScreen,
@@ -175,6 +176,54 @@ export const bridge = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, address }),
+    });
+  },
+
+  async getGameOptions(): Promise<GameOption[]> {
+    const data = await bridgeFetch<{
+      options: {
+        key: string;
+        label: string;
+        type: string;
+        value: string;
+        min: string;
+        max: string;
+        step: string;
+      }[];
+    }>("/api/v1/client/options");
+    return data.options.map((option) => ({
+      key: option.key,
+      label: option.label,
+      type:
+        option.type === "float" || option.type === "boolean"
+          ? option.type
+          : "enum",
+      value: Number(option.value),
+      min: Number(option.min),
+      max: Number(option.max),
+      step: Number(option.step),
+    }));
+  },
+
+  async adjustGameOption(key: string, delta: number): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/options/adjust", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, delta }),
+    });
+  },
+
+  async setGameOption(key: string, value: number): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/options/set", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key, value }),
+    });
+  },
+
+  async leaveWorld(): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/screen/leave-world", {
+      method: "POST",
     });
   },
 };
