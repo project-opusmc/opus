@@ -63,7 +63,7 @@
   ];
 
   onMount(async () => {
-    modules = await api.getModules();
+    modules = isStandalone ? await api.getModules() : await bridge.getModules();
     if (!isStandalone) {
       gameOptions = await bridge.getGameOptions();
     }
@@ -93,7 +93,11 @@
     modules = modules.map((module) =>
       module.id === id ? { ...module, enabled } : module,
     );
-    void api.setModuleEnabled(id, enabled);
+    if (isStandalone) {
+      void api.setModuleEnabled(id, enabled);
+    } else {
+      void bridge.setModuleEnabled(id, enabled);
+    }
   }
 
   function changeModuleSetting(
@@ -111,7 +115,11 @@
           }
         : module,
     );
-    void api.setModuleSetting(moduleId, key, value);
+    if (isStandalone) {
+      void api.setModuleSetting(moduleId, key, value);
+    } else {
+      void bridge.setModuleSetting(moduleId, key, value);
+    }
   }
 </script>
 

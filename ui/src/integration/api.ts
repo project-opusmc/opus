@@ -226,4 +226,73 @@ export const bridge = {
       method: "POST",
     });
   },
+
+  async getModules(): Promise<Module[]> {
+    const data = await bridgeFetch<{
+      modules: {
+        id: string;
+        name: string;
+        enabled: boolean;
+        settings: {
+          key: string;
+          label: string;
+          type: string;
+          value: string;
+          min: string;
+          max: string;
+          step: string;
+          options: { value: string; label: string }[];
+        }[];
+      }[];
+    }>("/api/v1/client/modules");
+    return data.modules.map((module) => ({
+      id: module.id,
+      name: module.name,
+      description: "",
+      enabled: module.enabled,
+      settings: module.settings.map((setting) => {
+        const type =
+          setting.type === "boolean" || setting.type === "integer"
+            ? setting.type
+            : setting.type === "float"
+              ? "float"
+              : "enum";
+        return {
+          key: setting.key,
+          label: setting.label,
+          type,
+          value:
+            type === "boolean"
+              ? setting.value === "1"
+              : type === "integer" || type === "float"
+                ? Number(setting.value)
+                : setting.value,
+          min: Number(setting.min),
+          max: Number(setting.max),
+          step: Number(setting.step),
+          options: setting.options,
+        };
+      }),
+    }));
+  },
+
+  async setModuleEnabled(id: string, enabled: boolean): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/modules/toggle", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, enabled }),
+    });
+  },
+
+  async setModuleSetting(
+    id: string,
+    key: string,
+    value: boolean | number | string,
+  ): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/modules/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, key, value: String(value) }),
+    });
+  },
 };
