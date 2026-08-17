@@ -1,0 +1,68 @@
+@use "tokens.scss";
+
+// Motion is restrained and purposeful. Durations come only from tokens.
+
+@keyframes opus-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes opus-page-in {
+  from {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes opus-page-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+}
+
+@keyframes opus-pulse {
+  0% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.45;
+  }
+}
+
+.motion-page-enter {
+  animation: opus-page-in var(--motion-medium) var(--ease-standard) both;
+}
+
+.motion-fade-in {
+  animation: opus-fade-in var(--motion-normal) var(--ease-standard) both;
+}
+
+.motion-pulse {
+  animation: opus-pulse var(--motion-medium) ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

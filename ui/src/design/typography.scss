@@ -1,0 +1,56 @@
+@use "tokens.scss";
+
+// Typography scale is locked in tokens.scss. Pages compose these utilities;
+// they never define their own font sizes.
+
+.text-metadata {
+  font-size: var(--text-11);
+  font-weight: 400;
+  line-height: var(--line-height-normal);
+}
+
+.text-secondary {
+  font-size: var(--text-12);
+  font-weight: 400;
+  line-height: var(--line-height-normal);
+}
+
+.text-regular {
+  font-size: var(--text-13);
+  font-weight: 400;
+  line-height: var(--line-height-normal);
+}
+
+.text-control {
+  font-size: var(--text-14);
+  font-weight: 500;
+  line-height: var(--line-height-tight);
+}
+
+.text-section {
+  font-size: var(--text-16);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+
+.text-page-title {
+  font-size: var(--text-20);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+
+.text-hero {
+  font-size: var(--text-24);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+
+.text-hero-large {
+  font-size: var(--text-28);
+  font-weight: 600;
+  line-height: var(--line-height-tight);
+}
+
+.text-mono {
+  font-family: var(--font-mono);
+}

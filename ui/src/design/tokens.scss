@@ -1,0 +1,82 @@
+// OPUS UI DESIGN TOKENS
+// Source of truth: OPUS_UI_ARCHITECTURE.md sections 15-25.
+// Components must never use raw hex, random spacing, or invented motion.
+// If a token is missing, request a token review; do not invent one.
+
+:root {
+  // Foundation colors
+  --surface-0: #090a0c;
+  --surface-1: #0f1013;
+  --surface-2: #15171b;
+  --surface-3: #1b1d22;
+
+  --text-primary: #f4f4f5;
+  --text-secondary: #a6a8ad;
+  --text-muted: #71747b;
+
+  --accent: #ffffff;
+
+  --success: #55b87a;
+  --warning: #d7a84a;
+  --danger: #d75d5d;
+
+  // Semantic colors
+  --panel-background: var(--surface-1);
+  --panel-hover-background: var(--surface-2);
+  --button-background: var(--surface-2);
+  --button-hover-background: var(--surface-3);
+  --button-primary-background: var(--accent);
+  --button-primary-text: var(--surface-0);
+  --input-background: var(--surface-1);
+  --modal-background: var(--surface-1);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  // Typography
+  --font-family: "Inter Variable", "Inter", system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", ui-monospace, "Menlo", monospace;
+  --text-11: 11px;
+  --text-12: 12px;
+  --text-13: 13px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-20: 20px;
+  --text-24: 24px;
+  --text-28: 28px;
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.45;
+
+  // Spacing scale
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+
+  // Radius
+  --radius-control: 5px;
+  --radius-card: 6px;
+  --radius-modal: 8px;
+  --radius-pill: 999px;
+
+  // Motion
+  --motion-micro: 120ms;
+  --motion-fast: 160ms;
+  --motion-normal: 200ms;
+  --motion-medium: 280ms;
+  --motion-large: 400ms;
+  --motion-screen: 500ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  // Layout
+  --control-height-sm: 28px;
+  --control-height-md: 36px;
+  --control-height-lg: 44px;
+  --focus-ring: 0 0 0 2px var(--surface-0), 0 0 0 4px var(--accent);
+}
