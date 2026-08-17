@@ -3,6 +3,7 @@ import type {
   BridgeHello,
   ClientInfo,
   GameOption,
+  HudModule,
   Module,
   Server,
   VirtualScreen,
@@ -293,6 +294,37 @@ export const bridge = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, key, value: String(value) }),
+    });
+  },
+
+  async getHudModules(): Promise<HudModule[]> {
+    const data = await bridgeFetch<{
+      hud: {
+        id: string;
+        name: string;
+        enabled: boolean;
+        offsetX: string;
+        offsetY: string;
+        scale: string;
+        anchor: string;
+      }[];
+    }>("/api/v1/client/hud");
+    return data.hud.map((module) => ({
+      id: module.id,
+      name: module.name,
+      enabled: module.enabled,
+      offsetX: Number(module.offsetX),
+      offsetY: Number(module.offsetY),
+      scale: Number(module.scale),
+      anchor: module.anchor,
+    }));
+  },
+
+  async moveHudModule(id: string, x: number, y: number): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/hud/move", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, x, y }),
     });
   },
 };

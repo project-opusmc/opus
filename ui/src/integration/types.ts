@@ -109,3 +109,13 @@ export interface GameOption {
   max: number;
   step: number;
 }
+
+export interface HudModule {
+  id: string;
+  name: string;
+  enabled: boolean;
+  offsetX: number;
+  offsetY: number;
+  scale: number;
+  anchor: string;
+}
