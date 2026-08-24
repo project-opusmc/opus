@@ -1,5 +1,12 @@
 # Research: LiquidBounce UI Architecture (Svelte + CEF/MCEF)
 
+> **Historical research only.** This file records LiquidBounce observations and
+> earlier Opus hypotheses. It is not the active implementation contract. The
+> active path is [Forge + OptiFine + OPUS Core Mod + vanilla Minecraft UI]
+> (coremod-first-goal-and-plan.md). The retired T-UI and every CEF/client route
+> remain outside production; the old `virtualScreen`/`screen` transport is not a
+> production API.
+
 Ngày: 2026-08-17
 Nguồn: https://github.com/CCBlueX/LiquidBounce (clone `--depth 1` tại
 `/Users/zvwgvx/Project/opus-research/liquidbounce`)
@@ -86,7 +93,7 @@ viewport, rồi gọi `sendMousePress/Move/Wheel`, `sendKeyPress/Release/Typed`.
 - Frontend đọc `port` từ hash params khi dùng external backend, nếu không thì
   dùng `window.location.origin` (CEF mở trực tiếp server).
 
-### 3.5 Virtual screen + acknowledgement
+### 3.5 Virtual screen + acknowledgement (historical precedent)
 
 `ScreenManager` + `ScreenAcknowledgement`:
 
@@ -95,8 +102,10 @@ viewport, rồi gọi `sendMousePress/Move/Wheel`, `sendKeyPress/Release/Typed`.
   bằng recognizer predicate.
 - Khi screen thay đổi: reset ack -> `VirtualScreenEvent` -> WS -> frontend
   router chuyển `#/route`.
-- Frontend gọi `POST /api/v1/client/virtualScreen` (confirm) sau khi route đã
-  mở; nếu quá 1 giây chưa confirm -> coi là desync -> reload browser.
+- LiquidBounce gọi `POST /api/v1/client/virtualScreen` để xác nhận route. Opus
+  không mang endpoint đó sang production: acknowledgement hiện tại là
+  `POST /api/v1/client/ui-state/ack` với navigation revision, và event duy nhất
+  là `uiNavigationChanged`.
 - Replace dùng `CustomStandaloneMinecraftScreen`/`CustomSharedMinecraftScreen`;
   overlay dùng `CustomOverlay` (HUD, inventory...).
 
@@ -164,11 +173,12 @@ tại. Hướng khả thi nhất cho Opus:
 - Kiểm tra: macOS hiện tại, Retina, GUI scale 1/1.5/2, GPU vs CPU.
 - Nếu JCEF cũ không ổn -> giữ `external` làm bản chính, CEF là optional.
 
-### Phase C — Screen replace/overlay
+### Phase C — Screen replace/overlay (superseded for Opus)
 
 - Replace title/multiplayer/singleplayer/options/pause; overlay cho HUD.
-- Cân nhắc tương tác với `OpusVanillaTerminalOverlay` hiện tại (giữ làm
-  fallback khi browser crash/không khởi động được).
+- Không giữ hoặc khôi phục `OpusVanillaTerminalOverlay`. Khi CEF thiếu hoặc
+  crash, client chỉ dùng lifecycle/error shell tối giản hoặc đóng route; không
+  được lộ native product page hay terminal overlay.
 
 ## 6. Kết luận
 
@@ -176,8 +186,8 @@ LiquidBounce đã chứng minh kiến trúc mà tài liệu OPUS_UI_ARCHITECTURE
 là hoàn toàn có thật và chạy production: Svelte SPA + Chromium texture + REST/
 WS bridge + virtual screen. Với Opus 1.8.9, phần lớn thiết kế kế thừa được,
 nhưng **backend Chromium là rủi ro duy nhất cần PoC sớm** vì khác Java/Fabric
-thế hệ. Lộ trình an toàn: hoàn thiện frontend + bridge + virtual screen trước
-(dùng external browser), sau đó mới ghép JCEF/MCEF tương thích Java 8.
+thế hệ. Đây chỉ là bối cảnh nghiên cứu; production Opus hiện dùng CEF OSR
+out-of-process và không dùng external browser hoặc T-UI fallback.
 
 ## 7. Tham chiếu source đã đọc
 
@@ -258,7 +268,8 @@ chắn 100%.
 - Bundle/download JCEF bản Java 8 + macOS x64; không phụ thuộc hạ tầng CCBlueX.
 - Giữ kiến trúc LiquidBounce ở tầng trên: `BrowserBackend` abstraction,
   external backend, interop server, virtual screen, Svelte theme.
-- Giữ TUI hiện tại làm fallback khi JCEF không khởi động được.
+- Không dùng TUI làm fallback khi CEF/JCEF không khởi động được; failure phải
+  đi qua lifecycle/error shell tối giản của product compositor duy nhất.
 
 ### 8.4 CinemaMod/mcef old-1.12.2 — ứng viên JCEF cho PoC macOS
 

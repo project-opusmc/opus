@@ -1,24 +1,27 @@
 // Typed contract between the Opus Client Core and the Opus UI frontend.
 // The frontend never imports Minecraft or Forge types; this file is the API.
 
-export type AccountKind = "official" | "unofficial" | "demo";
+// A launch identity. Microsoft accounts are "official"; offline identities are
+// "unofficial". The account type is surfaced once (as a badge), so we do not
+// carry a separate label/note that just repeats it.
+export type AccountKind = "official" | "unofficial";
 
 export interface Account {
   id: string;
-  label: string;
   username: string;
   kind: AccountKind;
   uuid?: string;
-  note?: string;
+  // The identity that launches the game. Exactly one account is active.
+  active?: boolean;
 }
 
-export type ServerState = "offline" | "online" | "pinging" | "connecting";
+export type ServerState = "unknown" | "offline" | "online" | "pinging" | "connecting";
 
 export interface Server {
   id: string;
   name: string;
   address: string;
-  version: string;
+  version?: string;
   latencyMs?: number;
   state: ServerState;
 }
@@ -56,7 +59,7 @@ export interface World {
   id: string;
   name: string;
   fileName: string;
-  mode: string;
+  mode?: string;
   lastPlayed?: string;
   size?: string;
 }
@@ -82,14 +85,45 @@ export interface ScreenRouteInfo {
   label: string;
 }
 
-export interface VirtualScreen {
-  name: string;
-  action?: "open" | "close";
+export type RouteId =
+  | "title"
+  | "singleplayer"
+  | "multiplayer"
+  | "settings"
+  | "accounts"
+  | "game_menu"
+  | "quick_hub"
+  | "mods_catalog"
+  | "module_detail"
+  | "hud_editor"
+  | "none";
+
+export interface RouteRef {
+  id: RouteId;
+  params?: {
+    moduleId?: string;
+    settingsSection?: "interface" | "game";
+  };
 }
 
-export interface VirtualScreenEvent {
-  screenName: string;
-  action: "open" | "close";
+export type EntryPoint =
+  | "launch"
+  | "title"
+  | "pause"
+  | "hotkey"
+  | "mods_catalog"
+  | "hud_widget";
+
+export interface NavigationState {
+  revision: number;
+  current: RouteRef;
+  entryPoint: EntryPoint;
+  returnTo: RouteRef | null;
+  worldContext: "none" | "singleplayer" | "multiplayer";
+  presentation: "opaque" | "workspace" | "quick" | "hud_editor";
+  pausePolicy: "not_applicable" | "paused" | "live";
+  canGoBack: boolean;
+  canCloseToGame: boolean;
 }
 
 export interface BridgeHello {
@@ -98,6 +132,8 @@ export interface BridgeHello {
   minecraft: string;
   forge: string;
   optifine: string;
+  session?: string;
+  accountKind: AccountKind;
 }
 
 export interface GameOption {

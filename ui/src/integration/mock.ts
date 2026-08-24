@@ -21,25 +21,15 @@ export const mockClient: ClientInfo = {
 export const mockAccounts: Account[] = [
   {
     id: "acc-official-1",
-    label: "Official",
     username: "zvwgvx",
     kind: "official",
     uuid: "0f8d1b0c-0000-0000-0000-000000000001",
-    note: "Microsoft account",
+    active: true,
   },
   {
     id: "acc-unofficial-1",
-    label: "Unofficial",
     username: "opus-player",
     kind: "unofficial",
-    note: "Offline identity",
-  },
-  {
-    id: "acc-demo-1",
-    label: "Demo",
-    username: "demo01",
-    kind: "demo",
-    note: "Demo profile",
   },
 ];
 

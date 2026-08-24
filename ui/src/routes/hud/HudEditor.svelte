@@ -1,237 +1,263 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import PageShell from "../../components/PageShell.svelte";
-  import Badge from "../../primitives/Badge.svelte";
-  import Button from "../../primitives/Button.svelte";
-  import ScrollArea from "../../primitives/ScrollArea.svelte";
+  import RouteState from "../../menu/RouteState.svelte";
+  import IconTextButton from "../../menu/buttons/IconTextButton.svelte";
+  import SwitchSetting from "../../menu/setting/SwitchSetting.svelte";
   import { bridge } from "../../integration/api";
   import { isStandalone } from "../../integration/host";
+  import { back, navigate, navigation } from "../../stores/ui";
   import type { HudModule } from "../../integration/types";
 
   const mockItems: HudModule[] = [
     { id: "fps", name: "FPS Display", enabled: true, offsetX: 16, offsetY: 16, scale: 100, anchor: "top-left" },
     { id: "armor", name: "Armor Status", enabled: true, offsetX: 16, offsetY: 60, scale: 100, anchor: "top-left" },
-    { id: "keystrokes", name: "Keystrokes", enabled: false, offsetX: 200, offsetY: 16, scale: 100, anchor: "top-left" },
+    { id: "keystrokes", name: "Keystrokes", enabled: false, offsetX: 220, offsetY: 16, scale: 100, anchor: "top-left" },
   ];
 
   let items: HudModule[] = $state([]);
   let selectedId = $state("");
-  let canvasWidth = $state(900);
+  let loading = $state(true);
+  let error = $state("");
+  let inputError = $state("");
+  let selected = $derived(items.find((item) => item.id === selectedId));
+  let canvasElement: HTMLDivElement;
 
-  onMount(async () => {
-    if (isStandalone) {
-      items = mockItems;
-    } else {
-      items = await bridge.getHudModules();
+  async function loadModules() {
+    loading = true;
+    error = "";
+    try {
+      items = isStandalone ? mockItems : await bridge.getHudModules();
+      selectedId = items[0]?.id ?? "";
+    } catch (failure) {
+      error = failure instanceof Error ? failure.message : "Could not load HUD modules";
+    } finally {
+      loading = false;
     }
-    if (items.length > 0) {
-      selectedId = items[0].id;
+  }
+
+  onMount(() => {
+    let stopped = false;
+    let resizeObserver: ResizeObserver | null = null;
+    let publishTimer: ReturnType<typeof setTimeout> | null = null;
+    let lastPayload = "";
+
+    void loadModules();
+
+    const publishCanvas = () => {
+      if (stopped || isStandalone || !canvasElement) return;
+      if (publishTimer) clearTimeout(publishTimer);
+      publishTimer = setTimeout(() => {
+        publishTimer = null;
+        const rect = canvasElement.getBoundingClientRect();
+        const region = {
+          x: Math.max(0, Math.round(rect.left)),
+          y: Math.max(0, Math.round(rect.top)),
+          width: Math.max(0, Math.round(rect.width)),
+          height: Math.max(0, Math.round(rect.height)),
+        };
+        const revision = $navigation.revision;
+        const payload = `${revision}:${region.x}:${region.y}:${region.width}:${region.height}`;
+        if (payload === lastPayload) return;
+        lastPayload = payload;
+        inputError = "";
+        void bridge.reportHudEditorCanvas(revision, region).catch((error) => {
+          inputError = error instanceof Error
+            ? error.message
+            : "HUD input ownership sync failed";
+        });
+      }, 0);
+    };
+
+    if (!isStandalone && canvasElement) {
+      if (typeof ResizeObserver !== "undefined") {
+        resizeObserver = new ResizeObserver(publishCanvas);
+        resizeObserver.observe(canvasElement);
+      }
+      window.addEventListener("resize", publishCanvas);
+      publishCanvas();
     }
+
+    return () => {
+      stopped = true;
+      if (publishTimer) clearTimeout(publishTimer);
+      resizeObserver?.disconnect();
+      window.removeEventListener("resize", publishCanvas);
+    };
   });
 
-  function selected(): HudModule | undefined {
-    return items.find((item) => item.id === selectedId);
-  }
-
-  function boxStyle(item: HudModule) {
-    const width = Math.round(140 * item.scale / 100);
-    const height = Math.round(28 * item.scale / 100);
-    const left = item.anchor.includes("right")
-      ? canvasWidth - item.offsetX - width
-      : item.offsetX;
-    const top = item.anchor.includes("bottom")
-      ? 480 - item.offsetY - height
-      : item.offsetY;
-    return `left:${Math.max(0, left)}px;top:${Math.max(0, top)}px;width:${width}px;height:${height}px;`;
-  }
-
-  async function placeSelected(x: number, y: number) {
-    if (!selectedId) {
-      return;
+  async function toggle(id: string, enabled: boolean) {
+    const previous = items;
+    items = items.map((item) => (item.id === id ? { ...item, enabled } : item));
+    if (isStandalone) return;
+    try {
+      await bridge.setModuleEnabled(id, enabled);
+    } catch (failure) {
+      items = previous;
+      error = failure instanceof Error ? failure.message : "Could not update HUD module";
     }
-    if (isStandalone) {
-      items = items.map((item) =>
-        item.id === selectedId ? { ...item, offsetX: x, offsetY: y } : item,
-      );
-      return;
-    }
-    await bridge.moveHudModule(selectedId, x, y);
-    items = await bridge.getHudModules();
   }
 </script>
 
-<PageShell
-  title="HUD Editor"
-  description="Arrange runtime HUD components. Click a module then click the canvas to place it."
-  badge="OVERLAY"
->
-  {#snippet actions()}
-    <Badge tone={isStandalone ? "neutral" : "accent"}>
-      {isStandalone ? "PREVIEW" : "LIVE"}
-    </Badge>
-  {/snippet}
-
-  <div class="hud-editor">
-    <ScrollArea>
-      <div
-        class="hud-canvas"
-        class:hud-canvas--active={!!selectedId}
-        aria-label="HUD canvas"
-        role="button"
-        tabindex="0"
-        bind:clientWidth={canvasWidth}
-        onclick={(event) => {
-          const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
-          void placeSelected(
-            Math.round(event.clientX - rect.left),
-            Math.round(event.clientY - rect.top),
-          );
-        }}
-        onkeydown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            void placeSelected(Math.round(canvasWidth / 2), 240);
-          }
-        }}
-      >
+<div class="hud-editor">
+  <div class="hud-canvas" bind:this={canvasElement} aria-label="Live HUD canvas"></div>
+  <div class="sidebar">
+    <div class="sidebar__heading">
+      <span class="eyebrow">OPUS</span>
+      <span class="sidebar__title">HUD Editor</span>
+      <span class="sidebar__note">
+        {selected ? `Selected: ${selected.name}` : "Live widget layout"}
+      </span>
+    </div>
+    <span class="sidebar__section">Components</span>
+    <RouteState
+      loading={loading}
+      error={error}
+      retry={() => void loadModules()}
+      empty={items.length === 0 ? "No HUD modules are available." : ""}
+    />
+    {#if !loading && !error && items.length > 0}
+      <div class="list">
         {#each items as item (item.id)}
-          <div
-            class="hud-box"
-            class:hud-box--selected={item.id === selectedId}
-            style={boxStyle(item)}
-            role="button"
-            tabindex="0"
-            onclick={(event) => {
-              event.stopPropagation();
-              selectedId = item.id;
-            }}
-            onkeydown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                selectedId = item.id;
-              }
-            }}
-          >
-            <span class="text-metadata">{item.name}</span>
+          <div class="list-item" class:selected={item.id === selectedId}>
+            <button class="list-item__name" type="button" onclick={() => (selectedId = item.id)}>
+              {item.name}
+            </button>
+            <SwitchSetting value={item.enabled} onchange={(value) => void toggle(item.id, value)} />
           </div>
         {/each}
       </div>
-    </ScrollArea>
-    <div class="hud-sidebar">
-      <span class="text-control">MODULES</span>
-      <ScrollArea>
-        <div class="hud-module-list">
-          {#each items as item (item.id)}
-            <button
-              type="button"
-              class="hud-module"
-              class:hud-module--selected={item.id === selectedId}
-              onclick={() => (selectedId = item.id)}
-            >
-              <span class="text-regular">{item.name}</span>
-              <Badge tone={item.enabled ? "success" : "neutral"}>
-                {item.enabled ? "on" : "off"}
-              </Badge>
-            </button>
-          {/each}
-        </div>
-      </ScrollArea>
-      <p class="text-secondary">
-        {selected() ? `${selected()?.name} · ${selected()?.anchor} · scale ${selected()?.scale}%` : "Select a module first."}
-      </p>
-    </div>
+    {/if}
+    {#if inputError}
+      <span class="sidebar__error" role="alert">{inputError}</span>
+    {/if}
+    {#if selected && !error}
+      <IconTextButton
+        icon="options"
+        title="Widget settings"
+        onclick={() => void navigate({ id: "module_detail", params: { moduleId: selected.id } })}
+      />
+    {/if}
+    <IconTextButton icon="back" title="Back" onclick={() => void back()} />
   </div>
-</PageShell>
+</div>
 
 <style lang="scss">
   .hud-editor {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 240px;
-    gap: var(--space-16);
+    display: flex;
+    gap: 0;
+    width: 100%;
     height: 100%;
     min-height: 0;
   }
 
   .hud-canvas {
-    position: relative;
-    height: 480px;
-    border-radius: var(--radius-card);
-    border: 1px solid var(--border-strong);
-    background:
-      linear-gradient(var(--border-subtle) 1px, transparent 1px),
-      linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px),
-      var(--surface-1);
-    background-size: 24px 24px;
-    cursor: crosshair;
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
+    pointer-events: none;
   }
 
-  .hud-canvas--active {
-    cursor: copy;
-  }
-
-  .hud-box {
-    position: absolute;
+  .sidebar {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
     border-radius: var(--radius-control);
-    border: 1px solid var(--accent);
-    background: var(--surface-2);
-    color: var(--text-secondary);
-    cursor: grab;
-    transition: border-color var(--motion-fast) var(--ease-standard);
+    background: var(--menu-list-background-color);
+    min-height: 0;
+    width: min(300px, 48%);
+    flex: none;
+    margin: 18px 22px 18px 16px;
+    overflow: hidden;
   }
 
-  .hud-box:hover {
-    border-color: var(--text-secondary);
-  }
-
-  .hud-box--selected {
-    border-color: var(--text-primary);
-    background: var(--surface-3);
-  }
-
-  .hud-sidebar {
+  .sidebar__heading {
     display: flex;
     flex-direction: column;
-    gap: var(--space-12);
-    padding: var(--space-16);
-    border-radius: var(--radius-card);
-    border: 1px solid var(--border-subtle);
-    background: var(--panel-background);
+    gap: 3px;
   }
 
-  .hud-sidebar p {
-    margin: 0;
-    color: var(--text-muted);
+  .eyebrow {
+    color: var(--accent-color);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0;
   }
 
-  .hud-module-list {
+  .sidebar__note {
+    color: var(--menu-text-dimmed-color);
+    font-size: 12px;
+  }
+
+  .sidebar__error {
+    color: var(--error-color);
+    font-size: 12px;
+  }
+
+  .sidebar__title,
+  .sidebar__section {
+    color: var(--menu-text-color);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .sidebar__section {
+    margin-top: 6px;
+    color: var(--menu-text-dimmed-color);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: 8px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
   }
 
-  .hud-module {
+  .list-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-8);
-    width: 100%;
-    padding: var(--space-8) var(--space-12);
+    gap: 12px;
+    padding: 10px 14px;
     border-radius: var(--radius-control);
-    border: 1px solid var(--border-subtle);
-    background: var(--panel-background);
-    transition:
-      background-color var(--motion-fast) var(--ease-standard),
-      border-color var(--motion-fast) var(--ease-standard);
+    background: var(--menu-list-item-background-color);
+    border-left: solid 3px transparent;
+
+    &.selected { border-left-color: var(--accent-color); }
+
+    &__name {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      text-align: left;
+      color: var(--menu-text-color);
+      font-size: 14px;
+      cursor: pointer;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 
-  .hud-module:hover {
-    background: var(--panel-hover-background);
-  }
+  @media (max-width: 560px), (max-height: 400px) {
+    .sidebar {
+      gap: 8px;
+      padding: 12px;
+      margin: 10px 12px 10px 10px;
+    }
 
-  .hud-module--selected {
-    border-color: var(--accent);
+    .sidebar__title { font-size: 14px; }
+    .sidebar__note { font-size: 11px; }
+    .sidebar__section { margin-top: 2px; }
+
+    .list { gap: 6px; }
+    .list-item { padding: 8px 10px; }
   }
 </style>

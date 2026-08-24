@@ -1,4 +1,3 @@
-import { emit } from "./events";
 import { WS_BASE, authCode } from "./host";
 
 // WebSocket bridge (architecture doc section 7). The game server binds
@@ -46,7 +45,7 @@ function open() {
   socket = new WebSocket(`${WS_BASE}/ws${query}`);
 
   socket.addEventListener("open", () => {
-    emit("socketReady", undefined);
+    dispatch("socketReady", undefined);
   });
 
   socket.addEventListener("message", (event) => {
@@ -59,17 +58,7 @@ function open() {
     if (!message?.name) {
       return;
     }
-    const set = listeners.get(message.name);
-    if (!set) {
-      return;
-    }
-    for (const callback of set) {
-      try {
-        callback(message.event);
-      } catch (error) {
-        console.error(`[opus-ui] listener failed for ${message.name}`, error);
-      }
-    }
+    dispatch(message.name, message.event);
   });
 
   socket.addEventListener("close", () => {
@@ -82,6 +71,20 @@ function open() {
   socket.addEventListener("error", () => {
     socket?.close();
   });
+}
+
+function dispatch(eventName: string, payload: unknown) {
+  const set = listeners.get(eventName);
+  if (!set) {
+    return;
+  }
+  for (const callback of set) {
+    try {
+      callback(payload);
+    } catch (error) {
+      console.error(`[opus-ui] listener failed for ${eventName}`, error);
+    }
+  }
 }
 
 function scheduleReconnect() {

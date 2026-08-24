@@ -1,0 +1,8 @@
+// Shared SCSS helpers for the Opus menu. CEF receives the production pointer
+// through SendMouse*Event, so browser-native hover state is authoritative.
+
+@mixin hover {
+  &:hover {
+    @content;
+  }
+}

@@ -7,7 +7,6 @@ build/runtime/
 |- artifacts/
 |  |- opus-bootstrap-<version>.jar
 |  |- opus-runtime-legacy-1.8.9-<version>.jar
-|  `- opus-client-legacy-1.8.9-<version>.jar
 |- runtime-manifest.json
 `- runtime-checksums.json
 ```

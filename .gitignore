@@ -1,2 +1,5 @@
 /output/
 /.DS_Store
+/tools/gl-probe/*.class
+**/__pycache__/
+*.py[cod]

@@ -1,0 +1,3 @@
+#!/bin/zsh
+print -u2 "Refusing macOS security CLI in file-only credential mode."
+exit 126

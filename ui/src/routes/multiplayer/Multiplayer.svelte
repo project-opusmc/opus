@@ -1,202 +1,204 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import PageShell from "../../components/PageShell.svelte";
-  import ServerEntry from "../../components/ServerEntry.svelte";
-  import Button from "../../primitives/Button.svelte";
-  import Modal from "../../primitives/Modal.svelte";
-  import ScrollArea from "../../primitives/ScrollArea.svelte";
-  import SearchInput from "../../primitives/SearchInput.svelte";
-  import TextInput from "../../primitives/TextInput.svelte";
+  import OptionBar from "../../menu/optionbar/OptionBar.svelte";
+  import RouteState from "../../menu/RouteState.svelte";
+  import Divider from "../../menu/optionbar/Divider.svelte";
+  import MenuList from "../../menu/list/MenuList.svelte";
+  import MenuListItem from "../../menu/list/MenuListItem.svelte";
+  import MenuListItemTag from "../../menu/list/MenuListItemTag.svelte";
+  import MenuListItemButton from "../../menu/list/MenuListItemButton.svelte";
+  import BottomButtonWrapper from "../../menu/buttons/BottomButtonWrapper.svelte";
+  import ButtonContainer from "../../menu/buttons/ButtonContainer.svelte";
+  import IconTextButton from "../../menu/buttons/IconTextButton.svelte";
+  import Search from "../../menu/Search.svelte";
+  import SwitchSetting from "../../menu/setting/SwitchSetting.svelte";
+  import Modal from "../../menu/modal/Modal.svelte";
+  import IconTextInput from "../../menu/setting/IconTextInput.svelte";
+  import ButtonSetting from "../../menu/setting/ButtonSetting.svelte";
   import { api, bridge } from "../../integration/api";
   import { isStandalone } from "../../integration/host";
+  import { back } from "../../stores/ui";
   import type { Server } from "../../integration/types";
 
   let servers: Server[] = $state([]);
-  let loading = $state(true);
-  let selected = $state(0);
-  let query = $state("");
-  let addOpen = $state(false);
+  let searchQuery = $state("");
+  let onlineOnly = $state(false);
+  let addVisible = $state(false);
+  let directVisible = $state(false);
+
   let newName = $state("");
   let newAddress = $state("");
-  let direct = $state("");
+  let directAddress = $state("");
+  let loading = $state(true);
+  let error = $state("");
+  let actionError = $state("");
 
-  let filtered = $derived(
-    query.trim()
-      ? servers.filter(
-          (server) =>
-            server.name.toLowerCase().includes(query.trim().toLowerCase()) ||
-            server.address.toLowerCase().includes(query.trim().toLowerCase()),
-        )
-      : servers,
+  let rendered = $derived(
+    servers.filter(
+      (server) =>
+        (!isStandalone || !onlineOnly || server.state === "online") &&
+        (searchQuery.trim() === "" ||
+          server.name.toLowerCase().includes(searchQuery.trim().toLowerCase()) ||
+          server.address.toLowerCase().includes(searchQuery.trim().toLowerCase())),
+    ),
   );
 
-  onMount(async () => {
-    servers = isStandalone ? await api.getServers() : await bridge.getServers();
-    loading = false;
+  async function loadServers() {
+    loading = true;
+    error = "";
+    actionError = "";
+    try {
+      servers = isStandalone ? await api.getServers() : await bridge.getServers();
+    } catch (failure) {
+      error = failure instanceof Error ? failure.message : "Could not load servers";
+    } finally {
+      loading = false;
+    }
+  }
+
+  onMount(() => {
+    void loadServers();
   });
 
-  async function addServer() {
-    if (!newName.trim() || !newAddress.trim()) {
+  async function refresh() {
+    await loadServers();
+  }
+
+  function pingColor(server: Server) {
+    if (!isStandalone) return null;
+    if (server.state !== "online" || server.latencyMs == null) return "var(--error-color)";
+    if (server.latencyMs <= 50) return "var(--success-color)";
+    if (server.latencyMs <= 100) return "var(--warning-color)";
+    return "var(--error-color)";
+  }
+
+  function pingText(server: Server) {
+    if (!isStandalone) return null;
+    if (server.state === "online" && server.latencyMs != null) return `${server.latencyMs}ms`;
+    return null;
+  }
+
+  async function connect(server: Server) {
+    actionError = "";
+    if (isStandalone) {
+      console.info("[opus-ui] join", server.address);
       return;
     }
-    if (isStandalone) {
-      const server = await api.addServer(newName.trim(), newAddress.trim());
-      servers = [...servers, server];
-    } else {
-      await bridge.addServer(newName.trim(), newAddress.trim());
-      servers = await bridge.getServers();
+    try {
+      await bridge.connectServer(server.address);
+    } catch (failure) {
+      actionError = failure instanceof Error ? failure.message : "Could not connect to server";
+    }
+  }
+
+  async function addServer() {
+    if (!newName.trim() || !newAddress.trim()) return;
+    actionError = "";
+    try {
+      if (isStandalone) {
+        servers = [...servers, await api.addServer(newName.trim(), newAddress.trim())];
+      } else {
+        await bridge.addServer(newName.trim(), newAddress.trim());
+        await refresh();
+      }
+    } catch (failure) {
+      actionError = failure instanceof Error ? failure.message : "Could not add server";
+      return;
     }
     newName = "";
     newAddress = "";
-    addOpen = false;
+    addVisible = false;
   }
 
   async function directConnect() {
-    if (!direct.trim()) {
+    if (!directAddress.trim()) return;
+    actionError = "";
+    try {
+      if (isStandalone) {
+        console.info("[opus-ui] direct connect", directAddress);
+      } else {
+        await bridge.connectServer(directAddress.trim());
+      }
+    } catch (failure) {
+      actionError = failure instanceof Error ? failure.message : "Could not connect to server";
       return;
     }
-    if (isStandalone) {
-      const server = await api.addServer(direct.trim(), direct.trim());
-      servers = [...servers, server];
-    } else {
-      await bridge.addServer(direct.trim(), direct.trim());
-      servers = await bridge.getServers();
-      await bridge.connectServer(direct.trim());
-    }
-    selected = servers.length - 1;
-    direct = "";
+    directAddress = "";
+    directVisible = false;
+  }
+
+  function remove(server: Server) {
+    servers = servers.filter((entry) => entry.id !== server.id);
   }
 </script>
 
-<PageShell
-  title="Multiplayer"
-  description="Join servers through the Opus client runtime."
-  badge="SERVERS"
->
-  {#snippet actions()}
-    <Button onclick={() => (addOpen = true)}>Add Server</Button>
-  {/snippet}
+<OptionBar>
+  <Search bind:value={searchQuery} placeholder="Search servers..." />
+  {#if isStandalone}
+    <SwitchSetting title="Online only" bind:value={onlineOnly} />
+  {/if}
+  <Divider />
+  <ButtonSetting title="Refresh" secondary onclick={refresh} />
+</OptionBar>
 
-  <div class="multiplayer">
-    <div class="multiplayer__toolbar">
-      <SearchInput bind:value={query} placeholder="Search servers" />
-      <TextInput
-        bind:value={direct}
-        placeholder="play.example.com:25565"
-        hint="Direct connect"
-      />
-      <Button
-        variant="primary"
-        disabled={!direct.trim()}
-        onclick={directConnect}
+<MenuList>
+  <RouteState
+    loading={loading}
+    error={error || actionError}
+    retry={() => void loadServers()}
+    empty={rendered.length === 0 ? "No servers available." : ""}
+  />
+  {#if !loading && !error && !actionError}
+    {#each rendered as server (server.id)}
+      <MenuListItem
+        title={server.name}
+        imageText={pingText(server)}
+        imageTextColor={pingColor(server)}
+        ondblclick={() => void connect(server)}
       >
-        Connect
-      </Button>
-    </div>
+        {#snippet subtitle()}
+          <span>{server.address}</span>
+        {/snippet}
+        {#snippet tag()}
+          {#if server.version}
+            <MenuListItemTag text={server.version} />
+          {/if}
+          {#if isStandalone && server.state !== "online"}
+            <MenuListItemTag text="Offline" />
+          {/if}
+        {/snippet}
+        {#snippet activeVisible()}
+          {#if isStandalone}
+            <MenuListItemButton title="Remove" icon="trash" onclick={() => remove(server)} />
+            <MenuListItemButton title="Edit" icon="pen" onclick={() => console.info("[opus-ui] edit server", server.address)} />
+          {/if}
+        {/snippet}
+        {#snippet alwaysVisible()}
+          <MenuListItemButton title="Join" icon="play" onclick={() => void connect(server)} />
+        {/snippet}
+      </MenuListItem>
+    {/each}
+  {/if}
+</MenuList>
 
-    {#if loading}
-      <div class="state text-secondary motion-pulse">Loading servers…</div>
-    {:else if filtered.length === 0}
-      <div class="state">
-        <span class="text-regular">No servers match.</span>
-        <span class="text-secondary">Add one or change the search.</span>
-      </div>
-    {:else}
-      <ScrollArea>
-        <div class="server-list">
-          {#each filtered as server, index (server.id)}
-            <ServerEntry
-              {server}
-              selected={selected === index}
-              onselect={() => {
-                selected = index;
-                if (isStandalone) {
-                  console.info("[opus-ui] join", server.address);
-                } else {
-                  void bridge.connectServer(server.address);
-                }
-              }}
-            />
-          {/each}
-        </div>
-      </ScrollArea>
-    {/if}
-  </div>
-</PageShell>
+<BottomButtonWrapper>
+  <ButtonContainer>
+    <IconTextButton icon="plus" title="Add" onclick={() => (addVisible = true)} />
+    <IconTextButton icon="play" title="Direct" onclick={() => (directVisible = true)} />
+    <IconTextButton icon="refresh" title="Refresh" onclick={refresh} />
+  </ButtonContainer>
+  <ButtonContainer>
+    <IconTextButton icon="back" title="Back" onclick={() => void back()} />
+  </ButtonContainer>
+</BottomButtonWrapper>
 
-<Modal
-  open={addOpen}
-  title="Add Server"
-  onclose={() => (addOpen = false)}
->
-  <div class="add-form">
-    <TextInput
-      bind:value={newName}
-      label="Server name"
-      placeholder="Opus Network"
-    />
-    <TextInput
-      bind:value={newAddress}
-      label="Address"
-      placeholder="play.example.com:25565"
-    />
-  </div>
-  {#snippet footer()}
-    <Button variant="ghost" onclick={() => (addOpen = false)}>Cancel</Button>
-    <Button
-      variant="primary"
-      disabled={!newName.trim() || !newAddress.trim()}
-      onclick={addServer}
-    >
-      Save
-    </Button>
-  {/snippet}
+<Modal title="Add Server" bind:visible={addVisible}>
+  <IconTextInput icon="pen" title="Server name" bind:value={newName} />
+  <IconTextInput icon="globe" title="Address" bind:value={newAddress} />
+  <ButtonSetting title="Save" onclick={addServer} />
 </Modal>
 
-<style lang="scss">
-  .multiplayer {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-    gap: var(--space-16);
-  }
-
-  .multiplayer__toolbar {
-    display: flex;
-    align-items: end;
-    gap: var(--space-12);
-    flex: none;
-  }
-
-  .multiplayer__toolbar :global(.search-input) {
-    width: 280px;
-  }
-
-  .multiplayer__toolbar :global(.text-input) {
-    flex: 1;
-    max-width: 380px;
-  }
-
-  .state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-8);
-    height: 100%;
-    color: var(--text-muted);
-  }
-
-  .server-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-8);
-  }
-
-  .add-form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-16);
-  }
-</style>
+<Modal title="Direct Connect" bind:visible={directVisible}>
+  <IconTextInput icon="globe" title="play.example.com:25565" bind:value={directAddress} />
+  <ButtonSetting title="Connect" onclick={directConnect} />
+</Modal>

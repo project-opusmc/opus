@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { fade, slide } from "svelte/transition";
   import { bridge } from "./integration/api";
   import { isStandalone } from "./integration/host";
   import { connectBridge, disconnectBridge, listen } from "./integration/ws";
+  import Menu from "./menu/Menu.svelte";
   import Title from "./routes/title/Title.svelte";
   import Singleplayer from "./routes/singleplayer/Singleplayer.svelte";
   import Multiplayer from "./routes/multiplayer/Multiplayer.svelte";
@@ -11,185 +11,128 @@
   import Accounts from "./routes/accounts/Accounts.svelte";
   import HudEditor from "./routes/hud/HudEditor.svelte";
   import GameMenu from "./routes/game-menu/GameMenu.svelte";
+  import QuickHub from "./routes/quick-hub/QuickHub.svelte";
+  import ModsCatalog from "./routes/mods/ModsCatalog.svelte";
+  import ModuleDetail from "./routes/mods/ModuleDetail.svelte";
   import None from "./routes/none/None.svelte";
-  import {
-    asRouteId,
-    initHashRoute,
-    navigate,
-    route,
-    routes,
-  } from "./stores/ui";
+  import { back, commitNavigation, initHashRoute, navigation } from "./stores/ui";
+  import type { RouteId } from "./stores/ui";
 
-  let currentRoute = $derived($route);
+  let currentRoute = $derived($navigation.current.id);
+  let currentRouteKey = $derived(
+    `${currentRoute}:${$navigation.current.params?.moduleId ?? ""}:${$navigation.current.params?.settingsSection ?? ""}:${$navigation.revision}`,
+  );
 
-  async function syncFromBridge(name: string) {
-    navigate(asRouteId(name));
-    await bridge.confirmVirtualScreen(name || "none");
+  // Routes shown inside the padded Menu shell (header + account). "none" is the
+  // in-game suspended state and stands alone; the shell would only add chrome.
+  const menuRoutes: RouteId[] = [
+    "title",
+    "singleplayer",
+    "multiplayer",
+    "settings",
+    "accounts",
+    "game_menu",
+    "mods_catalog",
+    "module_detail",
+  ];
+
+  let inMenu = $derived(menuRoutes.includes(currentRoute));
+
+  async function syncFromBridge(state: typeof $navigation) {
+    commitNavigation(state);
+    document.documentElement.dataset.presentation = state.presentation;
+    await bridge.acknowledgeNavigation(state.revision);
   }
 
   onMount(() => {
-    initHashRoute();
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      // Modal.svelte owns its own close handler. If a modal is present, do not
+      // let the same key fall through to route history.
+      if (document.querySelector(".modal-wrapper")) return;
+      void back();
+    };
+    window.addEventListener("keydown", onEscape);
     if (isStandalone) {
-      return;
+      initHashRoute();
+      return () => window.removeEventListener("keydown", onEscape);
     }
 
-    connectBridge();
     const offReady = listen("socketReady", async () => {
-      const screen = await bridge.getVirtualScreen();
-      await syncFromBridge(screen.name);
+      await syncFromBridge(await bridge.getNavigationState());
     });
-    const offScreen = listen("virtualScreen", async (event: {
-      screenName: string;
-      action: "open" | "close";
-    }) => {
-      if (event.action === "close") {
-        await syncFromBridge("");
-      } else {
-        await syncFromBridge(event.screenName);
-      }
-    });
+    const offNavigation = listen("uiNavigationChanged", syncFromBridge);
+    // Register both listeners before opening the loopback socket. CEF can
+    // complete a localhost WebSocket handshake immediately; connecting first
+    // could lose socketReady and leave the initial navigation unacknowledged.
+    connectBridge();
 
     return () => {
       offReady();
-      offScreen();
+      offNavigation();
+      window.removeEventListener("keydown", onEscape);
       disconnectBridge();
     };
   });
 </script>
 
-<div class="app">
-  {#if isStandalone}
-    <aside class="app__rail" aria-label="Preview routes">
-      <div class="app__rail-brand">
-        <span class="app__rail-mark" aria-hidden="true"></span>
-        <span class="text-control">OPUS UI</span>
-      </div>
-      <nav class="app__rail-nav">
-        {#each routes as item (item.id)}
-          <button
-            type="button"
-            class="app__rail-item"
-            class:app__rail-item--active={currentRoute === item.id}
-            onclick={() => navigate(item.id)}
-          >
-            {item.label}
-          </button>
-        {/each}
-      </nav>
-      <span class="app__rail-note text-metadata">standalone preview</span>
-    </aside>
+<!--
+  No enter/leave transitions on route swap. The embedded in-game surface renders
+  in an offscreen helper WebView where requestAnimationFrame is throttled, so a
+  stalled out: transition used to overlay the previous page on top of the new
+  one and intercept pointer hits (the old broken/"tan nát" menu). Swapping the
+  page instantly with {#key} keeps hover/click alive after navigation.
+-->
+<div class="app" class:app--centered={currentRoute === "quick_hub"}>
+  {#if inMenu}
+    <Menu>
+      {#key currentRouteKey}
+        <div class="app__page">
+          {#if currentRoute === "title"}
+            <Title />
+          {:else if currentRoute === "singleplayer"}
+            <Singleplayer />
+          {:else if currentRoute === "multiplayer"}
+            <Multiplayer />
+          {:else if currentRoute === "settings"}
+            <Settings />
+          {:else if currentRoute === "accounts"}
+            <Accounts />
+          {:else if currentRoute === "game_menu"}
+            <GameMenu />
+          {:else if currentRoute === "mods_catalog"}
+            <ModsCatalog />
+          {:else if currentRoute === "module_detail"}
+            <ModuleDetail />
+          {/if}
+        </div>
+      {/key}
+    </Menu>
+  {:else if currentRoute === "quick_hub"}
+    <QuickHub />
+  {:else if currentRoute === "hud_editor"}
+    <HudEditor />
+  {:else}
+    <None />
   {/if}
-
-  <main class="app__stage">
-    {#key currentRoute}
-      <div
-        class="app__page"
-        in:slide={{ duration: 240 }}
-        out:fade={{ duration: 160 }}
-      >
-        {#if currentRoute === "title"}
-          <Title />
-        {:else if currentRoute === "singleplayer"}
-          <Singleplayer />
-        {:else if currentRoute === "multiplayer"}
-          <Multiplayer />
-        {:else if currentRoute === "settings"}
-          <Settings />
-        {:else if currentRoute === "accounts"}
-          <Accounts />
-        {:else if currentRoute === "hud"}
-          <HudEditor />
-        {:else if currentRoute === "game_menu"}
-          <GameMenu />
-        {:else if currentRoute === "none"}
-          <None />
-        {/if}
-      </div>
-    {/key}
-  </main>
 </div>
 
 <style lang="scss">
   .app {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
     height: 100%;
     min-height: 0;
-    background: var(--surface-0);
   }
 
-  .app:has(> .app__rail) {
-    grid-template-columns: 216px minmax(0, 1fr);
-  }
-
-  .app__rail {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-24);
-    padding: var(--space-20) var(--space-16);
-    border-right: 1px solid var(--border-subtle);
-    background: var(--surface-0);
-  }
-
-  .app__rail-brand {
+  .app--centered {
     display: flex;
     align-items: center;
-    gap: var(--space-12);
-    padding: 0 var(--space-8);
-  }
-
-  .app__rail-mark {
-    width: 20px;
-    height: 20px;
-    border-radius: var(--radius-control);
-    background: var(--accent);
-  }
-
-  .app__rail-nav {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-  }
-
-  .app__rail-item {
-    display: flex;
-    align-items: center;
-    height: var(--control-height-md);
-    padding: 0 var(--space-12);
-    border-radius: var(--radius-control);
-    color: var(--text-muted);
-    font-size: var(--text-13);
-    font-weight: 500;
-    text-align: left;
-    transition:
-      background-color var(--motion-fast) var(--ease-standard),
-      color var(--motion-fast) var(--ease-standard);
-  }
-
-  .app__rail-item:hover {
-    background: var(--panel-hover-background);
-    color: var(--text-primary);
-  }
-
-  .app__rail-item--active {
-    background: var(--panel-hover-background);
-    color: var(--text-primary);
-    box-shadow: inset 2px 0 0 var(--accent);
-  }
-
-  .app__rail-note {
-    margin-top: auto;
-    color: var(--text-muted);
-    padding: 0 var(--space-8);
-  }
-
-  .app__stage {
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;
+    justify-content: center;
   }
 
   .app__page {
-    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
 </style>

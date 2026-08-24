@@ -16,14 +16,25 @@ body,
 }
 
 body {
-  background: var(--surface-0);
-  color: var(--text-primary);
+  // The game draws no panorama behind us; the SPA paints its own opaque scene
+  // so the menu reads exactly like a standalone launcher window.
+  background: var(--app-scene-background);
+  background-color: #05060c;
+  color: var(--text-color);
   font-family: var(--font-family);
   font-size: var(--text-13);
   line-height: var(--line-height-normal);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  user-select: none;
   overflow: hidden;
+}
+
+html[data-presentation="quick"] body,
+html[data-presentation="workspace"] body,
+html[data-presentation="hud_editor"] body {
+  background: transparent;
+  background-color: transparent;
 }
 
 button,
@@ -46,13 +57,17 @@ button:disabled {
 }
 
 a {
-  color: var(--text-primary);
+  color: var(--text-color);
   text-decoration: none;
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--surface-0);
+  background: var(--accent-color);
+  color: var(--text-color);
+}
+
+*:focus {
+  outline: none;
 }
 
 *:focus-visible {
@@ -71,11 +86,10 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--surface-3);
-  border: 2px solid var(--surface-0);
+  background: var(--accent-color);
   border-radius: var(--radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+  background: var(--accent-hover-color);
 }

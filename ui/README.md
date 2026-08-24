@@ -1,9 +1,8 @@
 # Opus UI
 
-Standalone frontend for the Opus Client, following
-`OPUS_UI_ARCHITECTURE.md`. Minecraft hosts the UI; the UI is a real web
-application (Svelte 5 + TypeScript + SCSS + Vite) and can be developed
-completely outside the game.
+Standalone frontend for the Opus Client. Minecraft hosts this Svelte 5 web
+application through the authenticated CEF OSR bridge; the same bundle can be
+developed completely outside the game.
 
 ## Run
 
@@ -14,21 +13,27 @@ npm run dev
 
 Open http://127.0.0.1:5173 in a browser.
 
+For unscaled responsive QA in the Vite development server, use a route such as
+`http://127.0.0.1:5173/?uiAudit=1#/title`. The dev-only flag keeps zoom at 1
+while retaining standalone fixtures and hash navigation; it is not an
+integrated bridge mode and is disabled in production builds.
+
 ## Layout
 
 ```text
 src/
 ├── design/         tokens, typography, motion, global styles
-├── primitives/     Button, Input, Switch, Slider, Select, Tabs, Modal, ...
-├── components/     PageShell, ServerEntry, AccountEntry, ModuleCard, SettingRow
-├── routes/         title, singleplayer, multiplayer, settings, accounts, hud
-├── integration/    typed API contract, mock data, WS/event stubs
+├── menu/           shared product controls and layout
+├── routes/         title, singleplayer, multiplayer, settings, accounts, HUD,
+│                   Quick Hub, Mods Catalog, Module Detail
+├── integration/    typed API contract, bridge REST/WS, standalone fixtures
 └── stores/         ui router + settings
 ```
 
 ## Rules
 
-- Components use design tokens only; no raw hex/spacing/motion.
-- Mock data first; replace `integration/api.ts` with the real REST bridge later.
+- Integrated routes use the Java/Core bridge as their authority. Mock data is
+  limited to standalone preview mode and is never an in-game fallback.
 - The bridge binds `127.0.0.1` only and uses a per-session token.
-- The legacy Java TUI/GuiScreen surface stays as fallback/debug only.
+- Svelte/CEF is the sole product compositor. Native Java is limited to live HUD
+  rendering, HUD-editor hit testing, and the minimal loading/error shell.

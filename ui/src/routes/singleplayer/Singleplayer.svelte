@@ -1,156 +1,124 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import PageShell from "../../components/PageShell.svelte";
-  import Badge from "../../primitives/Badge.svelte";
-  import Button from "../../primitives/Button.svelte";
-  import ScrollArea from "../../primitives/ScrollArea.svelte";
+  import OptionBar from "../../menu/optionbar/OptionBar.svelte";
+  import RouteState from "../../menu/RouteState.svelte";
+  import MenuList from "../../menu/list/MenuList.svelte";
+  import MenuListItem from "../../menu/list/MenuListItem.svelte";
+  import MenuListItemTag from "../../menu/list/MenuListItemTag.svelte";
+  import MenuListItemButton from "../../menu/list/MenuListItemButton.svelte";
+  import BottomButtonWrapper from "../../menu/buttons/BottomButtonWrapper.svelte";
+  import ButtonContainer from "../../menu/buttons/ButtonContainer.svelte";
+  import IconTextButton from "../../menu/buttons/IconTextButton.svelte";
+  import Search from "../../menu/Search.svelte";
+  import MultiSelect from "../../menu/setting/MultiSelect.svelte";
   import { api, bridge } from "../../integration/api";
   import { isStandalone } from "../../integration/host";
+  import { back } from "../../stores/ui";
   import type { World } from "../../integration/types";
 
   let worlds: World[] = $state([]);
+  let searchQuery = $state("");
+  let modes = $state(["Survival", "Creative", "Adventure", "Hardcore", "Spectator"]);
   let loading = $state(true);
-  let selected = $state(0);
+  let error = $state("");
+  let actionError = $state("");
 
-  onMount(async () => {
-    worlds = isStandalone ? await api.getWorlds() : await bridge.getWorlds();
-    loading = false;
+  let rendered = $derived(
+    worlds.filter(
+      (world) =>
+        (!isStandalone || modes.length === 0 || (world.mode !== undefined && modes.includes(world.mode))) &&
+        (searchQuery.trim() === "" ||
+          world.name.toLowerCase().includes(searchQuery.trim().toLowerCase())),
+    ),
+  );
+
+  async function loadWorlds() {
+    loading = true;
+    error = "";
+    try {
+      worlds = isStandalone ? await api.getWorlds() : await bridge.getWorlds();
+    } catch (failure) {
+      error = failure instanceof Error ? failure.message : "Could not load worlds";
+    } finally {
+      loading = false;
+    }
+  }
+
+  onMount(() => {
+    void loadWorlds();
   });
 
-  async function loadWorld(world: World) {
+  async function open(world: World) {
+    actionError = "";
     if (isStandalone) {
       console.info("[opus-ui] load world", world.name);
       return;
     }
-    await bridge.loadWorld(world.fileName);
+    try {
+      await bridge.loadWorld(world.fileName);
+    } catch (failure) {
+      actionError = failure instanceof Error ? failure.message : "Could not load world";
+    }
+  }
+
+  function remove(world: World) {
+    worlds = worlds.filter((entry) => entry.id !== world.id);
   }
 </script>
 
-<PageShell
-  title="Singleplayer"
-  description="Load a world through the Opus client runtime."
-  badge="WORLDS"
->
-  {#snippet actions()}
-    <Button onclick={() => console.info("[opus-ui] create world")}>
-      Create World
-    </Button>
-  {/snippet}
-
-  {#if loading}
-    <div class="state text-secondary motion-pulse">Loading worlds…</div>
-  {:else if worlds.length === 0}
-    <div class="state">
-      <span class="text-regular">No worlds yet.</span>
-      <span class="text-secondary">Create one to start playing.</span>
-    </div>
-  {:else}
-    <ScrollArea>
-      <div class="world-list">
-        {#each worlds as world, index (world.id)}
-          <button
-            type="button"
-            class="world-entry"
-            class:world-entry--selected={selected === index}
-            onmouseenter={() => (selected = index)}
-            onclick={() => loadWorld(world)}
-          >
-            <div class="world-entry__icon" aria-hidden="true"></div>
-            <div class="world-entry__main">
-              <span class="world-entry__name text-control">{world.name}</span>
-              <span class="world-entry__meta text-metadata">
-                {world.fileName} · {world.size}
-              </span>
-            </div>
-            <div class="world-entry__side">
-              <Badge tone="neutral">{world.mode}</Badge>
-              {#if world.lastPlayed}
-                <span class="world-entry__time text-metadata">
-                  {world.lastPlayed}
-                </span>
-              {/if}
-            </div>
-          </button>
-        {/each}
-      </div>
-    </ScrollArea>
+<OptionBar>
+  <Search bind:value={searchQuery} placeholder="Search worlds..." />
+  {#if isStandalone}
+    <MultiSelect
+      title="Game Mode"
+      options={["Survival", "Creative", "Adventure", "Hardcore", "Spectator"]}
+      bind:values={modes}
+    />
   {/if}
-</PageShell>
+</OptionBar>
 
-<style lang="scss">
-  .state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-8);
-    height: 100%;
-    color: var(--text-muted);
-  }
+<MenuList>
+  <RouteState
+    loading={loading}
+    error={error || actionError}
+    retry={() => void loadWorlds()}
+    empty={rendered.length === 0 ? "No worlds available." : ""}
+  />
+  {#if !loading && !error && !actionError}
+    {#each rendered as world (world.id)}
+      <MenuListItem title={world.name} ondblclick={() => void open(world)}>
+        {#snippet subtitle()}
+          <span>{world.fileName}{world.size ? ` · ${world.size}` : ""}</span>
+        {/snippet}
+        {#snippet tag()}
+          {#if world.mode}
+            <MenuListItemTag text={world.mode} />
+          {/if}
+          {#if world.lastPlayed}
+            <MenuListItemTag text={world.lastPlayed} />
+          {/if}
+        {/snippet}
+        {#snippet activeVisible()}
+          {#if isStandalone}
+            <MenuListItemButton title="Delete" icon="trash" onclick={() => remove(world)} />
+            <MenuListItemButton title="Edit" icon="pen" onclick={() => console.info("[opus-ui] edit world", world.name)} />
+          {/if}
+        {/snippet}
+        {#snippet alwaysVisible()}
+          <MenuListItemButton title="Play" icon="play" onclick={() => void open(world)} />
+        {/snippet}
+      </MenuListItem>
+    {/each}
+  {/if}
+</MenuList>
 
-  .world-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-8);
-  }
-
-  .world-entry {
-    display: flex;
-    align-items: center;
-    gap: var(--space-16);
-    width: 100%;
-    padding: var(--space-12) var(--space-16);
-    border-radius: var(--radius-card);
-    border: 1px solid var(--border-subtle);
-    background: var(--panel-background);
-    text-align: left;
-    transition:
-      background-color var(--motion-fast) var(--ease-standard),
-      border-color var(--motion-fast) var(--ease-standard);
-  }
-
-  .world-entry:hover {
-    background: var(--panel-hover-background);
-    border-color: var(--border-strong);
-  }
-
-  .world-entry--selected {
-    border-color: var(--accent);
-  }
-
-  .world-entry__icon {
-    width: 44px;
-    height: 44px;
-    flex: none;
-    border-radius: var(--radius-card);
-    border: 1px solid var(--border-subtle);
-    background: linear-gradient(135deg, var(--surface-3), var(--surface-2));
-  }
-
-  .world-entry__main {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    min-width: 0;
-    flex: 1;
-  }
-
-  .world-entry__name {
-    color: var(--text-primary);
-  }
-
-  .world-entry__meta {
-    color: var(--text-muted);
-  }
-
-  .world-entry__side {
-    display: flex;
-    align-items: center;
-    gap: var(--space-12);
-    flex: none;
-  }
-
-  .world-entry__time {
-    color: var(--text-muted);
-  }
-</style>
+<BottomButtonWrapper>
+  {#if isStandalone}
+    <ButtonContainer>
+      <IconTextButton icon="plus" title="Create" onclick={() => console.info("[opus-ui] create world")} />
+    </ButtonContainer>
+  {/if}
+  <ButtonContainer>
+    <IconTextButton icon="back" title="Back" onclick={() => void back()} />
+  </ButtonContainer>
+</BottomButtonWrapper>

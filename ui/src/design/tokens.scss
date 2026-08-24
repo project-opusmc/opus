@@ -1,41 +1,122 @@
 // OPUS UI DESIGN TOKENS
-// Source of truth: OPUS_UI_ARCHITECTURE.md sections 15-25.
-// Components must never use raw hex, random spacing, or invented motion.
-// If a token is missing, request a token review; do not invent one.
+//
+// The Opus menu recreates the LiquidBounce / LiquidLauncher visual language
+// (CCBlueX, GPL-3.0) as our own original Svelte code: translucent-black panels
+// over a dark scene, a single blue accent (#4677ff), and Inter. We do not
+// vendor their GPL source or SVG assets; the palette is re-derived here with
+// color-mix so panels, buttons, lists and modals share one coherent system.
 
 :root {
-  // Foundation colors
-  --surface-0: #090a0c;
-  --surface-1: #0f1013;
-  --surface-2: #15171b;
-  --surface-3: #1b1d22;
+  /* Foundation ------------------------------------------------------------ */
+  --surface-color: #000000;
+  --text-color: #ffffff;
+  --text-dimmed-color: #d3d3d3;
 
-  --text-primary: #f4f4f5;
-  --text-secondary: #a6a8ad;
-  --text-muted: #71747b;
+  --accent-color: #4677ff;
+  --accent-hover-color: color-mix(in srgb, var(--accent-color) 82%, black);
+  --accent-subtle-background-color: color-mix(
+    in srgb,
+    var(--accent-color) 12%,
+    transparent
+  );
 
-  --accent: #ffffff;
+  --success-color: #4dac68;
+  --error-color: #fc4130;
+  --premium-color: #67d24a;
+  --warning-color: #efbf04;
 
-  --success: #55b87a;
-  --warning: #d7a84a;
-  --danger: #d75d5d;
+  /* Menu system (translucent-black composition) --------------------------- */
+  --menu-base-color: var(--surface-color);
+  --menu-text-color: var(--text-color);
+  --menu-text-dimmed-color: var(--text-dimmed-color);
+  --menu-error-color: var(--error-color);
+  --menu-account-premium-color: var(--premium-color);
 
-  // Semantic colors
-  --panel-background: var(--surface-1);
-  --panel-hover-background: var(--surface-2);
-  --button-background: var(--surface-2);
-  --button-hover-background: var(--surface-3);
-  --button-primary-background: var(--accent);
-  --button-primary-text: var(--surface-0);
-  --input-background: var(--surface-1);
-  --modal-background: var(--surface-1);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.12);
+  --menu-base-36-color: color-mix(in srgb, var(--menu-base-color) 36%, transparent);
+  --menu-base-50-color: color-mix(in srgb, var(--menu-base-color) 50%, transparent);
+  --menu-base-68-color: color-mix(in srgb, var(--menu-base-color) 68%, transparent);
+  --menu-base-80-color: color-mix(in srgb, var(--menu-base-color) 80%, transparent);
+  --menu-base-90-color: color-mix(in srgb, var(--menu-base-color) 90%, transparent);
 
-  // Typography
+  --menu-search-background-color: var(--menu-base-36-color);
+  --menu-search-border-color: var(--accent-color);
+  --menu-button-container-background-color: var(--menu-base-68-color);
+  --menu-option-bar-background-color: var(--menu-base-68-color);
+  --menu-option-bar-divider-color: var(--menu-base-36-color);
+  --menu-list-background-color: var(--menu-base-68-color);
+  --menu-list-item-background-color: var(--menu-base-36-color);
+  --menu-list-item-hover-background-color: var(--accent-color);
+  --menu-list-item-hover-subtitle-color: var(--menu-text-color);
+  --menu-list-tag-background-color: var(--menu-base-36-color);
+  --menu-icon-text-button-background-color: var(--menu-base-36-color);
+  --menu-icon-text-button-accent-color: var(--accent-color);
+  --menu-icon-text-button-icon-background-color: var(--accent-color);
+  --menu-title-button-icon-color: var(--menu-text-color);
+  --menu-title-button-icon-hover-color: var(--accent-color);
+  --menu-main-button-background-color: var(--menu-base-68-color);
+  --menu-main-button-accent-color: var(--accent-color);
+  --menu-main-button-icon-background-color: var(--accent-color);
+  --menu-main-button-icon-hover-background-color: var(--menu-text-color);
+  --menu-main-button-icon-foreground-color: var(--menu-title-button-icon-color);
+  --menu-main-button-icon-hover-foreground-color: var(--menu-title-button-icon-hover-color);
+  --menu-main-button-text-color: var(--menu-text-color);
+  --menu-input-background-color: var(--menu-base-36-color);
+  --menu-input-divider-color: var(--menu-base-color);
+  --menu-input-error-border-color: var(--menu-error-color);
+  --menu-input-icon-background-color: var(--accent-color);
+  --menu-switch-track-color: color-mix(in srgb, var(--menu-text-color) 45%, black);
+  --menu-switch-thumb-color: var(--menu-text-color);
+  --menu-switch-track-active-color: color-mix(in srgb, var(--accent-color) 40%, black);
+  --menu-switch-thumb-active-color: var(--accent-color);
+  --menu-button-background-color: var(--accent-color);
+  --menu-button-hover-background-color: var(--accent-hover-color);
+  --menu-button-secondary-background-color: var(--menu-base-36-color);
+  --menu-button-secondary-hover-background-color: var(--menu-base-color);
+  --menu-modal-backdrop-color: color-mix(in srgb, black 60%, transparent);
+  --menu-modal-background-color: var(--menu-base-80-color);
+  --menu-modal-shadow-color: var(--menu-base-50-color);
+  --menu-modal-title-accent-color: var(--accent-color);
+  --menu-modal-close-border-color: var(--menu-text-color);
+  --menu-modal-close-hover-background-color: color-mix(in srgb, var(--menu-text-color) 10%, transparent);
+  --menu-select-header-background-color: var(--accent-color);
+  --menu-select-options-background-color: var(--menu-base-90-color);
+  --menu-account-header-background-color: var(--menu-base-68-color);
+  --menu-account-switcher-background-color: var(--menu-base-90-color);
+  --menu-account-search-background-color: var(--menu-base-36-color);
+  --menu-account-search-border-color: var(--accent-color);
+
+  /* App scene (opaque; the game draws no panorama behind us) --------------- */
+  --app-scene-background:
+    radial-gradient(140% 120% at 50% -20%, #16223f 0%, #0a1122 42%, #05060c 100%);
+
+  /* Typography ------------------------------------------------------------ */
   --font-family: "Inter Variable", "Inter", system-ui, -apple-system,
     "Segoe UI", sans-serif;
   --font-mono: "SFMono-Regular", ui-monospace, "Menlo", monospace;
+
+  /* Legacy aliases (residual references resolve to the new palette) -------- */
+  --surface-0: var(--surface-color);
+  --surface-1: var(--menu-base-90-color);
+  --surface-2: var(--menu-base-68-color);
+  --surface-3: var(--menu-base-36-color);
+  --text-primary: var(--text-color);
+  --text-secondary: var(--text-dimmed-color);
+  --text-muted: color-mix(in srgb, var(--text-color) 55%, transparent);
+  --accent: var(--accent-color);
+  --success: var(--success-color);
+  --warning: var(--warning-color);
+  --danger: var(--error-color);
+  --panel-background: var(--menu-base-68-color);
+  --panel-hover-background: var(--menu-base-36-color);
+  --button-background: var(--menu-base-36-color);
+  --button-hover-background: var(--menu-base-68-color);
+  --button-primary-background: var(--accent-color);
+  --button-primary-text: var(--text-color);
+  --input-background: var(--menu-input-background-color);
+  --modal-background: var(--menu-modal-background-color);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
   --text-11: 11px;
   --text-12: 12px;
   --text-13: 13px;
@@ -47,7 +128,7 @@
   --line-height-tight: 1.25;
   --line-height-normal: 1.45;
 
-  // Spacing scale
+  /* Spacing --------------------------------------------------------------- */
   --space-4: 4px;
   --space-8: 8px;
   --space-12: 12px;
@@ -58,13 +139,13 @@
   --space-40: 40px;
   --space-48: 48px;
 
-  // Radius
+  /* Radius ---------------------------------------------------------------- */
   --radius-control: 5px;
-  --radius-card: 6px;
-  --radius-modal: 8px;
+  --radius-card: 5px;
+  --radius-modal: 5px;
   --radius-pill: 999px;
 
-  // Motion
+  /* Motion ---------------------------------------------------------------- */
   --motion-micro: 120ms;
   --motion-fast: 160ms;
   --motion-normal: 200ms;
@@ -74,9 +155,9 @@
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
 
-  // Layout
+  /* Control sizing -------------------------------------------------------- */
   --control-height-sm: 28px;
   --control-height-md: 36px;
   --control-height-lg: 44px;
-  --focus-ring: 0 0 0 2px var(--surface-0), 0 0 0 4px var(--accent);
+  --focus-ring: 0 0 0 2px var(--surface-color), 0 0 0 4px var(--accent-color);
 }

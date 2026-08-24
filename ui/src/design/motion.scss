@@ -3,50 +3,14 @@
 // Motion is restrained and purposeful. Durations come only from tokens.
 
 @keyframes opus-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes opus-page-in {
-  from {
-    opacity: 0;
-    transform: translateX(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes opus-page-out {
-  from {
-    opacity: 1;
-    transform: translateX(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(-12px);
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes opus-pulse {
-  0% {
-    opacity: 0.45;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.45;
-  }
-}
-
-.motion-page-enter {
-  animation: opus-page-in var(--motion-medium) var(--ease-standard) both;
+  0% { opacity: 0.45; }
+  50% { opacity: 1; }
+  100% { opacity: 0.45; }
 }
 
 .motion-fade-in {
@@ -65,4 +29,15 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+// Runtime toggle (Settings > Interface > Reduce motion). The media query above
+// only reflects the OS setting, so mirror it with a data-attribute the Settings
+// page flips on <html>.
+[data-reduce-motion="true"] *,
+[data-reduce-motion="true"] *::before,
+[data-reduce-motion="true"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
 }

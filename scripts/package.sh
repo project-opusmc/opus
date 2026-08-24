@@ -10,4 +10,4 @@ fi
 
 "${opus_root}/scripts/build.sh"
 OPUS_RUNTIME_ARTIFACT_DIR="${opus_root}/runtime/build/runtime" \
-  npm --prefix "${opus_root}/launcher/desktop" run tauri:build:premium
+  npm --prefix "${opus_root}/launcher/desktop" run tauri:build

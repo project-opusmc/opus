@@ -6,11 +6,7 @@ import { writable } from "svelte/store";
 
 export const uiScale = writable<number>(1.0);
 export const reduceMotion = writable<boolean>(false);
-export const searchHistory = writable<string[]>([]);
 
-export function pushSearch(value: string) {
-  searchHistory.update((history) => {
-    const next = [value, ...history.filter((item) => item !== value)];
-    return next.slice(0, 10);
-  });
-}
+// Which Settings tab to show when the page opens next. The in-game pause menu
+// sets this to "game" so "Game Options" lands on real game options directly.
+export const settingsTab = writable<"interface" | "game">("interface");

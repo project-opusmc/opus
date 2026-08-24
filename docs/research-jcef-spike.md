@@ -1,5 +1,9 @@
 # Phase B Spike: JCEF trên macOS arm64 + Java 8/21
 
+> **Historical spike.** JCEF/CEF is not part of the current production client.
+> The active path is [Forge + OptiFine + OPUS Core Mod + vanilla Minecraft UI]
+> (coremod-first-goal-and-plan.md). Keep this only as failure evidence.
+
 Ngày: 2026-08-17
 
 ## Mục tiêu

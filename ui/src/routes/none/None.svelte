@@ -1,16 +1,5 @@
-<script lang="ts">
-  import { onMount } from "svelte";
-  import { bridge } from "../../integration/api";
-  import { asRouteId, navigate } from "../../stores/ui";
-
-  onMount(async () => {
-    const screen = await bridge.getVirtualScreen();
-    navigate(asRouteId(screen.name));
-  });
-</script>
-
 <main class="none">
-  <span class="text-secondary motion-pulse">In game — Opus UI suspended</span>
+  <span class="none__text">In game — Opus UI suspended</span>
 </main>
 
 <style lang="scss">
@@ -19,7 +8,8 @@
     align-items: center;
     justify-content: center;
     height: 100%;
-    background: var(--surface-0);
-    color: var(--text-muted);
+    color: var(--menu-text-dimmed-color);
   }
+
+  .none__text { font-size: 14px; }
 </style>

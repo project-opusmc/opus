@@ -5,8 +5,9 @@ import type {
   GameOption,
   HudModule,
   Module,
+  NavigationState,
+  RouteRef,
   Server,
-  VirtualScreen,
   World,
 } from "./types";
 import { REST_BASE } from "./host";
@@ -23,6 +24,18 @@ import {
 
 const latency = (ms = 120) =>
   new Promise<void>((resolve) => setTimeout(resolve, ms));
+
+export class BridgeError extends Error {
+  readonly status: number;
+  readonly payload: unknown;
+
+  constructor(path: string, status: number, payload: unknown) {
+    super(`Opus bridge ${path} failed: ${status}`);
+    this.name = "BridgeError";
+    this.status = status;
+    this.payload = payload;
+  }
+}
 
 export const api = {
   async getClient(): Promise<ClientInfo> {
@@ -79,25 +92,46 @@ export const api = {
     console.info(`[opus-ui] ${moduleId}.${key} ->`, value);
   },
 
-  async openScreen(route: string): Promise<void> {
-    await latency(40);
-    console.info(`[opus-ui] open screen ${route}`);
-  },
-
-  async closeScreen(): Promise<void> {
-    await latency(40);
-    console.info("[opus-ui] close screen");
-  },
 };
 
 // ---- Bridge-backed API (used when the game serves this SPA) --------------
 
 async function bridgeFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${REST_BASE}${path}`, init);
-  if (!response.ok) {
-    throw new Error(`Opus bridge ${path} failed: ${response.status}`);
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 8000);
+  let response: Response;
+  try {
+    response = await fetch(`${REST_BASE}${path}`, {
+      ...init,
+      signal: controller.signal,
+    });
+  } catch (failure) {
+    if (failure instanceof DOMException && failure.name === "AbortError") {
+      throw new Error(`Opus bridge ${path} timed out`);
+    }
+    throw failure;
+  } finally {
+    window.clearTimeout(timeout);
   }
-  return (await response.json()) as T;
+  const contentType = response.headers.get("Content-Type") ?? "";
+  let payload: unknown;
+  if (contentType.includes("application/json")) {
+    try {
+      payload = await response.json();
+    } catch {
+      payload = undefined;
+    }
+  }
+  if (!response.ok) {
+    throw new BridgeError(path, response.status, payload);
+  }
+  if (response.status === 204) {
+    return undefined as T;
+  }
+  if (!contentType.includes("application/json")) {
+    return undefined as T;
+  }
+  return payload as T;
 }
 
 export const bridge = {
@@ -105,28 +139,48 @@ export const bridge = {
     return bridgeFetch<BridgeHello>("/api/v1/client");
   },
 
-  async getVirtualScreen(): Promise<VirtualScreen> {
-    return bridgeFetch<VirtualScreen>("/api/v1/client/virtualScreen");
+  async getNavigationState(): Promise<NavigationState> {
+    return bridgeFetch<NavigationState>("/api/v1/client/ui-state");
   },
 
-  async confirmVirtualScreen(name: string): Promise<void> {
-    await bridgeFetch<unknown>("/api/v1/client/virtualScreen", {
+  async acknowledgeNavigation(revision: number): Promise<void> {
+    await bridgeFetch<void>("/api/v1/client/ui-state/ack", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ revision }),
     });
   },
 
-  async openScreen(name: string): Promise<void> {
-    await bridgeFetch<unknown>("/api/v1/client/screen", {
-      method: "PUT",
+  async navigate(route: RouteRef, revision: number): Promise<NavigationState> {
+    return bridgeFetch<NavigationState>("/api/v1/client/ui-actions", {
+      method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify({ action: "navigate", route, revision }),
     });
   },
 
-  async closeScreen(): Promise<void> {
-    await bridgeFetch<unknown>("/api/v1/client/screen", { method: "DELETE" });
+  async back(revision: number): Promise<NavigationState> {
+    return bridgeFetch<NavigationState>("/api/v1/client/ui-actions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "back", revision }),
+    });
+  },
+
+  async close(revision: number): Promise<NavigationState> {
+    return bridgeFetch<NavigationState>("/api/v1/client/ui-actions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "close", revision }),
+    });
+  },
+
+  async quit(): Promise<void> {
+    await bridgeFetch<unknown>("/api/v1/client/ui-actions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "quit" }),
+    });
   },
 
   async getWorlds(): Promise<World[]> {
@@ -137,9 +191,6 @@ export const bridge = {
       id: world.file,
       name: world.name,
       fileName: world.file,
-      mode: "Singleplayer",
-      lastPlayed: "",
-      size: "",
     }));
   },
 
@@ -159,8 +210,7 @@ export const bridge = {
       id: server.address,
       name: server.name || server.address,
       address: server.address,
-      version: "1.8.9",
-      state: "offline",
+      state: "unknown",
     }));
   },
 
@@ -223,7 +273,7 @@ export const bridge = {
   },
 
   async leaveWorld(): Promise<void> {
-    await bridgeFetch<unknown>("/api/v1/client/screen/leave-world", {
+    await bridgeFetch<unknown>("/api/v1/client/world/leave", {
       method: "POST",
     });
   },
@@ -325,6 +375,17 @@ export const bridge = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, x, y }),
+    });
+  },
+
+  async reportHudEditorCanvas(
+    revision: number,
+    region: { x: number; y: number; width: number; height: number },
+  ): Promise<void> {
+    await bridgeFetch<void>("/api/v1/client/ui-input-region", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ revision, ...region }),
     });
   },
 };
