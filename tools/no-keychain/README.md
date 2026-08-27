@@ -18,7 +18,9 @@ or credential value into the attestation.
   child cannot rediscover the macOS launchd agent. It records a non-secret
   launch attestation before a new process starts. If the existing process
   already has the exact flags and environment, it attests that PID in place
-  and exits without forcing another restart.
+  and activates it without forcing another restart. The installed
+  `~/Applications/Codex File-only.app` wrapper and its Dock tile call this same
+  launcher, so normal desktop use does not require typing the script path.
 - `launch-cursor-file-store.sh` starts Cursor with the same switches and
   in-memory editor secret storage, and disables the GitHub authentication
   extension that otherwise probes the OS keychain. The installed

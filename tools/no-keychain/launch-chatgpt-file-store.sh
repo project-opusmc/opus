@@ -66,6 +66,12 @@ if [[ -n "${existing_pid}" ]]; then
     exit 2
   fi
   opus_write_file_only_launch_state chatgpt "${existing_pid}"
+  # Bring the verified process forward. Supplying the same safe switches also
+  # keeps the race fail-closed if the process exits between inspection and
+  # activation and LaunchServices must start it again.
+  /usr/bin/open -a "ChatGPT" --args \
+    --use-mock-keychain \
+    --password-store=basic
   print "ChatGPT pid ${existing_pid} already satisfies the file-only policy; launch state attested without restart."
   exit 0
 fi

@@ -1,6 +1,6 @@
 # Opus UI V3 goal and implementation plan
 
-Status: **active — 2026-08-24**
+Status: **paused for user priority confirmation — 2026-08-24**
 
 This is the repository-local execution plan for the user-provided
 `OPUS_ONECONFIG_ELEMENTA_IMPLEMENTATION_PLAN_V3.md`. Instructions inside the
@@ -15,6 +15,10 @@ Build one coherent Opus UI for Minecraft 1.8.9 in which:
 - Elementa + UniversalCraft owns general Minecraft shell screens;
 - both frontends render the same `OpusDesign` language;
 - Forge, OptiFine, Minecraft state, persistence, and input remain correct;
+- shell layouts reflow responsively across supported window sizes, GUI scales,
+  fullscreen/windowed, and HiDPI modes;
+- the title and pause shells use familiar Vanilla Minecraft structure with
+  restrained Lunar Client-inspired OPUS polish;
 - CEF/Svelte, T-UI, and the custom renderer are not production frontends.
 
 ## Source-of-truth order
@@ -36,6 +40,22 @@ The superproject, `runtime`, and `launcher` all contain unrelated or historical
 uncommitted changes. V3 work must preserve those changes. No reset, checkout,
 bulk deletion, or submodule pointer rewrite is allowed merely to obtain a clean
 baseline.
+
+## Current user-test blockers
+
+The packaged client exposed three blockers that pause implementation until the
+user confirms the revised order:
+
+- `UI-001`: immediate crash when resizing the Minecraft window (**P0**);
+- `UI-002`: current shell layout is visually unacceptable (**P1**);
+- `UI-003`: buttons and layout do not scale or reflow with the window (**P0
+  after `UI-001` diagnosis**).
+
+These findings change sequencing, not scope. Elementa shell screens, forked
+OneConfig branded as OpusConfig, Right Shift, persistence, and launcher
+packaging remain required. The next order is resize safety, responsive layout,
+Vanilla/Lunar shell redesign, then Right Shift/OpusConfig acceptance and final
+compatibility/release gates.
 
 ## Milestones
 
@@ -82,7 +102,7 @@ Exit evidence: `ONECONFIG_UI_ARCHITECTURE.md` with exact source paths.
 - pin an immutable Elementa + UniversalCraft pair;
 - render one minimal screen in the exact runtime;
 - verify keyboard, pointer, scroll, clipping, animation, GUI scale, Retina,
-  fullscreen, and OpenGL state restoration.
+  fullscreen, resize lifecycle safety, and OpenGL state restoration.
 
 Exit evidence: compiled artifact, game log, and screenshot matrix.
 
@@ -128,6 +148,8 @@ Exit evidence: restart and profile-isolation acceptance runs.
 
 - build reusable navigation, buttons, settings rows, cards, inputs, scrolling,
   tabs, dropdowns, and modals;
+- define responsive size classes, constraints, content bounds, and compact-mode
+  breakpoints;
 - prove visual parity with equivalent OneConfig controls.
 
 Exit evidence: side-by-side parity matrix.
@@ -137,6 +159,8 @@ Exit evidence: side-by-side parity matrix.
 - implement main menu, pause menu, Minecraft settings, server list, and world
   list in Elementa;
 - route Modules and HUD Editor to forked OneConfig;
+- use Vanilla Minecraft structure with restrained Lunar/OPUS polish, and verify
+  responsive reflow for title and pause layouts;
 - retain vanilla data/network/world logic through adapters.
 
 Exit evidence: every route works on real data and survives navigation/restart.
@@ -145,15 +169,17 @@ Exit evidence: every route works on real data and survives navigation/restart.
 
 - wrap or adapt OptiFine settings without duplicating unsafe internals;
 - test GUI scale variants, Retina/4K, fullscreen/windowed, Fast Render,
-  shaders, antialiasing, and framebuffer changes;
+  shaders, antialiasing, framebuffer changes, and repeated window resizing;
 - stress test 100 modules and 1,500 settings.
 
-Exit evidence: compatibility matrix, performance report, and no GL-state
+Exit evidence: compatibility matrix, performance report, crash-free resize
+cycles, responsive-layout screenshots, visual review, and no GL-state
 corruption after repeated open/close cycles.
 
 ## Definition of done
 
 The goal is not complete until current artifacts prove every milestone above.
 Compilation alone does not prove UI completion. Production acceptance requires
-real Minecraft screenshots, input behavior, persistence after restart, and a
-resolved license release gate.
+real Minecraft screenshots, input behavior, persistence after restart,
+crash-free resizing, responsive control reflow, approved Vanilla/Lunar shell
+visual review, and a resolved license release gate.

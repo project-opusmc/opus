@@ -1,6 +1,13 @@
 # Opus OneConfig + Elementa detailed implementation plan
 
-Status: **active execution checkpoint — 2026-08-24**
+Status: **paused for user priority confirmation — 2026-08-24**
+
+The concrete user-facing production goal and current execution contract are
+defined in [docs/opus-elementa-opusconfig-production-goal-and-plan.md](opus-elementa-opusconfig-production-goal-and-plan.md):
+Elementa-enhanced Minecraft shell screens plus forked OneConfig branded as
+OpusConfig and opened with **Right Shift**. That document is the actionable
+goal for the current implementation cycle; this file remains the detailed
+architecture, evidence, and workstream reference.
 
 This document turns the accepted UI architecture into an implementation
 program grounded in the current Opus superproject, Runtime source, and audited
@@ -20,7 +27,56 @@ Related repository documents:
 - docs/THIRD_PARTY_LICENSE_AUDIT.md records the open distribution gates.
 - docs/architecture.md defines repository ownership and artifact boundaries.
 
+The current user-test blockers are recorded in
+[docs/opus-elementa-opusconfig-known-issues.md](opus-elementa-opusconfig-known-issues.md).
+They are authoritative for sequencing until the user confirms the next
+implementation step.
+
 ## 0. Execution checkpoint — 2026-08-24
+
+### Current production implementation delta
+
+The worktree has now moved beyond the proof source names, but not beyond the
+proof build and packaging contract. The uncommitted native-client source
+currently contains:
+
+- `OpusNativeUiMod`, with the intended physical Right Shift keybinding,
+  debounced OpusConfig toggle, initial OneConfig route, and Elementa main/pause
+  route interception;
+- `OpusConfigModule`, a real OneConfig annotation-backed module using the
+  visible product name `OpusConfig` and `opus-config.json`;
+- `OpusElementaShellScreen`, with initial Elementa V11 main-menu and pause-menu
+  routes consuming `OpusDesign` through `ElementaThemeAdapter`;
+- production-oriented native UI lifecycle, screen, display, GL, and OptiFine
+  diagnostics.
+
+These classes have **not** yet passed compilation or runtime acceptance. The
+native-client `build.gradle`, `settings.gradle`, `mcmod.info`, README, artifact
+checks, and runtime-report expectations still use the deleted proof class
+names, proof properties, and proof artifact identity. Runtime root packaging
+and Launcher staging still publish/accept only the old bootstrap and telemetry
+Core Mod set. The frozen OneConfig source has not yet been imported or
+customized, and no Launcher-launched Right Shift acceptance run has occurred.
+
+Accordingly, the older proof.2 results below remain historical dependency and
+design-contract evidence only. They are not evidence that the current
+production source compiles, packages, launches, or satisfies the product goal.
+
+### Current user-test blockers — August 24, 2026
+
+The packaged shell currently has three open issues:
+
+- `UI-001`: Minecraft crashes immediately when the window is resized (**P0**).
+- `UI-002`: the shell layout is messy and does not meet the expected Vanilla
+  Minecraft or Lunar Client visual bar (**P1**).
+- `UI-003`: buttons and layout do not scale or reflow with the window (**P0
+  after `UI-001` diagnosis**).
+
+These blockers supersede the previous “Right Shift first, visual redesign
+later” sequence. Elementa, OpusConfig, Right Shift, persistence, and launcher
+packaging remain required; only the execution order changes. The revised order
+is resize safety, responsive layout foundation, Vanilla/Lunar shell redesign,
+Right Shift/OpusConfig acceptance, then packaging and release gates.
 
 The static dependency lane and the proof.2 verifier hardening are complete:
 
@@ -931,6 +987,22 @@ and equivalent Elementa and OneConfig controls pass the visual parity matrix.
 Implement screens in dependency order so adapters are proven before broad
 presentation work.
 
+### L0. Responsive shell foundation and visual direction
+
+Before expanding routes, define and implement the shell composition contract:
+
+- minimum, reference, wide, and tall logical size classes;
+- responsive Elementa constraints, content bounds, stacks, grids, and
+  compact-mode breakpoints;
+- minimum readable text and hit-target dimensions;
+- one source of truth for draw and hit-test coordinates;
+- title and pause shell review using Vanilla Minecraft structure with restrained
+  Lunar Client-inspired OPUS polish.
+
+Exit gate: the shell reflows without clipping or detached controls at every
+supported size class, and the visual direction is approved before route
+expansion.
+
 ### L1. Navigation shell
 
 - central route registry and owner declaration;
@@ -1007,7 +1079,8 @@ sound changes, resource refresh, and options persistence.
 
 Every route operates on real Minecraft data, returns to the correct parent,
 survives restart where state is persistent, and has empty, loading, error, and
-confirmation coverage.
+confirmation coverage. The title and pause routes must also satisfy the
+responsive size-class and approved Vanilla/Lunar visual review gates.
 
 ## 20. Workstream M — OptiFine, rendering, input, and scaling
 
@@ -1018,7 +1091,7 @@ Test at minimum:
 - GUI scale Auto, 1, 2, 3, and 4 where available;
 - windowed and fullscreen;
 - standard and Retina/HiDPI framebuffers;
-- resize while each frontend is open;
+- resize while each frontend is open, including repeated grow/shrink cycles;
 - OptiFine Fast Render off and on where supported;
 - shaders off and representative shader configuration;
 - antialiasing and anisotropic settings relevant to the runtime;
@@ -1037,6 +1110,10 @@ Test at minimum:
 - recreate resources safely after display or framebuffer changes;
 - release screen resources on shutdown.
 
+Resize handling must be lifecycle-safe: preserve the active route, parent
+screen, focus, cursor, and input state; recompute logical bounds and scissor
+regions; and recreate any display-dependent resources without stale references.
+
 ### Coordinate invariants
 
 - one documented conversion between logical UI coordinates and framebuffer
@@ -1049,7 +1126,9 @@ Test at minimum:
 ### Exit gate
 
 The complete matrix has no critical clipping, input offset, GL corruption,
-resource leak, or unrecoverable screen failure.
+resource leak, unrecoverable screen failure, or resize crash. It must also show
+responsive reflow and aligned drawing/hit-testing at the minimum, reference,
+wide, and tall size classes.
 
 ## 21. Workstream N — retire CEF, Svelte, and parallel native UI
 
@@ -1233,6 +1312,9 @@ outside the library.
 | World list | disposable save fixtures | create, rename, delete, launch |
 | OptiFine | option mapping audit | compatibility matrix |
 | Rendering | forbidden-state and resource checks | GL error and screenshot matrix |
+| Resize lifecycle | display/framebuffer lifecycle fixtures | repeated grow/shrink cycles with no crash or stale resources |
+| Responsive layout | constraint/breakpoint tests | minimum/reference/wide/tall screenshots and hit-test checks |
+| Shell visual direction | token/route ownership review | Vanilla-structure plus restrained Lunar/OPUS visual review |
 | Retirement | artifact content scan | launch with no web helper/process |
 | Release | notices, source path, lock checks | installed artifact smoke run |
 
@@ -1290,6 +1372,18 @@ distribution until written authorization or another reviewed path exists.
 Response: inspect diffs per file, patch narrowly, capture status before and
 after each milestone, and never normalize unrelated changes.
 
+### R11. Window resize crashes the client
+
+Response: treat `UI-001` as a P0 release blocker; reproduce first, trace the
+display/framebuffer/resource lifecycle, and block broader interaction claims
+until repeated exact-runtime resize cycles pass.
+
+### R12. Fixed composition fails at different window sizes
+
+Response: treat `UI-003` as a follow-on P0 gate; define explicit size classes,
+constraints, and compact breakpoints, then review the shell against Vanilla
+Minecraft structure and restrained Lunar/OPUS polish.
+
 ## 26. Milestone dependency graph
 
     M0 repository and exact-runtime inventory
@@ -1326,7 +1420,23 @@ M2 and M4 can proceed in parallel once M1 provides immutable inputs. M6 can
 proceed from approved design evidence while runtime baselines are being built.
 Production page work must wait for the corresponding UI lab.
 
-## 27. Immediate execution order
+## 27. Revised execution order after current user-test checkpoint
+
+This order is paused pending user confirmation:
+
+1. Reproduce `UI-001` from the packaged exact-runtime launch and retain the
+   crash, display, framebuffer, and native UI evidence.
+2. Fix and verify resize lifecycle safety through repeated grow/shrink cycles,
+   including route, focus, input, clipping, and GL/resource checks.
+3. Implement responsive size classes, constraints, content bounds, and
+   compact-mode reflow; verify controls at minimum, reference, wide, and tall
+   sizes.
+4. Redesign the title and pause shells using Vanilla Minecraft structure with
+   restrained Lunar/OPUS polish and complete visual review.
+5. Resume Right Shift/OpusConfig, persistence, exact-runtime, and launcher
+   packaging acceptance.
+
+## 28. Historical immediate execution order
 
 The first implementation cycle should be:
 
@@ -1357,7 +1467,7 @@ This order maximizes early evidence. It proves dependency and runtime viability
 before expensive visual work and proves adapters with two real modules before
 broad migration.
 
-## 28. Definition of done
+## 29. Definition of done
 
 The UI program is done when:
 
@@ -1372,6 +1482,11 @@ The UI program is done when:
 - profile switching is coherent and recoverable;
 - all persisted state survives restart;
 - HUD placement is stable across display and GUI scale changes;
+- resizing the Minecraft window is crash-free and display-dependent resources
+  are recreated safely;
+- shell controls and content reflow responsively with aligned drawing and
+  hit-testing across the supported size classes;
+- title and pause shells pass the approved Vanilla/Lunar visual review;
 - input and GL state remain correct across the compatibility matrix;
 - stress and performance targets pass or have an explicitly approved revision;
 - the production artifact contains no CEF/Svelte/WebView or retired custom UI
