@@ -6,3 +6,5 @@
 *.py[cod]
 hs_err_pid*.log
 /.codex-stub-probe/
+/runtime-java/build/
+/runtime-java/.gradle/
