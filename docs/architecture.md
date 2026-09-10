@@ -1,18 +1,31 @@
 # OPUS Architecture
 
-OPUS uses three active repositories for this phase:
+OPUS currently has two deliberately separated integration lanes:
 
 ```text
-project-opusmc/opus
+injector-development (active, foundation-only)
+        |
+        +-- injector/       Rust M3 preflight and authorized-target proof boundary
+        +-- runtime-native/ C++17 JNI/JVMTI runtime
+        +-- runtime-java/   Java 8 payload foundation
+        `-- adapters/       client/runtime certification boundaries
+
+legacy-forge-rollback (not active)
         |
         +-- launcher/ -> project-opusmc/launcher
-        |
         `-- runtime/  -> project-opusmc/runtime
 ```
 
-The `opus` repository is the product superproject. It owns integration scripts,
-release locks, product documentation, and complete-product CI. It does not own
-copied Launcher or Runtime implementation source.
+The schema-v2 release lock selects the foundation-only injector lane. It
+verifies architecture, native/JVM proof, an opt-in authorized-test-target
+lifecycle/survival proof, and the future payload compatibility contract without
+claiming a generated payload JAR or certified third-party client. The legacy
+Forge lane remains available only as a rollback profile with exact historical
+component pins.
+
+The `opus` repository is the product superproject. It owns integration
+scripts, release locks, product documentation, and complete-product CI. It
+does not own copied Launcher or Runtime implementation source.
 
 Launcher owns the desktop application, authentication, account catalog,
 platform integration, installation, verification, artifact staging, launch
@@ -56,3 +69,9 @@ CEF/Svelte, the legacy T-UI (`UiRuntime` pages and
 `OpusVanillaTerminalOverlay`), and the custom renderer prototype are not target
 production components. Quarantined source may remain for review while the V3
 baseline is established, but it must not become a third production frontend.
+
+The separately gated transition from the current Forge-started integration to
+the Injector → native runtime → Java payload architecture is documented in
+[injector-runtime-payload-migration-plan.md](injector-runtime-payload-migration-plan.md).
+That plan does not change the current release artifact contract until its
+architecture, payload, OneConfig, lifecycle, and cutover gates pass.
