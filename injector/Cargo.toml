@@ -1,0 +1,19 @@
+[package]
+name = "opus-injector"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.92"
+license = "All rights reserved"
+description = "OPUS M3 injector preflight, diagnostics, and transport contract"
+
+[lib]
+name = "opus_injector"
+path = "src/lib.rs"
+
+[[bin]]
+name = "opus-injector"
+path = "src/main.rs"
+
+[lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
