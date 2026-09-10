@@ -3,6 +3,13 @@ set -euo pipefail
 
 opus_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+if [[ "$#" -eq 2 && "$1" == "--profile" && -n "$2" ]]; then
+  selected_profile="$2"
+elif [[ "$#" -ne 0 ]]; then
+  echo "Usage: $0 [--profile <name>]" >&2
+  exit 1
+fi
+
 if [[ ! -f "${opus_root}/.gitmodules" ]]; then
   echo "OPUS submodule configuration is missing." >&2
   exit 1
@@ -26,5 +33,11 @@ for component_name in launcher runtime; do
   fi
 done
 
-node "${opus_root}/scripts/verify-release-lock.mjs" "${opus_root}"
+if [[ -n "${selected_profile:-}" ]]; then
+  node "${opus_root}/scripts/verify-release-lock.mjs" \
+    "${opus_root}" \
+    --profile "${selected_profile}"
+else
+  node "${opus_root}/scripts/verify-release-lock.mjs" "${opus_root}"
+fi
 printf '%s\n' "${submodule_output}"
