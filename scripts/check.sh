@@ -24,7 +24,11 @@ case "${selected_profile}" in
     "${opus_root}/scripts/build-injector-native-slice.sh" x86_64
     "${opus_root}/scripts/build-injector-native-transport.sh" arm64
     "${opus_root}/scripts/build-injector-native-transport.sh" x86_64
+    "${opus_root}/tests/check-injector-native-vm-read-probe.sh"
+    "${opus_root}/tests/check-injector-native-vm-rw-probe.sh"
     "${opus_root}/tests/check-injector-native-transport-probe.sh"
+    "${opus_root}/tests/check-injector-native-direct-vm-gates.sh"
+    "${opus_root}/tests/check-injector-native-execution-probe.sh"
     "${opus_root}/tests/check-injector-native-runtime-load.sh"
     "${opus_root}/tests/check-injector-x86_64-rosetta-transport-rejection.sh"
     "${opus_root}/scripts/check-injector-m3-preflight.sh"

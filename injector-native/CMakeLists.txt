@@ -63,11 +63,41 @@ add_executable(opus-macos-transport
 
 target_compile_features(opus-macos-transport PRIVATE cxx_std_17)
 
+add_library(opus-cooperative-vm-probe-protocol STATIC
+    src/cooperative_vm_probe_protocol.cpp
+)
+
+target_compile_features(opus-cooperative-vm-probe-protocol PUBLIC cxx_std_17)
+
 add_executable(opus-task-port-probe-target
     src/task_port_probe_target.cpp
 )
 
 target_compile_features(opus-task-port-probe-target PRIVATE cxx_std_17)
+target_link_libraries(
+    opus-task-port-probe-target
+    PRIVATE opus-cooperative-vm-probe-protocol
+)
+
+add_executable(opus-task-port-vm-read-probe
+    src/task_port_vm_read_probe.cpp
+)
+
+target_compile_features(opus-task-port-vm-read-probe PRIVATE cxx_std_17)
+target_link_libraries(
+    opus-task-port-vm-read-probe
+    PRIVATE opus-cooperative-vm-probe-protocol
+)
+
+add_executable(opus-task-port-vm-rw-probe
+    src/task_port_vm_rw_probe.cpp
+)
+
+target_compile_features(opus-task-port-vm-rw-probe PRIVATE cxx_std_17)
+target_link_libraries(
+    opus-task-port-vm-rw-probe
+    PRIVATE opus-cooperative-vm-probe-protocol
+)
 
 add_library(opus-remote-loader-probe SHARED
     src/remote_loader_probe.cpp
@@ -82,7 +112,25 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
         -Wpedantic
         -Werror
     )
+    target_compile_options(opus-cooperative-vm-probe-protocol PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Werror
+    )
     target_compile_options(opus-task-port-probe-target PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Werror
+    )
+    target_compile_options(opus-task-port-vm-rw-probe PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Werror
+    )
+    target_compile_options(opus-task-port-vm-read-probe PRIVATE
         -Wall
         -Wextra
         -Wpedantic
@@ -102,6 +150,14 @@ set_target_properties(opus-macos-transport PROPERTIES
 
 set_target_properties(opus-task-port-probe-target PROPERTIES
     OUTPUT_NAME "opus-task-port-probe-target"
+)
+
+set_target_properties(opus-task-port-vm-read-probe PROPERTIES
+    OUTPUT_NAME "opus-task-port-vm-read-probe"
+)
+
+set_target_properties(opus-task-port-vm-rw-probe PROPERTIES
+    OUTPUT_NAME "opus-task-port-vm-rw-probe"
 )
 
 set_target_properties(opus-remote-loader-probe PROPERTIES

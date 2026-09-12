@@ -35,11 +35,15 @@ cmake --build "${build_dir}" \
   --target \
     opus-macos-transport \
     opus-task-port-probe-target \
+    opus-task-port-vm-read-probe \
+    opus-task-port-vm-rw-probe \
     opus-remote-loader-probe \
   --parallel
 
 transport_binary="${build_dir}/opus-macos-transport"
 probe_target_binary="${build_dir}/opus-task-port-probe-target"
+vm_read_probe_binary="${build_dir}/opus-task-port-vm-read-probe"
+vm_rw_probe_binary="${build_dir}/opus-task-port-vm-rw-probe"
 probe_runtime_library="${build_dir}/libopus-remote-loader-probe.dylib"
 if [[ ! -x "${transport_binary}" ]]; then
   echo "Native transport helper is missing: ${transport_binary}" >&2
@@ -47,6 +51,14 @@ if [[ ! -x "${transport_binary}" ]]; then
 fi
 if [[ ! -x "${probe_target_binary}" ]]; then
   echo "Native transport probe target is missing: ${probe_target_binary}" >&2
+  exit 1
+fi
+if [[ ! -x "${vm_read_probe_binary}" ]]; then
+  echo "Native transport VM-read probe is missing: ${vm_read_probe_binary}" >&2
+  exit 1
+fi
+if [[ ! -x "${vm_rw_probe_binary}" ]]; then
+  echo "Native transport VM-RW probe is missing: ${vm_rw_probe_binary}" >&2
   exit 1
 fi
 if [[ ! -f "${probe_runtime_library}" ]]; then
@@ -66,6 +78,18 @@ if [[ " ${probe_target_architectures} " != *" ${requested_arch} "* ]]; then
   exit 1
 fi
 
+vm_read_probe_architectures="$(lipo -archs "${vm_read_probe_binary}")"
+if [[ " ${vm_read_probe_architectures} " != *" ${requested_arch} "* ]]; then
+  echo "Native transport VM-read probe architecture mismatch: expected ${requested_arch}, got ${vm_read_probe_architectures}" >&2
+  exit 1
+fi
+
+vm_rw_probe_architectures="$(lipo -archs "${vm_rw_probe_binary}")"
+if [[ " ${vm_rw_probe_architectures} " != *" ${requested_arch} "* ]]; then
+  echo "Native transport VM-RW probe architecture mismatch: expected ${requested_arch}, got ${vm_rw_probe_architectures}" >&2
+  exit 1
+fi
+
 probe_runtime_architectures="$(lipo -archs "${probe_runtime_library}")"
 if [[ " ${probe_runtime_architectures} " != *" ${requested_arch} "* ]]; then
   echo "Native transport probe runtime architecture mismatch: expected ${requested_arch}, got ${probe_runtime_architectures}" >&2
@@ -78,10 +102,18 @@ codesign --force --sign - \
 codesign --force --sign - \
   --entitlements "${opus_root}/injector-native/entitlements/debug-target.plist" \
   "${probe_target_binary}"
+codesign --force --sign - \
+  --entitlements "${opus_root}/injector-native/entitlements/debug-target.plist" \
+  "${vm_read_probe_binary}"
+codesign --force --sign - \
+  --entitlements "${opus_root}/injector-native/entitlements/debug-target.plist" \
+  "${vm_rw_probe_binary}"
 codesign --force --sign - "${probe_runtime_library}"
 
-printf 'OPUS native transport helper built: requested_arch=%s helper_arch=%s probe_target_arch=%s probe_runtime_arch=%s\n' \
+printf 'OPUS native transport helper built: requested_arch=%s helper_arch=%s probe_target_arch=%s vm_read_probe_arch=%s vm_rw_probe_arch=%s probe_runtime_arch=%s\n' \
   "${requested_arch}" \
   "${transport_architectures}" \
   "${probe_target_architectures}" \
+  "${vm_read_probe_architectures}" \
+  "${vm_rw_probe_architectures}" \
   "${probe_runtime_architectures}"
