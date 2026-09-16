@@ -1,0 +1,806 @@
+<title>Hồ sơ kiểm chứng Opus M3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  :root {
+    --ground:      #F6F8FA;
+    --surface:     #FFFFFF;
+    --sunk:        #EDF1F5;
+    --ink:         #131820;
+    --ink-soft:    #586475;
+    --ink-faint:   #8794A5;
+    --rule:        #DCE2E9;
+    --rule-strong: #C3CCD7;
+    --accent:      #0F5C8C;
+    --accent-soft: #E4EEF6;
+    --ok:          #1B6B47;
+    --ok-soft:     #E1F0E8;
+    --warn:        #8A5D00;
+    --warn-soft:   #F7EDD8;
+    --crit:        #A32E24;
+    --crit-soft:   #F8E5E2;
+    --shadow:      0 1px 2px rgba(19,24,32,.06), 0 6px 20px -12px rgba(19,24,32,.22);
+
+    --f-body: "IBM Plex Sans", ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif;
+    --f-cond: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --measure: 68ch;
+    --wide: 92ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #0F131A;
+      --surface:     #161B23;
+      --sunk:        #1D232D;
+      --ink:         #E5EAF1;
+      --ink-soft:    #9CA8B8;
+      --ink-faint:   #6E7B8D;
+      --rule:        #262E3A;
+      --rule-strong: #38424F;
+      --accent:      #5FA8D8;
+      --accent-soft: #14293A;
+      --ok:          #55BE8C;
+      --ok-soft:     #12291F;
+      --warn:        #D9A441;
+      --warn-soft:   #2A2213;
+      --crit:        #E4796E;
+      --crit-soft:   #2C1815;
+      --shadow:      0 1px 2px rgba(0,0,0,.4), 0 6px 20px -12px rgba(0,0,0,.7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:      #0F131A;
+    --surface:     #161B23;
+    --sunk:        #1D232D;
+    --ink:         #E5EAF1;
+    --ink-soft:    #9CA8B8;
+    --ink-faint:   #6E7B8D;
+    --rule:        #262E3A;
+    --rule-strong: #38424F;
+    --accent:      #5FA8D8;
+    --accent-soft: #14293A;
+    --ok:          #55BE8C;
+    --ok-soft:     #12291F;
+    --warn:        #D9A441;
+    --warn-soft:   #2A2213;
+    --crit:        #E4796E;
+    --crit-soft:   #2C1815;
+    --shadow:      0 1px 2px rgba(0,0,0,.4), 0 6px 20px -12px rgba(0,0,0,.7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    padding-block: 0 6rem;
+    padding-inline: 20px;
+  }
+
+  .wrap {
+    max-width: var(--wide);
+    margin-inline: auto;
+  }
+
+  /* ---------- masthead ---------- */
+  .masthead {
+    border-bottom: 2px solid var(--ink);
+    padding-block: 3.2rem 1.5rem;
+    margin-bottom: 2.5rem;
+  }
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: .74rem;
+    font-weight: 500;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 1rem;
+  }
+  h1 {
+    font-family: var(--f-cond);
+    font-weight: 700;
+    font-size: clamp(2.1rem, 5.5vw, 3.15rem);
+    line-height: 1.04;
+    letter-spacing: -.015em;
+    margin: 0 0 1.1rem;
+    text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.14rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    max-width: var(--measure);
+    margin: 0 0 1.8rem;
+  }
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem 2.4rem;
+    font-family: var(--f-mono);
+    font-size: .8rem;
+    color: var(--ink-soft);
+  }
+  .facts b {
+    color: var(--ink-faint);
+    font-weight: 500;
+    margin-right: .5rem;
+  }
+  .facts span { white-space: nowrap; }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 3.4rem; }
+
+  h2 {
+    font-family: var(--f-cond);
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: -.005em;
+    line-height: 1.15;
+    margin: 0 0 1.1rem;
+    padding-bottom: .55rem;
+    border-bottom: 1px solid var(--rule-strong);
+    text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--f-body);
+    font-weight: 600;
+    font-size: 1.0rem;
+    margin: 2rem 0 .6rem;
+  }
+  p { margin: 0 0 1rem; max-width: var(--measure); }
+  p.wide, ul.wide, ol.wide { max-width: var(--wide); }
+  a { color: var(--accent); }
+
+  ul, ol { margin: 0 0 1rem; padding-left: 1.35rem; max-width: var(--measure); }
+  li { margin-bottom: .5rem; }
+  li::marker { color: var(--ink-faint); }
+
+  strong { font-weight: 600; }
+
+  code {
+    font-family: var(--f-mono);
+    font-size: .855em;
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: .08em .38em;
+    white-space: nowrap;
+  }
+  pre {
+    font-family: var(--f-mono);
+    font-size: .82rem;
+    line-height: 1.6;
+    background: var(--sunk);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--rule-strong);
+    border-radius: 4px;
+    padding: .9rem 1.1rem;
+    margin: 0 0 1.2rem;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+  pre code { background: none; border: none; padding: 0; white-space: pre; }
+
+  /* ---------- executive callout ---------- */
+  .verdict-box {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-left: 4px solid var(--crit);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    padding: 1.5rem 1.7rem;
+    margin-bottom: 3.4rem;
+  }
+  .verdict-box h2 {
+    border: none;
+    padding: 0;
+    margin: 0 0 .8rem;
+    font-size: 1.25rem;
+  }
+  .verdict-box p:last-child { margin-bottom: 0; }
+
+  /* ---------- status chips ---------- */
+  .chip {
+    display: inline-block;
+    font-family: var(--f-mono);
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    padding: .18em .5em;
+    border-radius: 3px;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .chip-ok   { color: var(--ok);   background: var(--ok-soft);   border-color: color-mix(in srgb, var(--ok) 30%, transparent); }
+  .chip-warn { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 32%, transparent); }
+  .chip-crit { color: var(--crit); background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 30%, transparent); }
+  .chip-none { color: var(--ink-faint); background: var(--sunk); border-color: var(--rule); }
+
+  /* ---------- tables ---------- */
+  .table-scroll { overflow-x: auto; margin-bottom: 1.4rem; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 640px;
+    font-size: .905rem;
+  }
+  caption {
+    caption-side: top;
+    text-align: left;
+    font-family: var(--f-mono);
+    font-size: .74rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    padding-bottom: .5rem;
+  }
+  th {
+    font-family: var(--f-cond);
+    font-weight: 600;
+    font-size: .8rem;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-align: left;
+    padding: .5rem .8rem .5rem 0;
+    border-bottom: 1.5px solid var(--rule-strong);
+    white-space: nowrap;
+  }
+  td {
+    padding: .72rem .8rem .72rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+    line-height: 1.5;
+  }
+  tbody tr:last-child td { border-bottom: 1px solid var(--rule-strong); }
+  td:first-child { padding-right: 1.2rem; }
+  td code { white-space: nowrap; }
+
+  /* ---------- timeline ---------- */
+  .timeline { list-style: none; padding: 0; margin: 0; max-width: var(--wide); }
+  .timeline > li {
+    display: grid;
+    grid-template-columns: 9.5rem 1fr;
+    gap: 0 1.6rem;
+    padding: 1.15rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .timeline > li:first-child { border-top: 1px solid var(--rule); }
+  .t-when {
+    font-family: var(--f-mono);
+    font-size: .78rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1.5;
+    padding-top: .1rem;
+  }
+  .t-when em {
+    display: block;
+    font-style: normal;
+    color: var(--ink-faint);
+    font-size: .72rem;
+    margin-top: .25rem;
+  }
+  .t-what h3 {
+    margin: 0 0 .4rem;
+    font-size: .98rem;
+    font-weight: 600;
+  }
+  .t-what p { margin: 0 0 .55rem; font-size: .925rem; color: var(--ink-soft); }
+  .t-what p:last-child { margin-bottom: 0; }
+  .t-what .outcome {
+    font-family: var(--f-mono);
+    font-size: .78rem;
+    color: var(--ink-faint);
+    line-height: 1.55;
+  }
+  .t-what .outcome b { font-weight: 500; color: var(--ink-soft); }
+
+  /* ---------- evidence blocks ---------- */
+  figure { margin: 0 0 1.4rem; }
+  figcaption {
+    font-family: var(--f-mono);
+    font-size: .75rem;
+    color: var(--ink-faint);
+    margin-top: .5rem;
+    line-height: 1.5;
+  }
+
+  /* ---------- key/value list ---------- */
+  .kv { list-style: none; padding: 0; margin: 0 0 1.4rem; max-width: var(--wide); }
+  .kv > li {
+    display: grid;
+    grid-template-columns: 15rem 1fr;
+    gap: .3rem 1.5rem;
+    padding: .7rem 0;
+    border-bottom: 1px solid var(--rule);
+    margin: 0;
+    font-size: .93rem;
+  }
+  .kv > li:first-child { border-top: 1px solid var(--rule); }
+  .kv dt, .kv .k {
+    font-family: var(--f-mono);
+    font-size: .8rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .kv .v { line-height: 1.55; }
+
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 3rem 0;
+  }
+
+  footer {
+    border-top: 2px solid var(--ink);
+    padding-top: 1.3rem;
+    margin-top: 3.5rem;
+    font-size: .84rem;
+    color: var(--ink-faint);
+    max-width: var(--wide);
+  }
+  footer p { max-width: none; margin-bottom: .4rem; }
+
+  @media (max-width: 620px) {
+    .timeline > li { grid-template-columns: 1fr; gap: .5rem; }
+    .kv > li { grid-template-columns: 1fr; gap: .15rem; }
+    .masthead { padding-block: 2.2rem 1.2rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Báo cáo tiến độ · Lưu hành nội bộ</p>
+    <h1>Hồ sơ kiểm chứng Opus M3</h1>
+    <p class="standfirst">
+      Đối chiếu tám phiên làm việc của Codex (24/08 → 11/09/2026) với trạng thái thật của repository.
+      Điểm khác biệt then chốt: phần lớn kết quả then chốt <strong>không tái lập được</strong> từ repository,
+      và bước định nghĩa nên "inject" thì <strong>chưa từng chạy thành công</strong>.
+    </p>
+    <div class="facts">
+      <span><b>NGÀY</b>2026-09-11</span>
+      <span><b>NHÁNH</b>m3-general-transport-foundation</span>
+      <span><b>HEAD</b>6a117fe · 2026-09-10</span>
+      <span><b>PHẠM VI</b>8 phiên · 658 MB rollout</span>
+    </div>
+  </header>
+
+  <div class="verdict-box">
+    <h2>Kết luận điều hành</h2>
+    <p>
+      M3 <strong>chưa đạt</strong>. Thứ đã được chứng minh — và chứng minh được một cách tái lập — chỉ là
+      một primitive <em>đọc/ghi bộ nhớ</em> trên các tiến trình do Opus tự sinh. Kết quả chạy trên
+      client thật (Badlion) không để lại bất kỳ artifact nào trong repository và mâu thuẫn với chính
+      phân tích chữ ký mà dự án đã ghi lại.
+    </p>
+    <p>
+      Bước định nghĩa nên khả năng inject — buộc tiến trình đích <em>thực thi</em> code native do Opus đưa vào —
+      chưa được nối vào <code>HEAD</code>, đang lỗi ở working tree, và <strong>chưa từng được quan sát là thành công</strong>.
+    </p>
+    <p>
+      Ngoài ra: toàn bộ công việc tháng 9 <strong>chưa được commit</strong>; bộ kiểm thử tổng
+      (<code>./scripts/check.sh</code>) hiện <strong>đỏ</strong>; và tài liệu uỷ quyền chưa có văn bản nào từ phía vendor.
+    </p>
+  </div>
+
+  <section>
+    <h2>Phạm vi &amp; phương pháp</h2>
+    <p>
+      Codex lưu rollout tại <code>~/.codex/sessions/&lt;năm&gt;/&lt;tháng&gt;/&lt;ngày&gt;/rollout-*.jsonl</code>.
+      Có 51 phiên trỏ tới thư mục dự án; báo cáo này lấy tám phiên gần nhất (658 MB) làm phạm vi.
+    </p>
+    <p>
+      Các rollout thô quá lớn để đọc trực tiếp, nên chúng được trích thành digest dễ đọc, sau đó
+      <strong>đối chiếu ngược lại với repository thật</strong>: <code>git log</code>, <code>git status</code>,
+      sự tồn tại của từng file trên đĩa, nội dung test script, và chạy lại các bài kiểm thử.
+      Mọi tuyên bố trong báo cáo được phân loại theo nguồn:
+    </p>
+    <ul class="wide">
+      <li><strong>Đã quan sát</strong> — có lệnh được chạy và có output đọc được.</li>
+      <li><strong>Chỉ được tuyên bố</strong> — agent hoặc người dùng nói là đã làm, không có output tương ứng.</li>
+      <li><strong>Mâu thuẫn</strong> — hai nguồn nói ngược nhau, chưa gỡ được.</li>
+    </ul>
+    <p>
+      Việc chạy lại kiểm thử trong quá trình lập báo cáo chỉ nhắm vào các target do Opus tự sinh.
+      Không có tiến trình client bên thứ ba nào bị tác động.
+    </p>
+  </section>
+
+  <section>
+    <h2>Bảng trạng thái</h2>
+    <div class="table-scroll">
+      <table>
+        <caption>Mức độ chắc chắn của từng tuyên bố, sau kiểm chứng</caption>
+        <thead>
+          <tr>
+            <th scope="col">Tuyên bố</th>
+            <th scope="col">Kết luận</th>
+            <th scope="col">Cơ sở kiểm chứng</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Gate 3 (đọc VM) và Gate 4 (allocate/write/readback) đạt trên target hợp tác do Opus tự sinh</td>
+            <td><span class="chip chip-ok">Xác nhận</span></td>
+            <td>Chạy lại 3 test script độc lập; mỗi script in dòng pass và thoát mã 0.</td>
+          </tr>
+          <tr>
+            <td>Gate 3 / Gate 4 đạt <em>live</em> trên Badlion PID 51238</td>
+            <td><span class="chip chip-warn">Không kiểm chứng được</span></td>
+            <td><code>rg 51238</code> trên <code>docs/ tests/ scripts/ injector/</code> → 0 kết quả. Không test, không record, không commit. Chỉ tồn tại dưới dạng một dòng log dán trong khung chat.</td>
+          </tr>
+          <tr>
+            <td>Task port trên Badlion PID 4578</td>
+            <td><span class="chip chip-warn">Một phần</span></td>
+            <td>Do chủ dự án tự chạy <code>sudo</code>. Record còn untracked, và SHA-256 helper ghi trong record không khớp helper trên đĩa.</td>
+          </tr>
+          <tr>
+            <td>Gate 5 — thực thi code native trong JVM đích</td>
+            <td><span class="chip chip-crit">Chưa đạt</span></td>
+            <td>Không được dispatch trong <code>HEAD</code>. Working tree tái hiện <code>NativeExecutionCleanupFailed</code> 3/3 lần. Chưa từng in ra <code>execution_observed</code>.</td>
+          </tr>
+          <tr>
+            <td><code>./scripts/check.sh</code> xanh, toàn bộ gate đạt</td>
+            <td><span class="chip chip-crit">Bác bỏ</span></td>
+            <td>Chạy hai lần, cả hai thoát mã 2, chết ở bước build arm64 với <code>-Werror</code> (unused function/const). Không tới được các lane kiểm thử gate.</td>
+          </tr>
+          <tr>
+            <td>73 bài kiểm thử Rust đạt</td>
+            <td><span class="chip chip-ok">Xác nhận</span></td>
+            <td>Đếm trực tiếp: 56 + 17.</td>
+          </tr>
+          <tr>
+            <td>Đã có uỷ quyền từ vendor</td>
+            <td><span class="chip chip-crit">Chưa thiết lập</span></td>
+            <td>Văn bản đề nghị ghi rõ <em>"SUPERSEDED — never sent in this form"</em>; bản ghi non-prohibition là lời kể của chủ dự án, <code>recordSha256: PENDING</code>, artifact gốc không đính kèm.</td>
+          </tr>
+          <tr>
+            <td>SIP là rào cản kỹ thuật</td>
+            <td><span class="chip chip-crit">Bác bỏ</span></td>
+            <td>Chính <code>docs/m3-general-objective.md</code> kết luận gate là chữ ký <code>get-task-allow</code> của binary đích, và ghi đậm <em>"Tắt SIP là không cần thiết"</em>.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Mạch thời gian</h2>
+    <ol class="timeline">
+      <li>
+        <div class="t-when">24–25/08<em>hai phiên</em></div>
+        <div class="t-what">
+          <h3>Nhánh UI trong game (không liên quan injector)</h3>
+          <p>
+            Hai phiên đứng ở thư mục dự án nhưng làm việc khác: sửa <code>config.toml</code> và vấn đề
+            Keychain của chính Codex; và một phiên về Computer-Use khi khoá máy (agent từ chối tự bật
+            quyền cho mình).
+          </p>
+          <p class="outcome"><b>Không đụng tới</b> task port, Mach VM, hay injector. Không gate nào được bàn tới.</p>
+        </div>
+      </li>
+      <li>
+        <div class="t-when">24–27/08<em>hai phiên, 6 MB + 511 MB</em></div>
+        <div class="t-what">
+          <h3>OpusConfig / Elementa cho Minecraft 1.8.9</h3>
+          <p>
+            Xây dựng và đóng gói runtime UI, đuổi theo lỗi crash/méo cửa sổ native.
+          </p>
+          <p class="outcome">
+            <b>Kết thúc:</b> chủ dự án dừng toàn bộ việc code/build/commit vì các tuyên bố chưa được kiểm chứng.
+            Phiên kết thúc bằng <code>&lt;turn_aborted&gt;</code>.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="t-when">08/09 14:09<em>15 MB</em></div>
+        <div class="t-what">
+          <h3>Bước ngoặt kiến trúc — bỏ hướng client Forge riêng</h3>
+          <p>
+            Chuyển sang kiến trúc <em>injector → native runtime → Java payload</em>. Khảo sát 8 repo tham chiếu
+            (clone về <code>/tmp</code>), dựng nền M2 controlled-JVM, viết migration plan, tạo crate Rust
+            <code>injector/</code>, đổi release lock sang schema v2, làm build chọn được kiến trúc.
+          </p>
+          <p class="outcome">
+            <b>Kết thúc:</b> giữa M3, không có gate nào xanh. Hai lệnh cuối phiên lỗi
+            (exit 101 — format string; rồi exit 2).
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="t-when">08/09 19:52 → 11/09<em>119 MB</em></div>
+        <div class="t-what">
+          <h3>Phiên nặng nhất — dựng toàn bộ helper native</h3>
+          <p>
+            Yêu cầu được đẩy từ "chỉ harness của Opus" sang "ép inject vào client Minecraft".
+            Agent <strong>từ chối</strong> làm forced-injector tổng quát, và thay vào đó dựng: harness vòng đời JVM,
+            lane authorized-target, evidence gate, toàn bộ helper C++ <code>macos_transport.cpp</code>,
+            các module capability-boundary, reject Rosetta, stress harness, và viết decisions 0006/0007
+            cùng các record về Lunar/Badlion. Audit CosmosClient-lite và MIP ở mức chỉ đọc source.
+          </p>
+          <p class="outcome">
+            <b>Kết thúc:</b> xác nhận Badlion JVM PID 51238, chạy <code>probe --pid 51238</code> thoát 0, target còn sống.
+            Không commit.
+          </p>
+        </div>
+      </li>
+      <li>
+        <div class="t-when">11/09 14:16 → 15:38<em>1,8 MB</em></div>
+        <div class="t-what">
+          <h3>Gate 3 / Gate 4 trực tiếp, rồi dừng ở ngưỡng Gate 5</h3>
+          <p>
+            Thêm hai subcommand trực tiếp vào helper (<code>probe-vm-read</code>, <code>probe-vm-rw</code>,
+            +369 dòng), thêm test, nối vào <code>check.sh</code>. Được phép quét, tìm và xác thực PID 51238
+            là game JVM chứ không phải launcher. Chạy live và báo cáo toàn bộ Mach return code bằng 0.
+          </p>
+          <p class="outcome">
+            <b>Kết thúc:</b> sau chỉ thị Gate 5, agent chỉ <em>inspect và lên plan</em>, rồi hết phiên. Không commit.
+          </p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Bằng chứng đã kiểm chứng</h2>
+    <p>
+      Đây là phần đứng vững. Ba test script được chạy lại trong quá trình lập báo cáo, tất cả đều thoát mã 0:
+    </p>
+    <figure>
+      <pre><code>./tests/check-injector-native-direct-vm-gates.sh
+  → OPUS native direct VM map/read and RW round-trip probes passed.   exit 0
+
+./tests/check-injector-native-vm-read-probe.sh
+  → OPUS native VM map/query/read probe passed.                       exit 0
+
+./tests/check-injector-native-vm-rw-probe.sh
+  → OPUS cooperative VM allocation/write/readback/deallocation
+    probe passed.                                                     exit 0</code></pre>
+      <figcaption>
+        Đây là các assertion thật (script thoát 1 khi thiếu token, không chỉ in). Nhưng cả ba đều spawn target
+        do Opus tự sinh và yêu cầu descriptor công bố — về mặt cấu trúc, chúng <em>không thể</em> trỏ vào Badlion/Lunar.
+      </figcaption>
+    </figure>
+    <p>
+      Con số duy nhất sống sót qua kiểm chứng đối kháng là số bài kiểm thử Rust: <strong>73</strong> (56 + 17).
+    </p>
+    <p class="wide">
+      Cần lưu ý về phạm vi: chính tài liệu harness của dự án đã tự giới hạn —
+      <em>"A passing Gate 3 or Gate 4 fixture proves only that the named primitive worked for that
+      participating process instance, helper slice, and host configuration. It does not prove runtime
+      entry, executable-memory permission, dylib loading, JNI/JVMTI bridge readiness, unload/reinjection,
+      a Lunar/Badlion adapter, or M3 General completion."</em>
+      Giới hạn này là đúng và cần được giữ nguyên khi báo cáo lên trên.
+    </p>
+  </section>
+
+  <section>
+    <h2>Những gì chưa kiểm chứng được</h2>
+
+    <h3>Kết quả trên Badlion không để lại dấu vết nào</h3>
+    <p>
+      Kết quả then chốt nhất của cả tháng — Gate 3/4 chạy trên client thật — chỉ tồn tại dưới dạng
+      một khối văn bản dán trong transcript. Không có record nào được cập nhật, không test nào được viết,
+      không commit nào. Record duy nhất trên đĩa là cho <strong>PID 4578</strong>, do chủ dự án tự chạy
+      <code>sudo</code>, và tự phân loại kết quả là <code>transport entered: NOT TESTED</code>.
+    </p>
+    <p>
+      Record đó còn tự vô hiệu hoá: nó ghi <em>"the helper digest, rather than the current Git revision,
+      is therefore the authoritative identity"</em>, nhưng digest được ghim (<code>d16b963a…</code>)
+      <strong>không khớp</strong> helper đang có trên đĩa (<code>68a99cbb…</code>). <code>output/</code> nằm trong
+      <code>.gitignore</code>, nên đây là build artifact không có version control.
+    </p>
+
+    <h3>Mâu thuẫn chưa gỡ về quyền truy cập</h3>
+    <p>
+      Hai ghi nhận không thể cùng đúng:
+    </p>
+    <ul class="wide">
+      <li>
+        <strong>10/09</strong> — đọc chữ ký JVM Badlion, ghi <code>get-task-allow=absent</code>, kết luận
+        <em>"không có quyền cho một process ngoài như Opus lấy task port của nó"</em>. Theo phân tích này,
+        một tiến trình user thường <strong>phải bị từ chối</strong>.
+      </li>
+      <li>
+        <strong>11/09</strong> — chạy <strong>không sudo</strong> trên PID 51238, nhận <code>task_for_pid_return=0</code>.
+      </li>
+    </ul>
+    <p>
+      Giả thuyết khả dĩ nhất là phép đọc chữ ký hôm 10/09 đã nhắm vào launcher stub <code>bin/java</code>
+      thay vì image đang chạy. Nhưng điều đó <strong>chưa được đo lại</strong>, và repository không có gì để phân xử.
+      Cho tới khi gỡ được, không nên trích dẫn kết quả Badlion như một năng lực đã xác lập.
+    </p>
+
+    <h3>Bộ kiểm thử tổng xanh chỉ vì artifact cũ</h3>
+    <p>
+      Các script kiểm thử chỉ rebuild khi binary chưa tồn tại. Vì <code>output/</code> đã có sẵn binary,
+      các test chạy trên artifact cũ, còn build sạch thì đỏ. Nói cách khác: <em>suite xanh so với artifact cũ,
+      và đỏ khi build lại từ đầu</em>. Đây là loại khác biệt dễ bị đọc nhầm thành "toàn bộ gate đều xanh".
+    </p>
+
+    <h3>Một tuyên bố không có nguồn</h3>
+    <p>
+      Có một đoạn agent khẳng định điều khoản chính thức của Lunar cấm vượt cơ chế bảo vệ. Kiểm tra
+      tool inventory của phiên đó: <strong>không có công cụ fetch/search nào</strong>, và không có URL
+      <code>lunarclient.com</code> nào xuất hiện. Đây là khẳng định từ kiến thức sẵn có của model, không phải
+      nguồn được truy xuất. Bản thân agent sau đó đã rút lại.
+    </p>
+
+    <h3>"Đọc memory" trong LLDB là bằng chứng yếu</h3>
+    <p>
+      Phép đọc được trích dẫn là header Mach-O của một dylib, trả về <code>cf fa ed fe</code> —
+      tức magic number chuẩn của Mach-O arm64 (<code>0xfeedfacf</code>). Các byte này <strong>nằm nguyên trong
+      file trên đĩa</strong>; đọc trực tiếp file cũng cho đúng kết quả đó. Nó không chứng minh truy cập được
+      vùng nhớ riêng tư của tiến trình (heap, đối tượng JVM, state runtime).
+      Thêm nữa, lệnh được ghi lại là <code>sudo lldb</code> — chạy bằng root, một đường quyền khác hẳn
+      với helper chạy bằng user thường.
+    </p>
+  </section>
+
+  <section>
+    <h2>Ràng buộc nền tảng cần biết</h2>
+    <p>
+      Đây là phần ảnh hưởng trực tiếp tới quyết định, nên tách riêng khỏi phần tiến độ.
+    </p>
+    <ul class="kv">
+      <li>
+        <span class="k">Cơ chế gate thật</span>
+        <span class="v">
+          <code>task_for_pid</code> từ tiến trình cùng user, không phải root, phụ thuộc vào
+          <strong>chữ ký của binary đích</strong> — cụ thể là entitlement <code>get-task-allow</code>.
+          Không phải SIP, và không phải entitlement của bên gọi.
+        </span>
+      </li>
+      <li>
+        <span class="k">Yêu cầu triển khai thật</span>
+        <span class="v">
+          Root <strong>một mình không đủ</strong> khi SIP còn bật — <code>taskgated</code> vẫn chặn root lấy task port
+          của binary hardened-runtime không có <code>get-task-allow</code>. Điều kiện đầy đủ là
+          <strong>root + SIP tắt</strong>, tức yêu cầu mọi máy người dùng phải hạ bảo mật toàn hệ thống.
+        </span>
+      </li>
+      <li>
+        <span class="k">Chưa cô lập được SIP</span>
+        <span class="v">
+          Toàn bộ evidence Gate 1–4 được thu trên máy <strong>đã tắt SIP sẵn</strong>. Kết luận "tắt SIP là không
+          cần thiết" trong tài liệu rút ra từ một target <em>có</em> <code>get-task-allow</code>, nên nó không
+          nói gì về target <em>không</em> có. Câu hỏi này chưa từng được đo.
+        </span>
+      </li>
+      <li>
+        <span class="k">Target nghiệm thu thật</span>
+        <span class="v">
+          Lunar 1.8.9 — hiện trả <code>kern_return=5 KERN_FAILURE</code>. Launcher Lunar giải nén lại toàn bộ JRE
+          (163 file) mỗi lần chạy, xoá mọi re-sign. Tài liệu dự án tự xếp việc chặn cơ chế đó vào nhóm
+          ngoài phạm vi, và agent đã từ chối triển khai.
+        </span>
+      </li>
+      <li>
+        <span class="k">Phạm vi primitive</span>
+        <span class="v">
+          <code>acquire_target_task</code> trong helper <strong>không có allowlist</strong> — chỉ kiểm tra kiến trúc
+          rồi gọi thẳng <code>task_for_pid</code>. Nghĩa là nó là primitive đọc/ghi VM tổng quát, không phải
+          thứ bị giới hạn như tài liệu mô tả.
+        </span>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Khoảng trống uỷ quyền</h2>
+    <p>
+      Trạng thái này cần được nêu rõ khi báo cáo lên trên, vì nó là rủi ro chứ không phải chi tiết thủ tục.
+    </p>
+    <ul class="wide">
+      <li>
+        <code>docs/m3-lunar-vendor-authorization-request.md</code> mang dòng trạng thái
+        <em>"SUPERSEDED — retained as history only. This draft was never sent in this form."</em>
+        — tức chưa từng có văn bản nào được gửi tới vendor.
+      </li>
+      <li>
+        <code>docs/protocol/m3-lunar-vendor-non-prohibition-record.md</code> tự ghi ở mục provenance rằng nó
+        được viết từ <strong>lời kể của chủ dự án</strong>, artifact gốc không đính kèm repository,
+        và <code>recordSha256</code> còn <code>PENDING</code>. Bản thân tài liệu nói nó
+        <em>"must not be cited as vendor certification, adapter certification, or feature-support evidence."</em>
+      </li>
+      <li>
+        Record Badlion không viện dẫn vendor nào; nguồn duy nhất là transcript chủ dự án tự chạy.
+      </li>
+      <li>
+        Ở tầng code, <code>scripts/verify-m3-client-integration-evidence.mjs</code> chỉ chấp nhận hai chế độ
+        <code>opus-owned</code> và <code>vendor-approved</code>, và tài liệu schema ghi rõ nó
+        <em>"has no slot for a general non-prohibition."</em>
+      </li>
+    </ul>
+    <p>
+      Nói gọn: <strong>chưa có bất kỳ văn bản nào từ phía vendor</strong>, và chính repository cũng đã được
+      thiết kế để từ chối coi lời kể là bằng chứng uỷ quyền.
+    </p>
+  </section>
+
+  <section>
+    <h2>Việc còn dở tại thời điểm lập báo cáo</h2>
+    <ul class="wide">
+      <li>
+        <strong>Toàn bộ công việc tháng 9 chưa được commit.</strong> <code>HEAD</code> vẫn là
+        <code>6a117fe</code> từ 10/09 — năm commit M3 được tạo trong vòng 44 giây. Working tree có
+        20 file sửa và 19 file mới, <strong>0 file staged</strong>. Cả hai submodule <code>launcher</code> và
+        <code>runtime</code> đều dirty.
+      </li>
+      <li>
+        <strong>Gate 5 đang được viết dở ngay lúc này.</strong> Một phiên Codex chưa vào archive đang sửa
+        <code>injector-native/src/macos_transport.cpp</code> — mtime nhảy 15:47 → 15:49, helper rebuild 15:49:22,
+        tức sau khi phiên lưu trữ cuối kết thúc (15:38). Source hiện không ở trạng thái compile được.
+      </li>
+      <li>
+        <strong>Biến thể "no-data" của Gate 4 chưa từng được viết.</strong> Gate 4 hiện luôn gọi
+        <code>mach_vm_read_overwrite</code> để đọc lại, nên yêu cầu "test kín, không đọc dữ liệu" chưa đáp ứng được.
+      </li>
+      <li>
+        <strong>Kiểm chứng độc lập trước mặt chủ dự án chưa diễn ra.</strong> Recipe hai Terminal đã được đưa,
+        nhưng log không cho thấy lần chạy nào.
+      </li>
+      <li>
+        <strong>Bốn tính năng yêu cầu ban đầu chưa hiện thực:</strong> inject mọi client 1.8.9, load
+        <code>opus-runtime</code>, unload ngược, và handshake injector↔runtime.
+      </li>
+      <li>
+        <strong>Pin của <code>release/opus.lock.json</code> vẫn lệch</strong> so với worktree của hai submodule.
+      </li>
+    </ul>
+  </section>
+
+  <hr class="rule">
+
+  <section>
+    <h2>Phụ lục — cách tái lập</h2>
+    <ul class="kv">
+      <li>
+        <span class="k">Rollout gốc</span>
+        <span class="v"><code>~/.codex/sessions/2026/09/11/rollout-2026-09-11T14-16-12-01a08f52-*.jsonl</code> (và các phiên cùng ngày)</span>
+      </li>
+      <li>
+        <span class="k">Chạy lại Gate 3/4</span>
+        <span class="v"><code>./tests/check-injector-native-vm-read-probe.sh</code> · <code>check-injector-native-vm-rw-probe.sh</code></span>
+      </li>
+      <li>
+        <span class="k">Tìm dấu vết Badlion</span>
+        <span class="v"><code>rg 51238 docs tests scripts injector</code> → kỳ vọng 0 kết quả</span>
+      </li>
+      <li>
+        <span class="k">Xác nhận Gate 5 chưa nối</span>
+        <span class="v"><code>./output/injector-native-transport/arm64/opus-macos-transport probe-native-execution --pid 1</code> → in usage, thoát 2</span>
+      </li>
+      <li>
+        <span class="k">Trạng thái build sạch</span>
+        <span class="v"><code>./scripts/check.sh</code> → thoát 2 ở bước build arm64</span>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    <p>
+      Báo cáo lập ngày 2026-09-11, từ tám rollout Codex trong khoảng 24/08 – 11/09/2026, đối chiếu với
+      repository tại <code>HEAD 6a117fe</code>, nhánh <code>m3-general-transport-foundation</code>.
+    </p>
+    <p>
+      Mọi tuyên bố "Xác nhận" trong báo cáo này đều đã được chạy lại và quan sát trực tiếp.
+      Mọi tuyên bố "Không kiểm chứng được" đều không có artifact tương ứng trong repository.
+    </p>
+  </footer>
+
+</div>

@@ -1,10 +1,10 @@
 # Nghiên cứu: render UI Opus TRỰC TIẾP trong game (bỏ overlay)
 
 > **Historical renderer comparison.** None of the CEF/JCEF/overlay approaches
-> below is an active production path. The active path is
-> [Forge + OptiFine + OPUS Core Mod + vanilla Minecraft UI]
-> (coremod-first-goal-and-plan.md). This document is retained for failure and
-> trade-off evidence only.
+> below is the active product architecture. The active product authority is
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md):
+> Opus Client + Opus Launcher, UI first; it does not select a renderer. This
+> document is retained for failure and trade-off evidence only.
 
 Ngày: 2026-08-18
 

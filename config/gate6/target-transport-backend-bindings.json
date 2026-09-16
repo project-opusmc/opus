@@ -1,0 +1,40 @@
+{
+  "schema_version": "opus.m3.gate6.target-transport-backend-bindings.v1",
+  "bindings": {
+    "badlion": {
+      "backend_identity": "badlion-native-control-plane",
+      "provider_identity": "badlion-native-control-plane-provider",
+      "control_plane": "native-selected-target-control-plane",
+      "cooperative_control_plane": {
+        "identity": "owned-native-bootstrap-control-plane",
+        "scope": "opus-owned-cooperative-only",
+        "provider_interface": "badlion-native-control-plane-provider",
+        "operations": {
+          "revalidate_target": "implemented",
+          "prepare": "implemented",
+          "verify_artifact": "implemented",
+          "load": "implemented",
+          "resolve_entrypoint": "implemented",
+          "start": "implemented",
+          "verify_handshake": "implemented",
+          "stop": "implemented",
+          "cleanup": "implemented",
+          "check_health": "implemented"
+        }
+      },
+      "readiness": {
+        "target_resolution": "implemented",
+        "transport_prepare": "not_implemented",
+        "artifact_verification": "implemented",
+        "load": "not_implemented",
+        "entrypoint": "not_implemented",
+        "start": "not_implemented",
+        "handshake": "not_implemented",
+        "stop": "not_implemented",
+        "cleanup": "not_implemented",
+        "health": "not_implemented"
+      },
+      "live_execution_performed": false
+    }
+  }
+}

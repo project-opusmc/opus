@@ -1,0 +1,11 @@
+{
+  "schema_version": "opus.m3.gate6.target-profile.v1",
+  "id": "lunar",
+  "kind": "generic-client",
+  "architecture": "unresolved",
+  "runtime": "unresolved",
+  "metadata": {
+    "live_gate_6": "not-tested",
+    "authorization": "unresolved"
+  }
+}

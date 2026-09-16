@@ -1,5 +1,13 @@
 # Opus Injector
 
+> **Frozen R&D notice — September 15, 2026:** the injector/injection track is
+> preserved as experimental evidence, not active product-mainline work. See
+> [Decision 0008](../docs/decisions/0008-opus-client-launcher-ui-first-mainline.md)
+> and the [current General Gate 6 policy](../docs/protocol/m3-general-gate-6-current-policy-status-2026-09-15.md).
+> Do not use the command examples below for a new target interaction, transport
+> run, or Gate promotion without an explicit owner decision to resume this R&D
+> lane.
+
 This directory contains the M3 Rust injector: client-neutral preflight,
 diagnostics, and selected-PID native transport on macOS. The transport has a
 debug-authorized arm64 Java-fixture lifecycle proof. On this Apple Silicon
@@ -42,6 +50,11 @@ returns `RosettaRemoteThreadUnavailable` before native entry and is cleaned up
 without a stale session. Neither case is evidence that a normal Lunar,
 Badlion, Forge, TLauncher, Legacy, or other game client grants the same
 access.
+
+This describes the compiled helper's selected-PID behavior. The project policy
+also permits a separately declared owner-authorized host experiment on the
+owner's development Mac, but that lane is not implemented by `opus-injector`;
+see [`docs/decisions/0007-owner-authorized-host-experiment-boundary.md`](../docs/decisions/0007-owner-authorized-host-experiment-boundary.md).
 
 `attach-harness` is separately restricted to the source-controlled
 `AttachTargetHarness`. It uses the JDK Attach API only as a diagnostic/test

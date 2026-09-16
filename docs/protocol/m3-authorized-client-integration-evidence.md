@@ -38,6 +38,21 @@ record explicit PID selection and target ownership without turning the injector
 into an unbounded process controller. That future schema work is not source
 authorization for transport implementation.
 
+This cooperative schema also does not represent an
+owner-authorized host experiment. Such an experiment is permitted as a
+separate research lane by
+[Decision 0007](../decisions/0007-owner-authorized-host-experiment-boundary.md),
+but it cannot be filed as cooperative M3 evidence until a schema revision
+records its host authority, actual mechanism scope, rollback evidence, and
+selected-game lifecycle proof.
+
+A retained example of a non-cooperative, owner-authorized **capability-only**
+record is [Badlion Direct Task-Port Capability Record —
+September 11, 2026](m3-badlion-direct-task-port-capability-record-2026-09-11.md).
+It must not be passed to this schema's verifier or presented as cooperative
+evidence, runtime entry, lifecycle proof, client certification, or M3 General
+completion.
+
 ## Required proof
 
 An evidence capture records:
@@ -80,6 +95,27 @@ approvedTransport: cooperative-opt-in
 `recordSha256` records the reviewed authorization material without embedding
 its contents in test output. It is traceability evidence, not a substitute for
 reviewing the underlying written approval or OPUS-owned source-control record.
+
+**Note on the Lunar vendor response (September 10, 2026).** The project owner
+holds a recorded answer from Lunar's support/developer channel declining to
+prohibit benign client injection. It is a **general non-prohibition**: it
+supplies no entry point usable by this schema, no allowed build, and no
+reference identifier, date, or `recordSha256` recorded yet — the owner retains
+the written reply from which that hash is to be computed.
+
+Two consequences for this schema:
+
+1. It does **not** qualify as `mode: vendor-approved` and must not be filed
+   under that mode. This schema has **no slot** for a general non-prohibition —
+   `mode` admits only `opus-owned | vendor-approved`, and
+   `scripts/verify-m3-client-integration-evidence.mjs` rejects anything else.
+   Until a `general-non-prohibition` mode is added deliberately to both the
+   schema and the verifier, **no capture may be filed under this authorization
+   at all.** Record it in the vendor record instead.
+2. The next section explains why no capture is currently possible in any case.
+
+See
+[Lunar Client M3 Vendor Non-Prohibition Record](m3-lunar-vendor-non-prohibition-record.md).
 
 This schema does not determine M3 General completion. M3 remains incomplete
 until the Definition of Done in [M3 General](../m3-general-objective.md) is

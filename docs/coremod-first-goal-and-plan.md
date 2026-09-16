@@ -1,6 +1,14 @@
 # OPUS Core-Mod-first goal and execution plan
 
-Status: **canonical plan — 2026-08-22**
+Status: **SUPERSEDED AS THE ACTIVE PRODUCT PLAN — September 15, 2026**
+
+> The current product authority is
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md):
+> Opus Client + Opus Launcher, UI first. This document remains a useful
+> historical stabilization and current-artifact-baseline record. Its
+> Core-Mod-only/no-UI constraints do not select the current product roadmap,
+> and Decision 0008 does not by itself change the verified artifact contract
+> described below.
 
 ## Authority and scope
 

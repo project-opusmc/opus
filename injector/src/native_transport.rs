@@ -86,6 +86,39 @@ pub struct NativeTransportReport {
     pub runtime_architectures: Option<BTreeSet<TargetArchitecture>>,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum NativeTransportProbeStatus {
+    Available,
+    TaskPortDenied,
+}
+
+impl NativeTransportProbeStatus {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Available => "available",
+            Self::TaskPortDenied => "denied",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct NativeTransportProbeReport {
+    pub pid: u32,
+    pub target_architecture: TargetArchitecture,
+    pub status: NativeTransportProbeStatus,
+}
+
+impl NativeTransportProbeReport {
+    pub fn summary(&self) -> String {
+        format!(
+            "pid={} target_architecture={} native_transport={}",
+            self.pid,
+            self.target_architecture,
+            self.status.as_str(),
+        )
+    }
+}
+
 impl NativeTransportReport {
     pub fn summary(&self) -> String {
         let runtime_architectures = self
@@ -118,6 +151,14 @@ enum SessionState {
     Stopped,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum SessionTransition {
+    BeginLoad,
+    CompleteLoad,
+    BeginUnload,
+    CompleteUnload,
+}
+
 impl SessionState {
     fn as_str(self) -> &'static str {
         match self {
@@ -134,6 +175,16 @@ impl SessionState {
             "running" => Some(Self::Running),
             "unload-pending" => Some(Self::UnloadPending),
             "stopped" => Some(Self::Stopped),
+            _ => None,
+        }
+    }
+
+    fn transition(self, transition: SessionTransition) -> Option<Self> {
+        match (self, transition) {
+            (Self::Stopped, SessionTransition::BeginLoad) => Some(Self::LoadPending),
+            (Self::LoadPending, SessionTransition::CompleteLoad) => Some(Self::Running),
+            (Self::Running, SessionTransition::BeginUnload) => Some(Self::UnloadPending),
+            (Self::UnloadPending, SessionTransition::CompleteUnload) => Some(Self::Stopped),
             _ => None,
         }
     }
@@ -161,6 +212,33 @@ struct NativeTransportDescriptor {
     capability: String,
     injector_version: String,
     state: String,
+}
+
+pub fn probe_native_transport(
+    processes: &[ProcessSnapshot],
+    current_user_id: u32,
+    pid: u32,
+    target_architecture: TargetArchitecture,
+    helper_path: Option<&Path>,
+) -> Result<NativeTransportProbeReport, InjectorError> {
+    let target = find_owned_minecraft_jvm_candidate(processes, pid, current_user_id)?;
+    let helper = resolve_helper(target_architecture, helper_path)?;
+    validate_helper_architecture(&helper, target_architecture)?;
+    match invoke_helper_probe(&helper, target.process.pid, target_architecture) {
+        Ok(()) => Ok(NativeTransportProbeReport {
+            pid: target.process.pid,
+            target_architecture,
+            status: NativeTransportProbeStatus::Available,
+        }),
+        Err(InjectorError::NativeTransportTaskPortDenied { .. }) => {
+            Ok(NativeTransportProbeReport {
+                pid: target.process.pid,
+                target_architecture,
+                status: NativeTransportProbeStatus::TaskPortDenied,
+            })
+        }
+        Err(error) => Err(error),
+    }
 }
 
 pub fn request_native_transport_load(
@@ -193,6 +271,8 @@ pub fn request_native_transport_load(
 
     match existing {
         None => {
+            let helper = resolve_helper(preparation.declared_target_architecture, helper_path)?;
+            validate_helper_architecture(&helper, preparation.declared_target_architecture)?;
             remove_descriptor_if_present(target.process.pid, current_user_id)?;
             let session = NativeTransportSession {
                 pid: target.process.pid,
@@ -207,12 +287,8 @@ pub fn request_native_transport_load(
             };
             write_session(&session)?;
 
-            let helper = resolve_helper(preparation.declared_target_architecture, helper_path)?;
             if let Err(error) = invoke_helper(&helper, &session) {
-                if matches!(
-                    &error,
-                    InjectorError::NativeTransportRosettaRemoteThreadUnavailable { .. }
-                ) {
+                if is_pre_entry_transport_failure(&error) {
                     remove_session(&session)?;
                 }
                 return Err(error);
@@ -221,10 +297,7 @@ pub fn request_native_transport_load(
             validate_live_target_session(&session, current_user_id)?;
             validate_descriptor(&descriptor, &session, Some("running"))?;
 
-            let running_session = NativeTransportSession {
-                state: SessionState::Running,
-                ..session
-            };
+            let running_session = transition_session(session, SessionTransition::CompleteLoad)?;
             write_session(&running_session)?;
             Ok(NativeTransportReport {
                 pid: running_session.pid,
@@ -254,10 +327,8 @@ pub fn request_native_transport_load(
                 SessionState::Stopped => {
                     let descriptor = read_descriptor(&session)?;
                     validate_descriptor(&descriptor, &session, Some("stopped"))?;
-                    let pending_session = NativeTransportSession {
-                        state: SessionState::LoadPending,
-                        ..session
-                    };
+                    let pending_session =
+                        transition_session(session, SessionTransition::BeginLoad)?;
                     write_session(&pending_session)?;
                     let report = request_control(
                         &pending_session,
@@ -265,10 +336,8 @@ pub fn request_native_transport_load(
                         NativeTransportOperation::Load,
                         Some(runtime_architectures),
                     )?;
-                    let running_session = NativeTransportSession {
-                        state: SessionState::Running,
-                        ..pending_session
-                    };
+                    let running_session =
+                        transition_session(pending_session, SessionTransition::CompleteLoad)?;
                     write_session(&running_session)?;
                     Ok(report)
                 }
@@ -292,10 +361,7 @@ pub fn request_native_transport_unload(
     let descriptor = read_descriptor(&session)?;
     validate_descriptor(&descriptor, &session, Some("running"))?;
 
-    let pending_session = NativeTransportSession {
-        state: SessionState::UnloadPending,
-        ..session
-    };
+    let pending_session = transition_session(session, SessionTransition::BeginUnload)?;
     write_session(&pending_session)?;
     let report = request_control(
         &pending_session,
@@ -303,10 +369,7 @@ pub fn request_native_transport_unload(
         NativeTransportOperation::Unload,
         None,
     )?;
-    let stopped_session = NativeTransportSession {
-        state: SessionState::Stopped,
-        ..pending_session
-    };
+    let stopped_session = transition_session(pending_session, SessionTransition::CompleteUnload)?;
     write_session(&stopped_session)?;
     Ok(report)
 }
@@ -421,6 +484,19 @@ fn validate_session_target(
     Ok(())
 }
 
+fn transition_session(
+    session: NativeTransportSession,
+    transition: SessionTransition,
+) -> Result<NativeTransportSession, InjectorError> {
+    let state = session.state.transition(transition).ok_or_else(|| {
+        InjectorError::NativeTransportSessionRecoveryRequired {
+            pid: session.pid,
+            state: session.state.as_str().to_owned(),
+        }
+    })?;
+    Ok(NativeTransportSession { state, ..session })
+}
+
 fn validate_live_target_session(
     session: &NativeTransportSession,
     current_user_id: u32,
@@ -477,14 +553,21 @@ fn canonical_helper_path(path: &Path) -> Result<PathBuf, InjectorError> {
     Ok(canonical)
 }
 
-fn invoke_helper(helper: &Path, session: &NativeTransportSession) -> Result<(), InjectorError> {
+fn validate_helper_architecture(
+    helper: &Path,
+    target_architecture: TargetArchitecture,
+) -> Result<(), InjectorError> {
     let helper_architectures = inspect_executable_architectures(helper)?;
-    if !helper_architectures.contains(&session.target_architecture) {
+    if !helper_architectures.contains(&target_architecture) {
         return Err(InjectorError::NativeTransportHelperFailed {
             operation: "load",
             detail: "helper does not contain the selected target architecture".to_owned(),
         });
     }
+    Ok(())
+}
+
+fn invoke_helper(helper: &Path, session: &NativeTransportSession) -> Result<(), InjectorError> {
     let output = Command::new(helper)
         .arg("load")
         .arg("--pid")
@@ -512,12 +595,54 @@ fn invoke_helper(helper: &Path, session: &NativeTransportSession) -> Result<(), 
     Ok(())
 }
 
+fn invoke_helper_probe(
+    helper: &Path,
+    pid: u32,
+    target_architecture: TargetArchitecture,
+) -> Result<(), InjectorError> {
+    let output = Command::new(helper)
+        .arg("probe")
+        .arg("--pid")
+        .arg(pid.to_string())
+        .output()
+        .map_err(|error| InjectorError::NativeTransportHelperFailed {
+            operation: "probe",
+            detail: format!("cannot launch helper: {error}"),
+        })?;
+    let detail = helper_output_detail(&output);
+    if !output.status.success() {
+        return Err(native_transport_helper_failure(pid, "probe", detail));
+    }
+    let expected_architecture = target_architecture.to_string();
+    if !detail.contains("code=TaskPortProbeReady")
+        || !detail.contains("task_port=acquired_and_released")
+        || !detail.contains(&format!("target_architecture={expected_architecture}"))
+    {
+        return Err(InjectorError::NativeTransportHelperFailed {
+            operation: "probe",
+            detail: "helper did not publish the required same-architecture task-port probe proof"
+                .to_owned(),
+        });
+    }
+    Ok(())
+}
+
+fn is_pre_entry_transport_failure(error: &InjectorError) -> bool {
+    matches!(
+        error,
+        InjectorError::NativeTransportTaskPortDenied { .. }
+            | InjectorError::NativeTransportRosettaRemoteThreadUnavailable { .. }
+    )
+}
+
 fn native_transport_helper_failure(
     pid: u32,
     operation: &'static str,
     detail: String,
 ) -> InjectorError {
-    if detail.contains("code=RosettaRemoteThreadUnavailable") {
+    if detail.contains("code=TaskPortDenied") {
+        InjectorError::NativeTransportTaskPortDenied { pid }
+    } else if detail.contains("code=RosettaRemoteThreadUnavailable") {
         InjectorError::NativeTransportRosettaRemoteThreadUnavailable { pid }
     } else {
         InjectorError::NativeTransportHelperFailed { operation, detail }
@@ -1532,8 +1657,9 @@ fn hex_value(value: u8) -> Option<u8> {
 #[cfg(test)]
 mod tests {
     use super::{
-        NativeTransportSession, SessionState, native_transport_helper_failure, parse_descriptor,
-        parse_session, percent_decode, percent_encode, render_session,
+        NativeTransportSession, SessionState, SessionTransition, is_pre_entry_transport_failure,
+        native_transport_helper_failure, parse_descriptor, parse_session, percent_decode,
+        percent_encode, render_session,
     };
     use crate::architecture::TargetArchitecture;
     use crate::diagnostics::InjectorError;
@@ -1606,5 +1732,49 @@ mod tests {
             error,
             InjectorError::NativeTransportRosettaRemoteThreadUnavailable { pid: 42 }
         ));
+        assert!(is_pre_entry_transport_failure(&error));
+    }
+
+    #[test]
+    fn maps_a_task_port_denial_to_a_typed_pre_entry_diagnostic() {
+        let error = native_transport_helper_failure(
+            42,
+            "load",
+            "[OPUS/MACOS-TRANSPORT] code=TaskPortDenied message=task_for_pid returned KERN_FAILURE"
+                .to_owned(),
+        );
+        assert!(matches!(
+            error,
+            InjectorError::NativeTransportTaskPortDenied { pid: 42 }
+        ));
+        assert!(is_pre_entry_transport_failure(&error));
+    }
+
+    #[test]
+    fn only_allows_the_declared_native_session_state_transitions() {
+        assert_eq!(
+            SessionState::Stopped.transition(SessionTransition::BeginLoad),
+            Some(SessionState::LoadPending)
+        );
+        assert_eq!(
+            SessionState::LoadPending.transition(SessionTransition::CompleteLoad),
+            Some(SessionState::Running)
+        );
+        assert_eq!(
+            SessionState::Running.transition(SessionTransition::BeginUnload),
+            Some(SessionState::UnloadPending)
+        );
+        assert_eq!(
+            SessionState::UnloadPending.transition(SessionTransition::CompleteUnload),
+            Some(SessionState::Stopped)
+        );
+        assert_eq!(
+            SessionState::Running.transition(SessionTransition::CompleteLoad),
+            None
+        );
+        assert_eq!(
+            SessionState::LoadPending.transition(SessionTransition::BeginUnload),
+            None
+        );
     }
 }

@@ -1,6 +1,12 @@
 # ADR 0005: OneConfig UI fork with an Elementa Minecraft shell
 
-Status: **accepted — 2026-08-23**
+Status: **superseded for active product direction — September 15, 2026**
+
+> This ADR is retained as UI research and possible reuse evidence. The current
+> product mainline is Opus Client + Opus Launcher, UI first, under
+> [Decision 0008](0008-opus-client-launcher-ui-first-mainline.md). It does not
+> select OneConfig/Elementa, CEF/Svelte, native UI, or any other renderer for
+> the new UI-first work; renderer selection requires a later explicit decision.
 
 ## Context
 

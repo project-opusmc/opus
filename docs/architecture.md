@@ -1,27 +1,49 @@
 # OPUS Architecture
 
-OPUS currently has two deliberately separated integration lanes:
+> **Current product authority — September 15, 2026.**
+> [Decision 0008: Opus Client + Launcher mainline, UI first](decisions/0008-opus-client-launcher-ui-first-mainline.md)
+> supersedes earlier injector-first, Core-Mod-only, CEF-first, and
+> OneConfig/Elementa-first product priorities where they conflict with it.
+> This document describes the current architecture direction; it does not claim
+> that a new UI, renderer, or artifact contract has already been implemented.
+
+OPUS has two deliberately separated lanes:
 
 ```text
-injector-development (active, foundation-only)
+active product mainline
         |
-        +-- injector/       Rust M3 preflight and authorized-target proof boundary
-        +-- runtime-native/ C++17 JNI/JVMTI runtime
-        +-- runtime-java/   Java 8 payload foundation
-        `-- adapters/       client/runtime certification boundaries
+        +-- Opus Launcher
+        |     desktop account/profile, install, verification, launch, and UI
+        |
+        +-- Opus Client
+        |     lightweight in-game UI and RBW intelligence experience
+        |
+        +-- Opus Core
+        |     host-neutral product-domain state and rules where practical
+        |
+        `-- Forge + OptiFine Minecraft 1.8.9
+              initial reference host for lifecycle, tick, render, world,
+              entity, packet, input, and game integration
 
-legacy-forge-rollback (not active)
+frozen experimental R&D
         |
-        +-- launcher/ -> project-opusmc/launcher
-        `-- runtime/  -> project-opusmc/runtime
+        +-- injector/       M3 preflight and transport research
+        +-- runtime-native/ JNI/JVMTI lifecycle foundation
+        +-- runtime-java/   Java payload foundation
+        `-- adapters/       future client/runtime compatibility research
 ```
 
-The schema-v2 release lock selects the foundation-only injector lane. It
-verifies architecture, native/JVM proof, an opt-in authorized-test-target
-lifecycle/survival proof, and the future payload compatibility contract without
-claiming a generated payload JAR or certified third-party client. The legacy
-Forge lane remains available only as a rollback profile with exact historical
-component pins.
+The active product mainline is a transparent, RBW-first Minecraft Client +
+Launcher experience. It is not a generic Minecraft module collection and it is
+not an injector research product. UI is the first product priority: Launcher
+and in-game Client should become one understandable player experience before
+the RBW intelligence surface broadens.
+
+The frozen injector lane remains intact. Its source, artifacts, Gate evidence,
+notes, and reproducibility bundles are retained for an explicit future
+resumption; the freeze does not alter any recorded result, authorization
+boundary, or vendor claim. The current General Gate 6 policy is
+[September 15, 2026](protocol/m3-general-gate-6-current-policy-status-2026-09-15.md).
 
 The `opus` repository is the product superproject. It owns integration
 scripts, release locks, product documentation, and complete-product CI. It
@@ -32,46 +54,38 @@ platform integration, installation, verification, artifact staging, launch
 planning, and game process lifecycle.
 
 Runtime owns code executed in the game JVM, including the bootstrap protocol,
-Minecraft 1.8.9 integration, Forge compatibility, Core Mod bytecode patches,
-the OneConfig UI fork, the Elementa shell integration, and reproducible Runtime
-artifacts.
+Minecraft 1.8.9 integration, Forge compatibility, host observations, and
+reproducible Runtime artifacts. The current Runtime artifact contract remains
+an implementation baseline; it has not been changed by the roadmap decision.
 
-The dependency direction is:
+The intended product dependency direction is:
 
 ```text
-superproject -> Launcher
-superproject -> Runtime
-Launcher     -> versioned Runtime artifacts
-Runtime      -X-> Launcher source
+superproject        -> Launcher
+superproject        -> Runtime reference host
+Launcher            -> versioned Runtime artifacts
+Runtime host        -> host-neutral Opus Core
+Opus Core           -X-> Forge, Minecraft, renderer, or client-brand types
+Frozen injector R&D -X-> active product delivery
 ```
+
+Forge + OptiFine 1.8.9 is the initial host/reference implementation. Thin host
+integrations should expose lifecycle, tick, render, world, entity, packet,
+input, and game-session observations to Core. RBW intelligence belongs above
+that raw layer: player, team, bed, generator, resource, projectile, match, and
+threat state.
+
+UI-first does not select a renderer. CEF/Svelte, OneConfig/Elementa, native UI,
+and prior renderer experiments are retained as research and reuse evidence;
+none is an active architecture selection until a later explicit technical
+decision. A renderer decision must preserve a single clear input,
+configuration, and lifecycle ownership model.
 
 Runtime artifacts cross the repository boundary through the versioned manifest
 described in [protocol/runtime-artifacts.md](protocol/runtime-artifacts.md).
+Any change to that contract, staging, package, or launch behavior remains
+separate implementation work with its own verification.
 
-The canonical product and architecture plan for the Minecraft client is
-[opus-ui-v3-goal-and-plan.md](opus-ui-v3-goal-and-plan.md), backed by
-[ADR 0005](decisions/0005-oneconfig-fork-elementa-shell.md). Older CEF, T-UI,
-custom-renderer, and vanilla-only plans are historical evidence when they
-conflict with ADR 0005 or the current local implementation.
-
-The target in-game composition has two specialized frontend technologies under
-one product design language:
-
-```text
-Opus Launcher -> Forge 1.8.9 + OptiFine HD U M5 -> Opus game integration
-                                                   |-> forked OneConfig
-                                                   |   module/config/HUD/profile UI
-                                                   `-> Elementa + UniversalCraft
-                                                       Minecraft shell UI
-```
-
-CEF/Svelte, the legacy T-UI (`UiRuntime` pages and
-`OpusVanillaTerminalOverlay`), and the custom renderer prototype are not target
-production components. Quarantined source may remain for review while the V3
-baseline is established, but it must not become a third production frontend.
-
-The separately gated transition from the current Forge-started integration to
-the Injector → native runtime → Java payload architecture is documented in
-[injector-runtime-payload-migration-plan.md](injector-runtime-payload-migration-plan.md).
-That plan does not change the current release artifact contract until its
-architecture, payload, OneConfig, lifecycle, and cutover gates pass.
+Earlier Core-Mod-first, CEF-first, OneConfig/Elementa-first, and
+injector-runtime-payload plans are preserved as implementation history and
+research. They may inform later work, but they do not override Decision 0008.

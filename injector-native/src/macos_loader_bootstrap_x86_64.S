@@ -2,7 +2,7 @@
 
 .globl _opus_remote_loader_bootstrap_start
 _opus_remote_loader_bootstrap_start:
-    // rdi is a RemoteLoaderContext pointer supplied by the transport helper.
+    // rdi is a RemoteCallContext pointer supplied by the transport helper.
     movq %rdi, %rbx
 
     // pthread_create_from_mach_thread(
@@ -15,7 +15,7 @@ _opus_remote_loader_bootstrap_start:
     callq *%rax
 
     // Publish pthread creation result before parking. The worker is a real
-    // pthread and is the only thread that calls dlopen.
+    // pthread and is the only thread that calls the selected remote function.
     movl %eax, 36(%rbx)
     mfence
 
@@ -30,10 +30,10 @@ _opus_remote_loader_worker_start:
     pushq %rbx
     movq %rdi, %rbx
 
-    // dlopen(context.runtime_path, context.dlopen_flags)
+    // context.function(context.argument0, context.argument1)
     movq 0(%rbx), %rax
     movq 8(%rbx), %rdi
-    movl 16(%rbx), %esi
+    movq 16(%rbx), %rsi
     callq *%rax
 
     movq %rax, 24(%rbx)

@@ -75,9 +75,25 @@ mkdir -p "${cache_root}"
 if [[ ! -f "${archive_path}" ]]; then
   partial_archive="${archive_path}.part.$$"
   printf 'Downloading pinned x86_64 Java 8 test JDK: %s\n' "${jdk_version}" >&2
-  curl --fail --location --proto '=https' --tlsv1.2 --silent --show-error \
-    --output "${partial_archive}" \
-    "${jdk_url}"
+  download_succeeded=false
+  for attempt in 1 2 3; do
+    rm -f -- "${partial_archive}"
+    if curl --fail --location --proto '=https' --tlsv1.2 --silent --show-error \
+      --output "${partial_archive}" \
+      "${jdk_url}"; then
+      download_succeeded=true
+      break
+    fi
+    if [[ "${attempt}" != 3 ]]; then
+      printf 'Pinned x86_64 Java 8 download attempt %s failed; retrying.\n' \
+        "${attempt}" >&2
+      sleep 2
+    fi
+  done
+  if [[ "${download_succeeded}" != true ]]; then
+    echo "Could not download the pinned x86_64 Java 8 test JDK after 3 attempts." >&2
+    exit 1
+  fi
   downloaded_sha256="$(shasum -a 256 "${partial_archive}" | awk '{print $1}')"
   if [[ "${downloaded_sha256}" != "${expected_sha256}" ]]; then
     echo "Downloaded Java 8 JDK archive did not match the pinned SHA-256." >&2

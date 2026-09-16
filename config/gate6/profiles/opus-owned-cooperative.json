@@ -1,0 +1,13 @@
+{
+  "schema_version": "opus.m3.gate6.target-profile.v1",
+  "id": "opus-owned-cooperative",
+  "kind": "generic-client",
+  "architecture": "arm64",
+  "runtime": "native-bootstrap-host",
+  "metadata": {
+    "target_ownership": "opus-owned",
+    "execution_scope": "source-controlled-native-bootstrap-host-only",
+    "general_gate6_slot": "none",
+    "external_target_execution": false
+  }
+}

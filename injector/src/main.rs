@@ -1,11 +1,12 @@
 #![forbid(unsafe_code)]
 
 use opus_injector::{
-    AuthorizedTargetOperation, CooperativeTargetKind, Diagnostic, InjectorError, InjectorPhase,
-    JvmAttachConfig, MinecraftJvmCandidate, OwnedTargetConfig, ProcessSnapshot, TargetArchitecture,
-    current_user_id, diagnostic_for, exercise_owned_target, find_owned_minecraft_jvm_candidate,
-    find_process, inspect_executable_architectures, inspect_runtime_architectures,
-    inspect_system_processes, lunar_launcher_processes, minecraft_jvm_candidates, prepare_load,
+    AuthorizedTargetOperation, CodeSignInspector, CooperativeTargetKind, Diagnostic, InjectorError,
+    InjectorPhase, JvmAttachConfig, MinecraftJvmCandidate, OwnedTargetConfig, ProcessSnapshot,
+    TargetArchitecture, current_user_id, diagnostic_for, exercise_owned_target,
+    find_owned_minecraft_jvm_candidate, find_process, inspect_executable_architectures,
+    inspect_runtime_architectures, inspect_system_processes, lunar_launcher_processes,
+    minecraft_jvm_candidates, prepare_load, probe_lldb_development_harness,
     render_preflight_report_json, report_summary, request_authorized_target,
     request_jvm_attach_harness_load, request_jvm_attach_harness_unload,
     request_native_transport_health, request_native_transport_load, request_native_transport_stop,
@@ -54,6 +55,14 @@ enum CliCommand {
     RequestStop {
         pid: u32,
     },
+    ProbeJvmAttach {
+        pid: u32,
+    },
+    ProbeNativeTransport {
+        pid: u32,
+        target_architecture: TargetArchitecture,
+        transport_helper: Option<PathBuf>,
+    },
     AttachHarnessLoad {
         pid: u32,
         target_architecture: TargetArchitecture,
@@ -65,6 +74,9 @@ enum CliCommand {
         pid: u32,
         attach_java: PathBuf,
         attach_classpath: PathBuf,
+    },
+    LldbHarnessProbe {
+        pid: u32,
     },
     OwnedHarness {
         java: PathBuf,
@@ -120,6 +132,12 @@ fn run() -> Result<(), InjectorError> {
         CliCommand::RequestUnload { pid } => request_unload(pid),
         CliCommand::RequestHealth { pid } => request_health(pid),
         CliCommand::RequestStop { pid } => request_stop(pid),
+        CliCommand::ProbeJvmAttach { pid } => probe_jvm_attach_cli(pid),
+        CliCommand::ProbeNativeTransport {
+            pid,
+            target_architecture,
+            transport_helper,
+        } => probe_native_transport_cli(pid, target_architecture, transport_helper.as_deref()),
         CliCommand::AttachHarnessLoad {
             pid,
             target_architecture,
@@ -146,6 +164,7 @@ fn run() -> Result<(), InjectorError> {
                 classpath: attach_classpath,
             },
         ),
+        CliCommand::LldbHarnessProbe { pid } => lldb_harness_probe(pid),
         CliCommand::OwnedHarness {
             java,
             classpath,
@@ -259,7 +278,28 @@ fn parse_cli(arguments: Vec<String>) -> Result<CliCommand, InjectorError> {
                 pid: required_pid(&options, "--pid")?,
             })
         }
+        "probe-jvm-attach" => {
+            let options = parse_options(arguments, &["--pid"])?;
+            Ok(CliCommand::ProbeJvmAttach {
+                pid: required_pid(&options, "--pid")?,
+            })
+        }
+        "probe-native" => {
+            let options = parse_options(
+                arguments,
+                &["--pid", "--target-architecture", "--transport-helper"],
+            )?;
+            Ok(CliCommand::ProbeNativeTransport {
+                pid: required_pid(&options, "--pid")?,
+                target_architecture: TargetArchitecture::parse(required_value(
+                    &options,
+                    "--target-architecture",
+                )?)?,
+                transport_helper: optional_path(&options, "--transport-helper"),
+            })
+        }
         "attach-harness" => parse_attach_harness(arguments),
+        "lldb-harness" => parse_lldb_harness(arguments),
         "owned-harness" => {
             let options = parse_options(
                 arguments,
@@ -388,6 +428,23 @@ fn parse_attach_harness(arguments: &[String]) -> Result<CliCommand, InjectorErro
     }
 }
 
+fn parse_lldb_harness(arguments: &[String]) -> Result<CliCommand, InjectorError> {
+    let Some((operation, operation_arguments)) = arguments.split_first() else {
+        return Err(InjectorError::InvalidArguments {
+            message: "lldb-harness requires the probe operation".to_owned(),
+        });
+    };
+    if operation != "probe" {
+        return Err(InjectorError::InvalidArguments {
+            message: "lldb-harness only supports the probe operation".to_owned(),
+        });
+    }
+    let options = parse_options(operation_arguments, &["--pid"])?;
+    Ok(CliCommand::LldbHarnessProbe {
+        pid: required_pid(&options, "--pid")?,
+    })
+}
+
 fn parse_options(
     arguments: &[String],
     allowed: &[&str],
@@ -486,6 +543,12 @@ fn inspect(pid: Option<u32>) -> Result<(), InjectorError> {
             InjectorPhase::TargetSelection,
             "TargetInspected",
             target_summary(target, current_user_id),
+        );
+        let code_signing = CodeSignInspector.inspect(Path::new(&target.executable));
+        report(
+            InjectorPhase::TargetSelection,
+            "CodeSigningInspected",
+            format!("pid={} {}", target.pid, code_signing.summary()),
         );
         return Ok(());
     }
@@ -730,6 +793,64 @@ fn request_stop(pid: u32) -> Result<(), InjectorError> {
     Ok(())
 }
 
+fn probe_jvm_attach_cli(pid: u32) -> Result<(), InjectorError> {
+    let processes = inspect_system_processes()?;
+    let current_user_id = current_user_id()?;
+    let report_data = opus_injector::probe_jvm_attach_capability(&processes, current_user_id, pid)?;
+    report(
+        InjectorPhase::TargetSelection,
+        "JvmAttachCapability",
+        report_data.summary(),
+    );
+    Ok(())
+}
+
+fn probe_native_transport_cli(
+    pid: u32,
+    target_architecture: TargetArchitecture,
+    transport_helper: Option<&Path>,
+) -> Result<(), InjectorError> {
+    let processes = inspect_system_processes()?;
+    let current_user_id = current_user_id()?;
+    let report_data = opus_injector::probe_native_transport(
+        &processes,
+        current_user_id,
+        pid,
+        target_architecture,
+        transport_helper,
+    )?;
+    let (recommended_backend, result, reason) = native_backend_availability(report_data.status);
+    report(
+        InjectorPhase::TargetSelection,
+        "BackendAvailability",
+        format!(
+            "jvm_attach=probe-separately-diagnostic-only lldb=restricted-to-owned-harness recommended_backend={} result={} reason={} {}",
+            recommended_backend,
+            result,
+            reason,
+            report_data.summary(),
+        ),
+    );
+    Ok(())
+}
+
+fn native_backend_availability(
+    status: opus_injector::NativeTransportProbeStatus,
+) -> (&'static str, &'static str, &'static str) {
+    match status {
+        opus_injector::NativeTransportProbeStatus::Available => (
+            "native",
+            "CAPABILITY_AVAILABLE",
+            "the selected target exposed the native task-port probe path",
+        ),
+        opus_injector::NativeTransportProbeStatus::TaskPortDenied => (
+            "none",
+            "UNSUPPORTED_TARGET_CONFIGURATION",
+            "no supported instrumentation path is exposed by the selected target configuration",
+        ),
+    }
+}
+
 fn attach_harness_load(
     pid: u32,
     target_architecture: TargetArchitecture,
@@ -769,6 +890,18 @@ fn attach_harness_unload(pid: u32, attach_config: JvmAttachConfig) -> Result<(),
             "test_harness=true explicit_pid=true target_ownership=current-user logical_shutdown=true native_dylib_unload=false target_survival_required=true {}",
             report_data.summary()
         ),
+    );
+    Ok(())
+}
+
+fn lldb_harness_probe(pid: u32) -> Result<(), InjectorError> {
+    let processes = inspect_system_processes()?;
+    let current_user_id = current_user_id()?;
+    let report_data = probe_lldb_development_harness(&processes, current_user_id, pid)?;
+    report(
+        InjectorPhase::TargetSelection,
+        "LldbDevelopmentProbe",
+        report_data.summary(),
     );
     Ok(())
 }
@@ -914,6 +1047,16 @@ fn contract() -> Result<(), InjectorError> {
         "attach-harness uses the JDK Attach API only against the source-controlled OPUS AttachTargetHarness and records a process-instance-bound recovery session; it is diagnostic/test-only, not a production Minecraft transport",
     );
     report(
+        InjectorPhase::TargetSelection,
+        "JvmAttachCapabilityBoundary",
+        "probe-jvm-attach performs only a bounded VM.version capability query against one explicit current-user Minecraft JVM; it never loads an agent and does not select a production transport",
+    );
+    report(
+        InjectorPhase::TargetSelection,
+        "LldbDevelopmentBoundary",
+        "lldb-harness only probes attach-and-detach availability against the source-controlled OPUS AttachTargetHarness; it is a development lane and never a retail-client fallback",
+    );
+    report(
         InjectorPhase::LoadTransport,
         "AuthorizedTargetFixtureBoundary",
         "The authorized-target command only talks to the separately launched OPUS loopback test fixture through an explicit descriptor and capability; it is not a third-party-client transport",
@@ -942,8 +1085,11 @@ fn print_usage() {
          opus-injector request-unload --pid <pid>\n\
          opus-injector request-health --pid <pid>\n\
          opus-injector request-stop --pid <pid>\n\
+         opus-injector probe-jvm-attach --pid <pid>\n\
+         opus-injector probe-native --pid <pid> --target-architecture <arm64|x86_64> [--transport-helper <opus-macos-transport>]\n\
          opus-injector attach-harness load --pid <pid> --target-architecture <arm64|x86_64> --runtime <libopus-runtime.dylib> --attach-classpath <opus-attach-harness.jar|classes-dir> [--attach-java <java>]\n\
          opus-injector attach-harness unload --pid <pid> --attach-classpath <opus-attach-harness.jar|classes-dir> [--attach-java <java>]\n\
+         opus-injector lldb-harness probe --pid <pid>\n\
          opus-injector owned-harness --java <java> --classpath <classes-dir> --runtime <libopus-runtime.dylib> --target-architecture <arm64|x86_64> [--cycles <1..20>]\n\
          opus-injector authorized-target load --descriptor <authorized-target.properties> --runtime <libopus-runtime.dylib>\n\
          opus-injector authorized-target unload --descriptor <authorized-target.properties>\n\
@@ -960,9 +1106,10 @@ fn print_usage() {
 
 #[cfg(test)]
 mod tests {
-    use super::{CliCommand, parse_cli, target_summary};
+    use super::{CliCommand, native_backend_availability, parse_cli, target_summary};
     use opus_injector::{
-        AuthorizedTargetOperation, CooperativeTargetKind, ProcessSnapshot, TargetArchitecture,
+        AuthorizedTargetOperation, CooperativeTargetKind, NativeTransportProbeStatus,
+        ProcessSnapshot, TargetArchitecture,
     };
 
     #[test]
@@ -1026,6 +1173,51 @@ mod tests {
     }
 
     #[test]
+    fn parses_a_read_only_native_transport_probe() {
+        let command = parse_cli(vec![
+            "probe-native".to_owned(),
+            "--pid".to_owned(),
+            "42".to_owned(),
+            "--target-architecture".to_owned(),
+            "arm64".to_owned(),
+        ])
+        .expect("native transport probe command should parse");
+
+        assert!(matches!(
+            command,
+            CliCommand::ProbeNativeTransport {
+                pid: 42,
+                target_architecture: TargetArchitecture::Arm64,
+                ..
+            }
+        ));
+    }
+
+    #[test]
+    fn parses_a_benign_jvm_attach_capability_probe() {
+        let command = parse_cli(vec![
+            "probe-jvm-attach".to_owned(),
+            "--pid".to_owned(),
+            "42".to_owned(),
+        ])
+        .expect("JVM Attach capability probe command should parse");
+
+        assert!(matches!(command, CliCommand::ProbeJvmAttach { pid: 42 }));
+    }
+
+    #[test]
+    fn reports_no_recommended_backend_for_a_task_port_denial() {
+        assert_eq!(
+            native_backend_availability(NativeTransportProbeStatus::TaskPortDenied),
+            (
+                "none",
+                "UNSUPPORTED_TARGET_CONFIGURATION",
+                "no supported instrumentation path is exposed by the selected target configuration",
+            )
+        );
+    }
+
+    #[test]
     fn parses_an_attach_harness_load_command() {
         let command = parse_cli(vec![
             "attach-harness".to_owned(),
@@ -1050,6 +1242,19 @@ mod tests {
                 ..
             } if attach_java.as_os_str() == std::ffi::OsStr::new("java")
         ));
+    }
+
+    #[test]
+    fn parses_a_development_only_lldb_harness_probe() {
+        let command = parse_cli(vec![
+            "lldb-harness".to_owned(),
+            "probe".to_owned(),
+            "--pid".to_owned(),
+            "42".to_owned(),
+        ])
+        .expect("LLDB harness probe command should parse");
+
+        assert!(matches!(command, CliCommand::LldbHarnessProbe { pid: 42 }));
     }
 
     #[test]

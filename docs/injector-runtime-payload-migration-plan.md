@@ -1,11 +1,20 @@
 # Opus Injector Runtime-Payload Migration Plan
 
-- Status: **proposed migration plan — no production cutover yet**
+- Status: **FROZEN / EVIDENCE-PRESERVED — historical injector runtime-payload
+  migration plan; no production cutover**
 - Created: **2026-09-08**
-- Architecture authority: `OPUS_INJECTOR_TECHNICAL_SPEC.md`
+- Historical R&D authority: `OPUS_INJECTOR_TECHNICAL_SPEC.md`
+- Current product authority:
+  [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md)
 - Current-release baseline: [`architecture.md`](architecture.md),
   [`protocol/runtime-artifacts.md`](protocol/runtime-artifacts.md), and the
   pinned `launcher/` and `runtime/` submodules.
+
+> **Current status — September 15, 2026:** retain this plan, its artifacts,
+> checks, and reproducibility material as injector R&D. It is not an active
+> migration or delivery plan while Opus Client + Opus Launcher UI-first work is
+> the mainline. This does not change any current Runtime or Launcher artifact
+> contract.
 
 ## Decision
 

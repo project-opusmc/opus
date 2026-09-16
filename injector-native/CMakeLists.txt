@@ -105,6 +105,19 @@ add_library(opus-remote-loader-probe SHARED
 
 target_compile_features(opus-remote-loader-probe PRIVATE cxx_std_17)
 
+add_library(opus-bootstrap SHARED
+    src/opus_bootstrap.cpp
+)
+
+target_compile_features(opus-bootstrap PRIVATE cxx_std_17)
+
+add_executable(opus-bootstrap-host
+    src/opus_bootstrap_host.cpp
+)
+
+target_compile_features(opus-bootstrap-host PRIVATE cxx_std_17)
+target_link_libraries(opus-bootstrap-host PRIVATE ${CMAKE_DL_LIBS})
+
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(opus-macos-transport PRIVATE
         -Wall
@@ -142,6 +155,18 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
         -Wpedantic
         -Werror
     )
+    target_compile_options(opus-bootstrap PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Werror
+    )
+    target_compile_options(opus-bootstrap-host PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Werror
+    )
 endif()
 
 set_target_properties(opus-macos-transport PROPERTIES
@@ -162,4 +187,12 @@ set_target_properties(opus-task-port-vm-rw-probe PROPERTIES
 
 set_target_properties(opus-remote-loader-probe PROPERTIES
     OUTPUT_NAME "opus-remote-loader-probe"
+)
+
+set_target_properties(opus-bootstrap PROPERTIES
+    OUTPUT_NAME "opus-bootstrap"
+)
+
+set_target_properties(opus-bootstrap-host PROPERTIES
+    OUTPUT_NAME "opus-bootstrap-host"
 )

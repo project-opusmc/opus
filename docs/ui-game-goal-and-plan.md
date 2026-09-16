@@ -2,22 +2,20 @@
 
 Status: **historical reference; not a production plan**
 
-> **Superseded on 2026-08-22.** The binding production architecture is
-> Forge 1.8.9 + OptiFine HD U M5 + OPUS Core Mod + vanilla Minecraft UI.
-> See [ADR 0004](decisions/0004-vanilla-ui-core-mod-first.md) and the active
-> [Core-Mod-first goal and plan](coremod-first-goal-and-plan.md). The text below
-> is retained only as evidence of CEF/UI failure modes; it does not authorize
-> building, staging, packaging, or enabling CEF, `opus-client`, T-UI, or another
-> parallel UI route.
+> **Current authority — September 15, 2026:** the product mainline is
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md):
+> Opus Client + Opus Launcher, UI first. UI-first does not select CEF/Svelte,
+> OneConfig/Elementa, native UI, or another renderer. The text below is
+> historical CEF/UI evidence only and does not authorize building, staging,
+> packaging, or enabling CEF, `opus-client`, T-UI, or a parallel UI route.
 
 Last preserved from the local working tree: 2026-08-22.
 
-> **Phase decision (2026-08-22):** Current production work is temporarily
-> vanilla-first and Core-Mod-first. See
-> [`docs/decisions/0004-vanilla-ui-core-mod-first.md`](decisions/0004-vanilla-ui-core-mod-first.md).
-> The CEF/Svelte architecture below is retained as future product context,
-> but its client hooks are opt-in and must not replace vanilla GUI during this
-> phase. The retired T-UI remains retired.
+> **Historical context:** on 2026-08-22 this plan was superseded by a
+> vanilla/Core-Mod stabilization phase. That phase and its later renderer
+> decisions are now also historical for active product direction; their
+> current artifact restrictions remain implementation facts until changed and
+> verified separately.
 
 Current launch blocker (2026-08-22): the release artifact is ready, but
 `/Applications/Opus Launcher.app` is still an older bundle (`b3d6ca...`;
@@ -35,18 +33,17 @@ authorization to modify code or build a release artifact. Any implementation
 work still requires an explicit project request; completion requires real
 Minecraft acceptance.
 
-## Scope and authority
+## Historical scope and authority
 
 The attached `opus_ui_architecture_handoff_for_claude_code.md` is review
 context. Its review-only constraints, evidence requirements, and warning not to
 pivot architecture remain in force unless the user explicitly authorizes a
 code change. They do not authorize keeping an old product UI as a fallback.
 
-The current product decision is separate and explicit: standardize the
-in-game experience around one CEF/Svelte product compositor, with native Java
-limited to the live HUD, HUD-editor hit testing, and a minimal lifecycle/error
-shell. Retired T-UI/native product pages are removal targets, not a parallel
-implementation.
+The historical product decision was to standardize the in-game experience
+around one CEF/Svelte product compositor, with native Java limited to the live
+HUD, HUD-editor hit testing, and a minimal lifecycle/error shell. Retired
+T-UI/native product pages were removal targets, not a parallel implementation.
 
 ## 1. Goal
 

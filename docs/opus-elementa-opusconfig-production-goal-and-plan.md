@@ -2,11 +2,20 @@
 
 ## Elementa Minecraft shell + OpusConfig opened with Right Shift
 
-Status: **authoritative implementation plan — paused for user priority confirmation, August 24, 2026**
+Status: **historical/paused — superseded as the active UI implementation plan
+on September 15, 2026**
 
-This document defines the concrete production goal for the next UI migration
-cycle. It converts the requested product behavior into an executable plan for
-the Opus superproject, Runtime, and Launcher repositories.
+> The active product direction is
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md):
+> Opus Client + Opus Launcher, UI first. This plan is retained as historical
+> implementation/reuse evidence. It does not select Elementa/OneConfig,
+> CEF/Svelte, native UI, or another renderer for the current UI-first mainline.
+>
+> Every “current,” “production,” and sequencing statement below describes the
+> August 2026 plan context only. It is not a current implementation instruction.
+
+This document records a former concrete UI migration goal for the Opus
+superproject, Runtime, and Launcher repositories.
 
 The current repository does **not** satisfy this goal yet. The existing
 OneConfig/Elementa work is an isolated compatibility proof and design baseline;

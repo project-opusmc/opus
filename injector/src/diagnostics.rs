@@ -196,6 +196,9 @@ pub enum InjectorError {
     JvmAttachHarnessTargetMismatch {
         pid: u32,
     },
+    LldbDevelopmentHarnessTargetMismatch {
+        pid: u32,
+    },
     JvmAttachProcessIdentityUnavailable {
         pid: u32,
     },
@@ -330,6 +333,9 @@ impl InjectorError {
             Self::JvmAttachReportInvalid { .. } => "JvmAttachReportInvalid",
             Self::JvmAttachAgentRejected { .. } => "JvmAttachAgentRejected",
             Self::JvmAttachHarnessTargetMismatch { .. } => "JvmAttachHarnessTargetMismatch",
+            Self::LldbDevelopmentHarnessTargetMismatch { .. } => {
+                "LldbDevelopmentHarnessTargetMismatch"
+            }
             Self::JvmAttachProcessIdentityUnavailable { .. } => {
                 "JvmAttachProcessIdentityUnavailable"
             }
@@ -378,6 +384,7 @@ impl InjectorError {
             | Self::ProcessNotFound { .. } => InjectorPhase::Discovery,
             Self::UnsupportedRuntimeCandidate { .. }
             | Self::JvmAttachHarnessTargetMismatch { .. }
+            | Self::LldbDevelopmentHarnessTargetMismatch { .. }
             | Self::TargetOwnershipUnknown { .. }
             | Self::TargetOwnershipMismatch { .. } => InjectorPhase::TargetSelection,
             Self::InvalidArchitecture { .. }
@@ -655,6 +662,10 @@ impl Display for InjectorError {
             Self::JvmAttachHarnessTargetMismatch { pid } => write!(
                 formatter,
                 "Selected process {pid} is not the source-controlled OPUS JVM Attach harness"
+            ),
+            Self::LldbDevelopmentHarnessTargetMismatch { pid } => write!(
+                formatter,
+                "Selected process {pid} is not the source-controlled OPUS LLDB development harness"
             ),
             Self::JvmAttachProcessIdentityUnavailable { pid } => write!(
                 formatter,

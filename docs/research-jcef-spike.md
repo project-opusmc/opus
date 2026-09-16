@@ -1,8 +1,10 @@
 # Phase B Spike: JCEF trên macOS arm64 + Java 8/21
 
-> **Historical spike.** JCEF/CEF is not part of the current production client.
-> The active path is [Forge + OptiFine + OPUS Core Mod + vanilla Minecraft UI]
-> (coremod-first-goal-and-plan.md). Keep this only as failure evidence.
+> **Historical spike.** JCEF/CEF is not part of the current Runtime artifact
+> contract. The active product authority is
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md):
+> Opus Client + Opus Launcher, UI first; it does not select a renderer. Keep
+> this only as failure evidence.
 
 Ngày: 2026-08-17
 

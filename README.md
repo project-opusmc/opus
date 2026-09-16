@@ -1,18 +1,25 @@
 # OPUS
 
-This repository is the OPUS superproject. It owns the injector/runtime-payload
-foundation, product-level build metadata, verification, packaging policy, and
-architecture documentation. Launcher and Runtime remain Git submodules for the
-isolated legacy Forge rollback lane.
+> **Current product direction — September 15, 2026.**
+> [Decision 0008](docs/decisions/0008-opus-client-launcher-ui-first-mainline.md)
+> makes **Opus Client + Opus Launcher** the active product mainline, with UI as
+> the first priority. The injector/injection work is preserved as frozen,
+> experimental R&D; it is not deleted or treated as the product delivery path.
+
+This repository is the OPUS superproject. It owns product-level build metadata,
+verification, packaging policy, architecture documentation, and the boundaries
+between the active Client + Launcher mainline and retained experimental R&D.
+Launcher and Runtime remain Git submodules and are the initial Forge +
+OptiFine 1.8.9 reference-host implementation.
 
 ```text
 Opus/
-|- injector/            Rust M3 preflight and selected-PID native transport
-|- runtime-native/      C++17 JNI/JVMTI native runtime
-|- runtime-java/        Java 8-compatible payload foundation
-|- adapters/            client/runtime-specific compatibility adapters
-|- launcher/    project-opusmc/launcher submodule
-|- runtime/     project-opusmc/runtime submodule
+|- launcher/            Opus Launcher product surface and launch lifecycle
+|- runtime/             initial Client host/reference implementation
+|- injector/            frozen M3 transport/injection R&D
+|- runtime-native/      frozen C++17 JNI/JVMTI R&D foundation
+|- runtime-java/        frozen Java payload R&D foundation
+|- adapters/            frozen client/runtime compatibility R&D
 |- docs/
 |- release/
 |- scripts/
@@ -31,7 +38,8 @@ cd opus
 ./scripts/build.sh
 ```
 
-The active `injector-development` profile is intentionally foundation-only:
+The retained `injector-development` profile is intentionally foundation-only
+experimental R&D:
 `check.sh` validates the Rust M3 preflight boundary, native foundation,
 repeatable owned-JVM lifecycle proof, and a separately launched,
 loopback-only authorized-target survival proof. It also tests the evidence
@@ -42,21 +50,25 @@ a production transport-capable injector/payload bundle or a package.
 `package.sh` remains blocked until the payload artifact contract and adapter
 certification gates pass.
 
-The planned production direction is documented as
-[M3 General](docs/m3-general-objective.md): process/JVM selection and native
-transport are client-independent, while Lunar, Badlion, Forge, Vanilla, and
-unknown runtime behavior are classified after entry and certified through
-separate adapter gates. The current injector has a generic Minecraft-JVM
-target model, non-authoritative process hints, and guarded direct
-selected-PID native transport on macOS. Its passing direct-transport evidence
-is limited to an arm64 debug-authorized OPUS Java fixture; the current
-x86_64 Java 8/Rosetta fixture returns a typed pre-entry rejection instead of
-attempting a bypass. Neither result is evidence of successful transport into a
-normal game client.
+The active product direction is documented in
+[Decision 0008](docs/decisions/0008-opus-client-launcher-ui-first-mainline.md):
+build a transparent, RBW-first Client + Launcher experience, starting with a
+coherent UI foundation. The existing Forge + OptiFine 1.8.9 lane is the initial
+reference host; a renderer has not been selected. No existing Runtime or
+Launcher artifact contract changes merely because of this roadmap decision.
 
-The old Forge artifact lock is retained as an explicit rollback profile. It
-may be selected with `OPUS_BUILD_PROFILE=legacy-forge-rollback`, but only from
-a clean checkout at the exact locked component revisions.
+The injector records remain available as R&D evidence. The current General
+Gate 6 project-state source is the
+[September 15 policy record](docs/protocol/m3-general-gate-6-current-policy-status-2026-09-15.md):
+the lane is frozen/evidence-preserved; `opus-owned` is `PASS`, Badlion and
+Lunar are `NOT_TESTED`, General Gate 6 is `NOT PASSED`, and Gate 7 is
+`BLOCKED`.
+
+The existing Forge artifact lock is retained as an implementation baseline and
+rollback profile. It may be selected with
+`OPUS_BUILD_PROFILE=legacy-forge-rollback`, but only from a clean checkout at
+the exact locked component revisions. It does not override the UI-first
+product roadmap.
 
 See [docs/architecture.md](docs/architecture.md) and
 [docs/build-and-release.md](docs/build-and-release.md).

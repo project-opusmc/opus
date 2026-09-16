@@ -1,0 +1,11 @@
+{
+  "schema_version": "opus.m3.gate6.target-profile.v1",
+  "id": "opus-owned",
+  "kind": "opus-owned-client",
+  "architecture": "arm64",
+  "runtime": "native-local-host",
+  "metadata": {
+    "evidence_boundary": "owned-harness-only",
+    "live_gate_6": "not-tested"
+  }
+}

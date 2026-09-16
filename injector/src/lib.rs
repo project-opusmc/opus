@@ -2,8 +2,11 @@
 
 pub mod architecture;
 pub mod authorized_target;
+pub mod code_signing;
 pub mod diagnostics;
 pub mod jvm_attach;
+pub mod jvm_attach_probe;
+pub mod lldb_development;
 pub mod native_transport;
 pub mod owned_target;
 pub mod process;
@@ -19,14 +22,24 @@ pub use authorized_target::{
     AuthorizedTargetReport, CooperativeTargetKind, OPUS_OWNED_CLIENT_KIND,
     request_authorized_target, request_opus_owned_client,
 };
+pub use code_signing::{
+    CodeSignInspector, CodeSigningObservation, CodeSigningReport, CodeSigningStatus,
+};
 pub use diagnostics::{Diagnostic, InjectorError, InjectorPhase, diagnostic_for};
 pub use jvm_attach::{
     ATTACH_HARNESS_HELPER_MAIN_CLASS, JvmAttachConfig, JvmAttachOperation, JvmAttachReport,
     request_jvm_attach_harness_load, request_jvm_attach_harness_unload,
 };
+pub use jvm_attach_probe::{
+    JvmAttachProbeReport, JvmAttachProbeStatus, probe_jvm_attach_capability,
+};
+pub use lldb_development::{
+    LldbDevelopmentReport, LldbDevelopmentStatus, probe_lldb_development_harness,
+};
 pub use native_transport::{
     NATIVE_TRANSPORT_HELPER_ENV, NATIVE_TRANSPORT_KIND, NativeTransportOperation,
-    NativeTransportReport, request_native_transport_health, request_native_transport_load,
+    NativeTransportProbeReport, NativeTransportProbeStatus, NativeTransportReport,
+    probe_native_transport, request_native_transport_health, request_native_transport_load,
     request_native_transport_stop, request_native_transport_unload,
 };
 pub use owned_target::{

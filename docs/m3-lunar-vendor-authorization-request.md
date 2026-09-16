@@ -1,9 +1,15 @@
 # Optional draft: Lunar M3 Vendor Collaboration Request
 
-Status: **optional draft only — not sent, not approval, not a prerequisite for
-M3 General, and not evidence of supported Lunar integration**
+Status: **SUPERSEDED — retained as history only. This draft was never sent in
+this form.** The project owner instead contacted Lunar's support/developer
+channel directly and received a general non-prohibition answer, recorded in
+[Lunar Client M3 Vendor Non-Prohibition Record](protocol/m3-lunar-vendor-non-prohibition-record.md).
+That record — not this draft — is the current authorization state. This draft
+remains useful only as the source of the specific entry-point questions listed
+in the record's "What would convert this into a usable path".
 
 Date prepared: September 9, 2026
+Superseded: September 10, 2026
 
 This is an optional collaboration route if the OPUS team chooses to seek
 vendor-specific guidance or a test environment. It does **not** define the M3

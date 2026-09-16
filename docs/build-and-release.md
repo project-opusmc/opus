@@ -1,9 +1,17 @@
 # Build And Release
 
-The active `release/opus.lock.json` profile is
-`injector-development`. It represents the Injector → native runtime → Java
-payload architecture, but it is deliberately **foundation-only**. It must not
-be described as a distributable OPUS client release.
+> **Current product direction — September 15, 2026:** Opus Client + Opus
+> Launcher, UI first, is the active mainline under
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md).
+> The injector/injection track and its release lock are frozen R&D, preserved
+> for a later explicit resumption. This page records the current technical
+> build/release contract; it does not describe the active product delivery
+> roadmap or claim a new Client/Launcher artifact contract.
+
+The checked-in `release/opus.lock.json` profile is
+`injector-development`. It represents retained Injector → native runtime → Java
+payload R&D and is deliberately **foundation-only**. It must not be described
+as a distributable OPUS client release.
 
 ## Prerequisites
 
@@ -14,13 +22,16 @@ be described as a distributable OPUS client release.
 - CMake 3.24 or later
 - macOS for the current native-runtime foundation and legacy Forge client lane
 
-## Active development commands
+## Retained R&D development commands
 
 ```bash
 ./scripts/bootstrap.sh
 ./scripts/check.sh
 ./scripts/build.sh
 ```
+
+These commands remain technical verification entry points for the retained R&D
+lane. They are not an instruction to resume injector work.
 
 `bootstrap.sh` initializes the rollback submodules and installs the Launcher
 frontend dependencies. `check.sh` validates the seven-role legacy artifact

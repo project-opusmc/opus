@@ -1,9 +1,16 @@
 # M3 Injector Preflight Contract
 
-Status: **implemented M3 General target discovery/preflight, guarded
-selected-PID native transport on macOS, owned-JVM lifecycle proof, and
-debug-authorized non-cooperative Java-fixture transport proof — normal
-Minecraft-client evidence is still pending**
+Status: **FROZEN / EVIDENCE-PRESERVED — implementation reference for M3
+experimental R&D; normal Minecraft-client evidence remains pending**
+
+> **Current R&D status — September 15, 2026:** this contract describes retained
+> implementation evidence, not active product work. The Client + Launcher
+> UI-first mainline is governed by
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md);
+> General Gate 6 is frozen under its
+> [current policy record](protocol/m3-general-gate-6-current-policy-status-2026-09-15.md).
+> Do not use this document to start new injector execution, target interaction,
+> or Gate promotion without an explicit owner resumption decision.
 
 The `injector/` Rust crate is the M3 entry boundary for OPUS. Its current role
 is to make target selection, architecture checks, protocol expectations, and
@@ -23,6 +30,12 @@ The complete contract, current limitations, and exact completion evidence are
 defined in [M3 General](m3-general-objective.md). This file describes the
 implementation currently in `injector/`; it does not claim that M3 is complete
 or that a normal third-party game client has accepted transport.
+
+The compiled `opus-injector` currently implements only the current-user,
+selected-PID lane described below. [Decision 0007](decisions/0007-owner-authorized-host-experiment-boundary.md)
+permits a separately declared owner-authorized host experiment on the project
+owner's development Mac, but that lane has no implementation in this binary
+and must not be inferred from these commands.
 
 ## What the binary does
 
@@ -234,9 +247,11 @@ not x86_64 direct-transport support:
 ```
 
 The helper can still receive a macOS task-port denial from a selected normal
-client. That denial is a typed, recoverable result; OPUS does not bypass
-client or operating-system protection, use stealth/manual mapping, or broaden
-the operation beyond the selected current-user PID.
+client. That denial is a typed, recoverable result for this current-user,
+selected-PID helper; it does not broaden its scope, use stealth/manual mapping,
+or claim a host-level mechanism is available. A separately declared
+owner-authorized host experiment is governed by Decision 0007 and requires its
+own implementation and evidence.
 
 The passing arm64 direct-transport test currently uses a debug-authorized,
 non-cooperative OPUS Java fixture with generic Minecraft-1.8.9 command-line

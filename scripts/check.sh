@@ -29,12 +29,18 @@ case "${selected_profile}" in
     "${opus_root}/tests/check-injector-native-transport-probe.sh"
     "${opus_root}/tests/check-injector-native-direct-vm-gates.sh"
     "${opus_root}/tests/check-injector-native-execution-probe.sh"
+    "${opus_root}/tests/check-injector-native-bootstrap-lifecycle.sh"
+    node "${opus_root}/tests/verify-gate6-general-lifecycle.mjs"
     "${opus_root}/tests/check-injector-native-runtime-load.sh"
+    OPUS_NATIVE_TRANSPORT_STRESS_ROUNDS=1 \
+      "${opus_root}/tests/check-injector-native-transport-stress.sh"
     "${opus_root}/tests/check-injector-x86_64-rosetta-transport-rejection.sh"
     "${opus_root}/scripts/check-injector-m3-preflight.sh"
     "${opus_root}/scripts/check-injector-foundation.sh"
     "${opus_root}/scripts/check-injector-native-bridge-contract.sh"
+    "${opus_root}/tests/check-injector-jvm-attach-capability-probe.sh"
     "${opus_root}/scripts/check-injector-attach-harness.sh"
+    "${opus_root}/tests/check-injector-lldb-development-harness.sh"
     "${opus_root}/scripts/check-injector-owned-target-harness.sh"
     "${opus_root}/scripts/check-injector-authorized-target.sh"
     "${opus_root}/scripts/check-injector-opus-owned-client-preview.sh"
@@ -53,7 +59,7 @@ case "${selected_profile}" in
     node "${opus_root}/tests/verify-release-lock.mjs"
     node "${opus_root}/tests/verify-m3-client-integration-evidence.mjs"
     "${opus_root}/scripts/audit-naming.sh"
-    echo "OPUS M3 preflight, selected-PID native transport, test-only Attach harness, owned-target, and authorized-target lifecycle checks passed for ${selected_profile}; no distributable payload exists yet."
+    echo "OPUS M3 preflight, selected-PID native transport, owned-bootstrap lifecycle, test-only Attach harness, owned-target, and authorized-target lifecycle checks passed for ${selected_profile}; no distributable payload exists yet."
     ;;
   legacy-forge-rollback|legacy-forge)
     node "${opus_root}/scripts/check-runtime-artifact-contract.mjs"

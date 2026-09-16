@@ -110,6 +110,7 @@ impl ProcessSnapshot {
             return None;
         }
 
+        let lower_executable = self.executable.to_ascii_lowercase();
         let lower_command = self.command_line.to_ascii_lowercase();
         let evidence = minecraft_jvm_evidence(&lower_command);
         if !is_eligible_minecraft_jvm_evidence(&evidence) {
@@ -118,7 +119,7 @@ impl ProcessSnapshot {
 
         Some(MinecraftJvmCandidate {
             process: self.clone(),
-            client_hint: client_hint(&lower_command),
+            client_hint: client_hint(&lower_executable, &lower_command),
             evidence,
         })
     }
@@ -238,11 +239,11 @@ fn is_eligible_minecraft_jvm_evidence(evidence: &[MinecraftJvmEvidence]) -> bool
         || (has_client_runtime && (has_runtime || has_game_directory || has_189_version))
 }
 
-fn client_hint(command_line: &str) -> ClientHint {
-    if command_line.contains("lunar") {
-        ClientHint::Lunar
-    } else if command_line.contains("badlion") {
+fn client_hint(executable: &str, command_line: &str) -> ClientHint {
+    if executable.contains("badlion client") || command_line.contains("badlion") {
         ClientHint::Badlion
+    } else if executable.contains("lunar client") || command_line.contains("lunar") {
+        ClientHint::Lunar
     } else if command_line.contains("forge")
         || command_line.contains("launchwrapper")
         || command_line.contains("fml")
@@ -686,6 +687,23 @@ mod tests {
         assert_eq!(candidates.len(), 1);
         assert_eq!(candidates[0].pid, 301);
         assert_eq!(candidates[0].executable_name(), "java");
+    }
+
+    #[test]
+    fn prioritizes_a_badlion_jre_path_over_an_incidental_lunar_marker() {
+        let mut processes = parse_ps_output(
+            "302 1 /usr/bin/java net.minecraft.launchwrapper.Launch -Dlunar.webosr.url=file:index.html --gameDir /Users/example/.minecraft --version 1.8.9\n",
+        )
+        .expect("fixture ps output should parse");
+        apply_executable_paths(
+            &mut processes,
+            "302 1 /Users/example/Library/Application Support/Badlion Client/Data/zulu.jre/Contents/Home/bin/java\n",
+        )
+        .expect("fixture executable output should parse");
+
+        let candidates = minecraft_jvm_candidates(&processes);
+        assert_eq!(candidates.len(), 1);
+        assert_eq!(candidates[0].client_hint, ClientHint::Badlion);
     }
 
     #[test]

@@ -1,0 +1,11 @@
+{
+  "schema_version": "opus.m3.gate6.target-profile.v1",
+  "id": "generic-cooperative",
+  "kind": "generic-client",
+  "architecture": "arm64",
+  "runtime": "cooperative-fixture",
+  "metadata": {
+    "test_fixture": true,
+    "live_gate_6": "not-tested"
+  }
+}

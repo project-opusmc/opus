@@ -58,6 +58,12 @@ if [[ -n "${expected_rejection}" && "${expected_rejection}" != "RosettaRemoteThr
   echo "OPUS_NATIVE_TRANSPORT_EXPECT_REJECTION must be RosettaRemoteThreadUnavailable when set." >&2
   exit 1
 fi
+max_rss_delta_kib="${OPUS_NATIVE_TRANSPORT_MAX_RSS_DELTA_KIB:-}"
+if [[ -n "${max_rss_delta_kib}" ]] \
+  && { ! [[ "${max_rss_delta_kib}" =~ ^[0-9]+$ ]] || (( max_rss_delta_kib == 0 )); }; then
+  echo "OPUS_NATIVE_TRANSPORT_MAX_RSS_DELTA_KIB must be a positive integer when set." >&2
+  exit 1
+fi
 runtime_seconds=$((cycles * 4 + 30))
 jvm_library="$(find "${target_java_home}" -type f -name libjvm.dylib -print -quit)"
 if [[ -z "${jvm_library}" ]]; then
@@ -88,6 +94,16 @@ cleanup() {
 }
 trap cleanup EXIT
 
+read_target_rss_kib() {
+  local rss_kib
+  rss_kib="$(ps -o rss= -p "${target_pid}" 2>/dev/null | tr -d '[:space:]')"
+  if [[ "${rss_kib}" =~ ^[0-9]+$ ]]; then
+    printf '%s\n' "${rss_kib}"
+  else
+    printf '%s\n' 'unavailable'
+  fi
+}
+
 for _ in {1..100}; do
   if grep -Fq "OPUS_REMOTE_JVM_TARGET pid=${target_pid};state=running" "${target_log}"; then
     break
@@ -95,10 +111,33 @@ for _ in {1..100}; do
   sleep 0.02
 done
 if ! grep -Fq "OPUS_REMOTE_JVM_TARGET pid=${target_pid};state=running" "${target_log}"; then
-  echo "Remote JVM target did not report its running state." >&2
-  sed -n '1,120p' "${target_log}" >&2
+    echo "Remote JVM target did not report its running state." >&2
+    sed -n '1,120p' "${target_log}" >&2
+    exit 1
+fi
+
+capability_output="$(
+  "${injector_binary}" probe-native \
+    --pid "${target_pid}" \
+    --target-architecture "${target_arch}" \
+    --transport-helper "${helper}"
+)"
+if ! printf '%s\n' "${capability_output}" | grep -Fq 'code=BackendAvailability'; then
+  echo "Native transport capability probe did not return its backend report." >&2
+  printf '%s\n' "${capability_output}" >&2
   exit 1
 fi
+for required_token in \
+  'native_transport=available' \
+  'recommended_backend=native' \
+  'result=CAPABILITY_AVAILABLE'; do
+  if ! printf '%s\n' "${capability_output}" | grep -Fq "${required_token}"; then
+    echo "Native transport capability probe is missing ${required_token}." >&2
+    printf '%s\n' "${capability_output}" >&2
+    exit 1
+  fi
+done
+rss_before_kib="$(read_target_rss_kib)"
 
 for ((cycle = 1; cycle <= cycles; cycle++)); do
   if [[ -n "${expected_rejection}" ]]; then
@@ -232,5 +271,18 @@ if ! kill -0 "${target_pid}" 2>/dev/null; then
   sed -n '1,160p' "${target_log}" >&2
   exit 1
 fi
+rss_after_kib="$(read_target_rss_kib)"
+rss_delta_kib='unavailable'
+if [[ "${rss_before_kib}" =~ ^[0-9]+$ && "${rss_after_kib}" =~ ^[0-9]+$ ]]; then
+  rss_delta_kib=$((rss_after_kib - rss_before_kib))
+  if [[ -n "${max_rss_delta_kib}" ]] && (( rss_delta_kib > max_rss_delta_kib )); then
+    echo "Native transport RSS grew by ${rss_delta_kib} KiB, above the requested ${max_rss_delta_kib} KiB limit." >&2
+    exit 1
+  fi
+fi
 
-echo "OPUS native transport completed ${cycles} load/handshake/unload/reload cycles in a non-cooperative Java target."
+printf 'OPUS native transport completed %s load/handshake/unload/reload cycles in a non-cooperative Java target; rss_before_kib=%s rss_after_kib=%s rss_delta_kib=%s.\n' \
+  "${cycles}" \
+  "${rss_before_kib}" \
+  "${rss_after_kib}" \
+  "${rss_delta_kib}"
