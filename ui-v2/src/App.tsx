@@ -1,16 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
-import { bridge } from "./bridge/bridge";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { bridge, isStandalone } from "./bridge/bridge";
 import type { ClientInfo, OpusModule, RouteId, UiSettings } from "./bridge/types";
 import { Mark } from "./components/Mark";
 
 const nav: Array<{ id: RouteId; label: string; key: string }> = [
-  { id: "home", label: "Home", key: "H" },
-  { id: "modules", label: "Modules", key: "M" },
+  { id: "title", label: "Home", key: "H" },
+  { id: "mods_catalog", label: "Modules", key: "M" },
   { id: "settings", label: "Settings", key: "S" },
 ];
 
+function initialRoute(): RouteId {
+  const hash = window.location.hash.replace(/^#\/?/, "").split("?")[0];
+  const allowed: RouteId[] = ["title", "singleplayer", "multiplayer", "settings", "accounts", "game_menu", "quick_hub", "mods_catalog", "module_detail", "hud_editor"];
+  return allowed.includes(hash as RouteId) ? (hash as RouteId) : "title";
+}
+
 export default function App() {
-  const [route, setRoute] = useState<RouteId>("home");
+  const [route, setRoute] = useState<RouteId>(initialRoute());
   const [client, setClient] = useState<ClientInfo | null>(null);
   const [modules, setModules] = useState<OpusModule[]>([]);
   const [settings, setSettings] = useState<UiSettings | null>(null);
@@ -34,11 +40,18 @@ export default function App() {
   }, [route]);
 
   useEffect(() => {
+    const sync = () => setRoute(initialRoute());
+    window.addEventListener("hashchange", sync);
+    return () => window.removeEventListener("hashchange", sync);
+  }, []);
+
+  useEffect(() => {
     const listener = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
-      if (event.key.toLowerCase() === "h") setRoute("home");
-      if (event.key.toLowerCase() === "m") setRoute("modules");
-      if (event.key.toLowerCase() === "s") setRoute("settings");
+      if (event.key.toLowerCase() === "h") void goRoute("title");
+      if (event.key.toLowerCase() === "m") void goRoute("mods_catalog");
+      if (event.key.toLowerCase() === "s") void goRoute("settings");
+      if (event.key === "Escape" && !isStandalone) void bridge.back().then((state) => setRoute(state.current.id));
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
@@ -54,10 +67,20 @@ export default function App() {
 
   const activeModule = modules.find((module) => module.id === selectedModule) ?? modules[0] ?? null;
 
+  async function goRoute(next: RouteId) {
+    if (isStandalone) {
+      window.location.hash = `#/${next}`;
+      setRoute(next);
+      return;
+    }
+    const state = await bridge.navigate({ id: next });
+    setRoute(state.current.id);
+  }
+
   const oracleState = useMemo(() => {
     if (!client || !settings || modules.length === 0) return "loading";
-    if (route === "home") return "home";
-    if (route === "modules") return activeModule?.enabled ? "modules-on" : "modules-off";
+    if (route === "title") return "home";
+    if (route === "mods_catalog") return activeModule?.enabled ? "modules-on" : "modules-off";
     return settings.accent === "violet" && settings.uiScale === 1 && settings.backgroundBlur === 22
       ? "settings"
       : "settings-changed";
@@ -92,7 +115,7 @@ export default function App() {
               <button
                 className={`nav__item ${route === item.id ? "nav__item--active" : ""}`}
                 key={item.id}
-                onClick={() => setRoute(item.id)}
+                onClick={() => void goRoute(item.id)}
                 title={item.label}
                 aria-label={item.label}
                 data-opus-nav={item.id}
@@ -114,7 +137,7 @@ export default function App() {
         <header className="topbar">
           <div>
             <div className="eyebrow">OPUS / {route.toUpperCase()}</div>
-            <h1>{route === "home" ? "Command center" : route === "modules" ? "Modules" : "Settings"}</h1>
+            <h1>{route === "title" ? "Command center" : route === "mods_catalog" || route === "module_detail" ? "Modules" : route === "settings" ? "Settings" : route.replace("_", " ")}</h1>
           </div>
           <div className="topbar__meta">
             <span>{client?.minecraft ?? "1.8.9"}</span>
@@ -124,8 +147,8 @@ export default function App() {
         </header>
 
         <section className="content" key={route}>
-          {route === "home" && <Home client={client} onRoute={setRoute} />}
-          {route === "modules" && (
+          {route === "title" && <Home client={client} onRoute={(next) => void goRoute(next)} />}
+          {(route === "mods_catalog" || route === "module_detail") && (
             <Modules
               modules={filteredModules}
               allCount={modules.length}
@@ -136,6 +159,12 @@ export default function App() {
               onToggle={toggleModule}
             />
           )}
+          {route === "singleplayer" && <WorldRoute />}
+          {route === "multiplayer" && <ServerRoute />}
+          {route === "accounts" && <SimpleRoute title="Accounts" detail="Account identity is provided by the active Minecraft session." />}
+          {route === "game_menu" && <GameMenuRoute onRoute={(next) => void goRoute(next)} />}
+          {route === "quick_hub" && <QuickHubRoute onRoute={(next) => void goRoute(next)} />}
+          {route === "hud_editor" && <HudEditorRoute />}
           {route === "settings" && settings && (
             <Settings settings={settings} onChange={updateSettings} />
           )}
@@ -165,9 +194,9 @@ function Home({ client, onRoute }: { client: ClientInfo | null; onRoute: (route:
       </section>
 
       <section className="quick-grid">
-        <QuickAction title="Singleplayer" subtitle="Open local worlds" badge="LOCAL" onClick={() => void bridge.performAction("singleplayer")} />
-        <QuickAction title="Multiplayer" subtitle="Join a server" badge="ONLINE" onClick={() => void bridge.performAction("multiplayer")} />
-        <QuickAction title="Modules" subtitle="Tune information layers" badge="05" onClick={() => onRoute("modules")} />
+        <QuickAction title="Singleplayer" subtitle="Open local worlds" badge="LOCAL" onClick={() => void onRoute("singleplayer")} />
+        <QuickAction title="Multiplayer" subtitle="Join a server" badge="ONLINE" onClick={() => void onRoute("multiplayer")} />
+        <QuickAction title="Modules" subtitle="Tune information layers" badge="05" onClick={() => onRoute("mods_catalog")} />
         <QuickAction title="Settings" subtitle="Interface and behavior" badge="UI" onClick={() => onRoute("settings")} />
       </section>
 
@@ -344,6 +373,111 @@ function Settings({ settings, onChange }: { settings: UiSettings; onChange: (nex
         </div>
       </section>
     </div>
+  );
+}
+
+
+function WorldRoute() {
+  const [worlds, setWorlds] = useState<Array<{ id: string; name: string }>>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    void bridge.getWorlds().then((items) => { if (active) setWorlds(items); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+  return (
+    <section className="route-list glass-card">
+      <div className="section-toolbar"><div><span className="section-kicker">LOCAL WORLDS</span><strong>Singleplayer</strong></div></div>
+      <div className="route-list__items">
+        {loading && <div className="empty-state">Reading worlds…</div>}
+        {!loading && worlds.length === 0 && <div className="empty-state">No local worlds found.</div>}
+        {worlds.map((world) => (
+          <button className="route-list__row" key={world.id} onClick={() => void bridge.loadWorld(world.id)}>
+            <span><strong>{world.name}</strong><small>{world.id}</small></span><span>Open ↗</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ServerRoute() {
+  const [servers, setServers] = useState<Array<{ id: string; name: string; address: string }>>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    let active = true;
+    void bridge.getServers().then((items) => { if (active) setServers(items); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+  return (
+    <section className="route-list glass-card">
+      <div className="section-toolbar"><div><span className="section-kicker">SERVERS</span><strong>Multiplayer</strong></div></div>
+      <div className="route-list__items">
+        {loading && <div className="empty-state">Reading servers…</div>}
+        {!loading && servers.length === 0 && <div className="empty-state">No saved servers found.</div>}
+        {servers.map((server) => (
+          <button className="route-list__row" key={server.id} onClick={() => void bridge.connectServer(server.address)}>
+            <span><strong>{server.name}</strong><small>{server.address}</small></span><span>Join ↗</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function GameMenuRoute({ onRoute }: { onRoute: (route: RouteId) => void }) {
+  return (
+    <div className="quick-grid route-actions">
+      <QuickAction title="Resume" subtitle="Return to the match" badge="ESC" onClick={() => void bridge.close()} />
+      <QuickAction title="Quick hub" subtitle="Competitive controls" badge="Q" onClick={() => onRoute("quick_hub")} />
+      <QuickAction title="Modules" subtitle="Adjust information layers" badge="M" onClick={() => onRoute("mods_catalog")} />
+      <QuickAction title="Leave world" subtitle="Return to title" badge="EXIT" onClick={() => void bridge.leaveWorld()} />
+    </div>
+  );
+}
+
+function QuickHubRoute({ onRoute }: { onRoute: (route: RouteId) => void }) {
+  return (
+    <div className="quick-grid route-actions">
+      <QuickAction title="Modules" subtitle="Toggle match intelligence" badge="M" onClick={() => onRoute("mods_catalog")} />
+      <QuickAction title="HUD editor" subtitle="Arrange live widgets" badge="HUD" onClick={() => onRoute("hud_editor")} />
+      <QuickAction title="Settings" subtitle="Interface & game" badge="S" onClick={() => onRoute("settings")} />
+      <QuickAction title="Close" subtitle="Return to gameplay" badge="ESC" onClick={() => void bridge.close()} />
+    </div>
+  );
+}
+
+function HudEditorRoute() {
+  const canvas = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const report = async () => {
+      if (!canvas.current || cancelled) return;
+      const state = await bridge.getNavigationState();
+      const rect = canvas.current.getBoundingClientRect();
+      await bridge.reportHudEditorCanvas(state.revision, {
+        x: Math.round(rect.left), y: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height),
+      });
+    };
+    void report();
+    window.addEventListener("resize", report);
+    return () => { cancelled = true; window.removeEventListener("resize", report); };
+  }, []);
+  return (
+    <section className="hud-editor-shell glass-card">
+      <div className="section-toolbar"><div><span className="section-kicker">LIVE CANVAS</span><strong>HUD editor</strong></div></div>
+      <div ref={canvas} className="hud-editor-canvas"><span>Native HUD canvas</span></div>
+    </section>
+  );
+}
+
+function SimpleRoute({ title, detail }: { title: string; detail: string }) {
+  return (
+    <section className="settings-card glass-card simple-route">
+      <span className="section-kicker">CANONICAL ROUTE</span>
+      <h2>{title}</h2>
+      <p>{detail}</p>
+    </section>
   );
 }
 

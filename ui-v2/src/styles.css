@@ -44,10 +44,10 @@ button:focus-visible, input:focus-visible {
 
 #opus-w5-oracle {
   position: fixed;
-  right: 0;
-  bottom: 0;
-  width: 4px;
-  height: 4px;
+  right: 8px;
+  bottom: 8px;
+  width: 8px;
+  height: 8px;
   z-index: 10000;
   pointer-events: none;
 }
@@ -352,3 +352,5 @@ button:focus-visible, input:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .001ms !important; animation-duration: .001ms !important; }
 }
+
+.route-list,.hud-editor-shell{padding:24px;min-height:0;display:flex;flex-direction:column;gap:18px}.route-list__items{display:flex;flex-direction:column;gap:10px;overflow:auto}.route-list__row{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.035);border-radius:16px;padding:16px 18px;color:inherit;display:flex;align-items:center;justify-content:space-between;text-align:left}.route-list__row:hover{background:rgba(255,255,255,.065);border-color:rgba(255,255,255,.14)}.route-list__row span:first-child{display:flex;flex-direction:column;gap:4px}.route-list__row small{color:var(--muted)}.route-actions{align-content:start}.hud-editor-canvas{min-height:360px;flex:1;border:1px dashed rgba(255,255,255,.16);border-radius:18px;background:rgba(0,0,0,.16);display:grid;place-items:center;color:var(--muted)}.simple-route{max-width:760px}.simple-route p{color:var(--muted);line-height:1.65}

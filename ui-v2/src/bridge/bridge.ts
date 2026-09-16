@@ -1,4 +1,4 @@
-import type { ClientInfo, OpusBridge, OpusModule, UiSettings } from "./types";
+import type { NavigationState, OpusBridge, OpusModule, RouteRef, UiSettings } from "./types";
 
 const search = new URLSearchParams(window.location.search);
 const port = Number(search.get("port"));
@@ -63,6 +63,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function navigateRequest(action: "navigate" | "back" | "close", route?: RouteRef): Promise<NavigationState> {
+  const state = await request<NavigationState>("/api/v1/client/ui-state");
+  return request<NavigationState>("/api/v1/client/ui-actions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action, route, revision: state.revision }),
+  });
+}
+
 const mockBridge: OpusBridge = {
   async getClient() {
     return {
@@ -73,6 +82,16 @@ const mockBridge: OpusBridge = {
       session: "online",
     };
   },
+  async getNavigationState() { return { revision: 1, current: { id: "title" }, canGoBack: false, canCloseToGame: false }; },
+  async navigate(route) { return { revision: 2, current: route, canGoBack: true, canCloseToGame: false }; },
+  async back() { return { revision: 3, current: { id: "title" }, canGoBack: false, canCloseToGame: false }; },
+  async close() { return { revision: 4, current: { id: "title" }, canGoBack: false, canCloseToGame: false }; },
+  async getWorlds() { return [{ id: "world-1", name: "Practice World" }]; },
+  async loadWorld(id) { console.info(`[opus-v2] load-world=${id}`); },
+  async getServers() { return [{ id: "hypixel", name: "Hypixel", address: "mc.hypixel.net" }]; },
+  async connectServer(address) { console.info(`[opus-v2] connect=${address}`); },
+  async leaveWorld() { console.info("[opus-v2] leave-world"); },
+  async reportHudEditorCanvas(revision, region) { console.info(`[opus-v2] hud-region=${revision}`, region); },
   async getModules() {
     return mockModules.map((module) => ({ ...module }));
   },
@@ -105,6 +124,33 @@ const hostBridge: OpusBridge = {
       account: hello.session || "Active account",
       session: "online",
     };
+  },
+  async getNavigationState() { return request<NavigationState>("/api/v1/client/ui-state"); },
+  async navigate(route) { return navigateRequest("navigate", route); },
+  async back() { return navigateRequest("back"); },
+  async close() { return navigateRequest("close"); },
+  async getWorlds() {
+    const data = await request<{ worlds: Array<{ file: string; name: string }> }>("/api/v1/client/worlds");
+    return data.worlds.map((world) => ({ id: world.file, name: world.name }));
+  },
+  async loadWorld(id) {
+    await request<void>("/api/v1/client/worlds/load", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ file: id }) });
+  },
+  async getServers() {
+    const data = await request<{ servers: Array<{ name: string; address: string }> }>("/api/v1/client/servers");
+    return data.servers.map((server) => ({ id: server.address, name: server.name || server.address, address: server.address }));
+  },
+  async connectServer(address) {
+    await request<void>("/api/v1/client/servers/connect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }) });
+  },
+  async leaveWorld() {
+    await request<void>("/api/v1/client/world/leave", { method: "POST" });
+  },
+  async reportHudEditorCanvas(revision, region) {
+    await request<void>("/api/v1/client/ui-input-region", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ revision, ...region }),
+    });
   },
   async getModules() {
     const response = await request<{ modules: Array<{ id: string; name: string; enabled: boolean }> }>(
