@@ -37,6 +37,13 @@ export default function App() {
   useEffect(() => {
     document.body.dataset.route = route;
     console.info(`[opus-v2] route=${route}`);
+    if (!isStandalone) {
+      void bridge.getNavigationState().then((state) => {
+        if (state.current.id === route) {
+          return bridge.ackNavigation(state.revision);
+        }
+      });
+    }
   }, [route]);
 
   useEffect(() => {

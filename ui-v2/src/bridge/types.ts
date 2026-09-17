@@ -54,6 +54,7 @@ export interface UiSettings {
 export interface OpusBridge {
   getClient(): Promise<ClientInfo>;
   getNavigationState(): Promise<NavigationState>;
+  ackNavigation(revision: number): Promise<void>;
   navigate(route: RouteRef): Promise<NavigationState>;
   back(): Promise<NavigationState>;
   close(): Promise<NavigationState>;

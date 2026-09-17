@@ -83,6 +83,7 @@ const mockBridge: OpusBridge = {
     };
   },
   async getNavigationState() { return { revision: 1, current: { id: "title" }, canGoBack: false, canCloseToGame: false }; },
+  async ackNavigation() {},
   async navigate(route) { return { revision: 2, current: route, canGoBack: true, canCloseToGame: false }; },
   async back() { return { revision: 3, current: { id: "title" }, canGoBack: false, canCloseToGame: false }; },
   async close() { return { revision: 4, current: { id: "title" }, canGoBack: false, canCloseToGame: false }; },
@@ -126,6 +127,13 @@ const hostBridge: OpusBridge = {
     };
   },
   async getNavigationState() { return request<NavigationState>("/api/v1/client/ui-state"); },
+  async ackNavigation(revision) {
+    await request<void>("/api/v1/client/ui-state/ack", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ revision }),
+    });
+  },
   async navigate(route) { return navigateRequest("navigate", route); },
   async back() { return navigateRequest("back"); },
   async close() { return navigateRequest("close"); },
