@@ -1,4 +1,4 @@
-import type { NavigationState, OpusBridge, OpusModule, RouteRef, UiSettings } from "./types";
+import type { GameOption, NavigationState, OpusBridge, OpusModule, RouteRef, UiSettings } from "./types";
 
 const search = new URLSearchParams(window.location.search);
 const port = Number(search.get("port"));
@@ -48,6 +48,14 @@ const mockModules: OpusModule[] = [
   },
 ];
 
+
+const mockGameOptions: GameOption[] = [
+  { key: "FOV", label: "FOV", type: "float", value: 0.5, min: 0, max: 1, step: 0.05 },
+  { key: "GAMMA", label: "Brightness", type: "float", value: 0.5, min: 0, max: 1, step: 0.05 },
+  { key: "RENDER_DISTANCE", label: "Render Distance", type: "float", value: 0.5, min: 0, max: 1, step: 0.05 },
+  { key: "ENABLE_VSYNC", label: "VSync", type: "boolean", value: 0, min: 0, max: 1, step: 1 },
+];
+
 let settings: UiSettings = {
   uiScale: 1,
   reduceMotion: false,
@@ -91,6 +99,17 @@ const mockBridge: OpusBridge = {
   async loadWorld(id) { console.info(`[opus-v2] load-world=${id}`); },
   async getServers() { return [{ id: "hypixel", name: "Hypixel", address: "mc.hypixel.net" }]; },
   async connectServer(address) { console.info(`[opus-v2] connect=${address}`); },
+  async getGameOptions() { return mockGameOptions.map((option) => ({ ...option })); },
+  async adjustGameOption(key, delta) {
+    const option = mockGameOptions.find((item) => item.key === key);
+    if (option) option.value = option.type === "float"
+      ? Math.max(option.min, Math.min(option.max, option.value + delta * option.step))
+      : option.value >= 0.5 ? 0 : 1;
+  },
+  async setGameOptionFloat(key, value) {
+    const option = mockGameOptions.find((item) => item.key === key);
+    if (option) option.value = value;
+  },
   async leaveWorld() { console.info("[opus-v2] leave-world"); },
   async reportHudEditorCanvas(revision, region) { console.info(`[opus-v2] hud-region=${revision}`, region); },
   async getModules() {
@@ -150,6 +169,23 @@ const hostBridge: OpusBridge = {
   },
   async connectServer(address) {
     await request<void>("/api/v1/client/servers/connect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }) });
+  },
+  async getGameOptions() {
+    const data = await request<{ options: Array<{ key: string; label: string; type: "float" | "boolean" | "enum"; value: string; min: string; max: string; step: string }> }>("/api/v1/client/options");
+    return data.options.map((option) => ({
+      key: option.key, label: option.label, type: option.type,
+      value: Number(option.value), min: Number(option.min), max: Number(option.max), step: Number(option.step),
+    }));
+  },
+  async adjustGameOption(key, delta) {
+    await request<void>("/api/v1/client/options/adjust", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key, delta }),
+    });
+  },
+  async setGameOptionFloat(key, value) {
+    await request<void>("/api/v1/client/options/set", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key, value }),
+    });
   },
   async leaveWorld() {
     await request<void>("/api/v1/client/world/leave", { method: "POST" });

@@ -32,6 +32,15 @@ export interface ClientInfo {
 
 export interface WorldInfo { id: string; name: string; }
 export interface ServerInfo { id: string; name: string; address: string; }
+export interface GameOption {
+  key: string;
+  label: string;
+  type: "float" | "boolean" | "enum";
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+}
 
 export type ModuleCategory = "information" | "analysis" | "utility" | "visual";
 export interface OpusModule {
@@ -62,6 +71,9 @@ export interface OpusBridge {
   loadWorld(id: string): Promise<void>;
   getServers(): Promise<ServerInfo[]>;
   connectServer(address: string): Promise<void>;
+  getGameOptions(): Promise<GameOption[]>;
+  adjustGameOption(key: string, delta: number): Promise<void>;
+  setGameOptionFloat(key: string, value: number): Promise<void>;
   leaveWorld(): Promise<void>;
   reportHudEditorCanvas(revision: number, region: { x: number; y: number; width: number; height: number }): Promise<void>;
   getModules(): Promise<OpusModule[]>;
