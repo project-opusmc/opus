@@ -1,6 +1,6 @@
 # Warm CEF lifecycle for the in-game pause menu
 
-Status: proposed for owner review, 2026-09-29
+Status: accepted by owner, 2026-09-29
 
 ## Intent and scope
 
