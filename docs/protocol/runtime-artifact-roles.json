@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "contract": "legacy-forge-1.8.9",
+  "minecraftVersion": "1.8.9",
+  "protocolVersion": 1,
+  "roles": [
+    {
+      "role": "bootstrap",
+      "filePattern": "opus-bootstrap-*.jar",
+      "stage": "launcher-classpath"
+    },
+    {
+      "role": "runtime-legacy-1.8.9",
+      "filePattern": "opus-runtime-legacy-1.8.9-*.jar",
+      "stage": "game-mods"
+    },
+    {
+      "role": "lwjgl-macos-compat",
+      "filePattern": "opus-lwjgl-macos-compat-2.9.2-nightly-20140822.jar",
+      "stage": "game-mods"
+    },
+    {
+      "role": "native-ui",
+      "filePattern": "opus-native-ui-1.8.9-0.1.0.jar",
+      "stage": "game-mods"
+    },
+    {
+      "role": "opusconfig",
+      "filePattern": "opus-oneconfig-1.8.9-forge-0.2.2-alpha228-full.jar",
+      "stage": "game-mods"
+    },
+    {
+      "role": "elementa",
+      "filePattern": "opus-elementa-762.jar",
+      "stage": "game-mods"
+    },
+    {
+      "role": "universalcraft",
+      "filePattern": "opus-universalcraft-1.8.9-forge-516.jar",
+      "stage": "game-mods"
+    }
+  ]
+}

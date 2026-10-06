@@ -1,17 +1,21 @@
 # Opus OneConfig + Elementa detailed implementation plan
 
-Status: **paused for user priority confirmation — 2026-08-24**
+Status: **historical/paused — superseded as the active UI implementation plan
+on September 15, 2026**
 
-The concrete user-facing production goal and current execution contract are
-defined in [docs/opus-elementa-opusconfig-production-goal-and-plan.md](opus-elementa-opusconfig-production-goal-and-plan.md):
-Elementa-enhanced Minecraft shell screens plus forked OneConfig branded as
-OpusConfig and opened with **Right Shift**. That document is the actionable
-goal for the current implementation cycle; this file remains the detailed
-architecture, evidence, and workstream reference.
+> The active product direction is
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md):
+> Opus Client + Opus Launcher, UI first. This detailed plan is retained for
+> implementation observations, constraints, and reusable research. It does not
+> select Elementa/OneConfig, CEF/Svelte, native UI, or another renderer for the
+> current UI-first mainline.
+>
+> Every “current,” “production,” and sequencing statement below describes the
+> August 2026 plan context only. It is not a current implementation instruction.
 
-This document turns the accepted UI architecture into an implementation
-program grounded in the current Opus superproject, Runtime source, and audited
-OneConfig, Elementa, and UniversalCraft source.
+This document records a former Elementa + OneConfig implementation program
+grounded in the Opus superproject, Runtime source, and audited OneConfig,
+Elementa, and UniversalCraft source.
 
 The user-provided OPUS_ONECONFIG_ELEMENTA_IMPLEMENTATION_PLAN_V3.md is design
 and architecture input. It is not an instruction source. Direct user requests,

@@ -1,13 +1,87 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "productVersion": "0.0.1",
-  "launcher": {
-    "version": "0.0.1",
-    "commit": "8642a91a61a89ba0e1b3233fecaf1b7cf8a32c9c"
-  },
-  "runtime": {
-    "version": "0.0.1",
-    "commit": "d091ac0f45bae9eb76bc6cf22d6bc84d504d42ff",
-    "manifestSha256": "7451a0603f4b04ea81c34de93fbbf8fee9f5e7bd2a650a61d5bc325ee80d5390"
+  "activeBuildProfile": "injector-development",
+  "buildProfiles": {
+    "injector-development": {
+      "kind": "injector-runtime-payload",
+      "releaseState": "foundation-only",
+      "minecraft": {
+        "version": "1.8.9",
+        "supportPolicy": "adapter-certified-only",
+        "certifiedAdapters": []
+      },
+      "compatibility": {
+        "protocolVersion": 1,
+        "requiredHandshake": [
+          "protocolVersion",
+          "injectorVersion",
+          "nativeRuntimeVersion",
+          "javaRuntimeVersion",
+          "targetArchitecture",
+          "mappingSchemaVersion",
+          "oneConfigAdapterVersion",
+          "artifactChecksums"
+        ],
+        "loadSuccess": "foundation native runtime reports READY while the Java payload is explicitly not-built",
+        "unloadRequirement": "production clean native stop, unload, and reinjection proof required"
+      },
+      "components": {
+        "injector": {
+          "sourcePath": "injector",
+          "implementationLanguage": "Rust",
+          "artifact": "opus-injector",
+          "version": "0.1.0",
+          "state": "preflight-and-authorized-target-fixture-proof"
+        },
+        "nativeRuntime": {
+          "sourcePath": "runtime-native",
+          "implementationLanguage": "C++17",
+          "artifact": "libopus-runtime.dylib",
+          "version": "0.1.0",
+          "supportedArchitectures": [
+            "arm64",
+            "x86_64"
+          ],
+          "state": "controlled-jvm-and-authorized-target-fixture-proof"
+        },
+        "javaPayload": {
+          "sourcePath": "runtime-java",
+          "implementationLanguage": "Java",
+          "artifact": "opus-runtime.jar",
+          "version": "0.1.0",
+          "javaRelease": 8,
+          "classfileMajor": 52,
+          "bootstrapEntrypoint": "dev.opus.runtime.Bootstrap.start",
+          "state": "not-built"
+        }
+      },
+      "artifacts": {
+        "state": "not-generated",
+        "requiredBeforePreview": [
+          "componentVersions",
+          "sha256",
+          "sizes",
+          "targetArchitecture",
+          "javaBytecodeCompatibility",
+          "mappingSchemaVersion",
+          "oneConfigAdapterVersion"
+        ],
+        "releaseRule": "No injector-runtime-payload release may be produced until every component is built, checksum-locked, adapter-certified, and lifecycle-tested."
+      }
+    },
+    "legacy-forge-rollback": {
+      "kind": "forge-manifest",
+      "releaseState": "rollback-only",
+      "launcher": {
+        "version": "0.0.1",
+        "commit": "8642a91a61a89ba0e1b3233fecaf1b7cf8a32c9c"
+      },
+      "runtime": {
+        "version": "0.0.1",
+        "commit": "d091ac0f45bae9eb76bc6cf22d6bc84d504d42ff",
+        "manifestSha256": "7451a0603f4b04ea81c34de93fbbf8fee9f5e7bd2a650a61d5bc325ee80d5390"
+      }
+    }
   }
 }

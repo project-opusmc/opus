@@ -1,0 +1,11 @@
+{
+  "schema_version": "opus.m3.gate6.adapter-bindings.v1",
+  "bindings": {
+    "badlion": {
+      "adapter": "generic-client",
+      "transport_mode": "external-target-transport",
+      "transport_backend": "badlion-native-control-plane",
+      "live_evidence": "evidence-pending"
+    }
+  }
+}

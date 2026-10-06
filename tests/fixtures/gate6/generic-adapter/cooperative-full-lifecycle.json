@@ -1,0 +1,90 @@
+{
+  "target_descriptor": {
+    "schema_version": "opus.m3.gate6.target-profile.v1",
+    "id": "generic-cooperative",
+    "kind": "generic-client",
+    "architecture": "arm64",
+    "runtime": "cooperative-fixture",
+    "metadata": {
+      "test_fixture": true
+    }
+  },
+  "target_instance": {
+    "identity": "generic-cooperative-target",
+    "architecture": "arm64",
+    "runtime": "cooperative-fixture",
+    "metadata": {
+      "target_marker": "fixture"
+    }
+  },
+  "bootstrap_artifact": {
+    "artifact": "/test-fixtures/generic-cooperative/libopus-bootstrap.dylib",
+    "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "version": "abi-v1"
+  },
+  "operations": {
+    "resolve_target": {
+      "status": "PASS",
+      "evidence": "cooperative target descriptor resolved"
+    },
+    "validate_target": {
+      "status": "PASS",
+      "evidence": "cooperative target instance validated"
+    },
+    "prepare_transport": {
+      "capability": "AVAILABLE",
+      "preparation": "READY",
+      "evidence": "cooperative transport prepared"
+    },
+    "verify_bootstrap_artifact": {
+      "status": "PASS",
+      "evidence": "cooperative artifact identity verified"
+    },
+    "load_bootstrap": {
+      "status": "PASS",
+      "evidence": "cooperative bootstrap loaded"
+    },
+    "resolve_entrypoint": {
+      "status": "PASS",
+      "evidence": "cooperative entrypoint resolved"
+    },
+    "start_bootstrap": {
+      "status": "PASS",
+      "nonce": "0x4f50555347415436",
+      "nonce_mode": "deterministic-counter"
+    },
+    "verify_handshake": {
+      "status": "PASS",
+      "expected_nonce": "0x4f50555347415436",
+      "observed_nonce": "0x4f50555347415436"
+    },
+    "stop_bootstrap": {
+      "status": "PASS",
+      "evidence": "cooperative bootstrap stopped"
+    },
+    "cleanup": {
+      "status": "PASS",
+      "evidence": "cooperative cleanup complete"
+    },
+    "check_target_health": {
+      "status": "PASS",
+      "evidence": "cooperative target healthy"
+    }
+  },
+  "iterations": {
+    "requested": 25,
+    "completed": 25,
+    "stability_ladder": [
+      1,
+      3,
+      10,
+      25
+    ],
+    "completed_stages": [
+      1,
+      3,
+      10,
+      25
+    ]
+  }
+}

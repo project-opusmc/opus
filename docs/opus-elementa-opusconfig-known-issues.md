@@ -2,6 +2,16 @@
 
 Status: **implementation paused for user priority confirmation — August 24, 2026**
 
+> Historical register for the earlier Elementa/OpusConfig shell. The active UI
+> is now recorded in `docs/OPUS_UI_SESSION_HANDOFF_2026-09-18.md` and
+> `docs/ui-g4-web-visual-review.md`. Do not use this older report as evidence
+> that the currently installed CEF client has passed fullscreen acceptance.
+
+The current Client Settings redesign and automated CEF evidence are recorded
+in [the 2026-10-04 control-center receipt](OPUS_CLIENT_CONTROL_CENTER_2026-10-04.md).
+That bounded release does not close the physical fullscreen/live-resize
+acceptance blockers in this historical register.
+
 This register records defects observed in the packaged Minecraft 1.8.9 client.
 It is subordinate to direct user instruction and is linked from the active
 production goal and detailed implementation plan.
@@ -90,4 +100,3 @@ persistence, and final packaging remain required by the production goal. They
 are not cancelled. Their final acceptance run is sequenced after UI-001 and
 UI-003 because a crash-prone, non-responsive shell cannot provide trustworthy
 interaction evidence.
-

@@ -1,18 +1,18 @@
 # CODEX_HANDOFF.md
 
-Recovery handoff for the Opus in-game web UI work. Reconstructed from the slim
-rollout transcript (~/.codex/sessions/2026/08/15/rollout-...01a00480...slim.jsonl)
-and reconciled against the current working tree, which is the source of truth.
+Historical recovery handoff for the former Opus in-game web UI work.
+Reconstructed from the slim rollout transcript
+(~/.codex/sessions/2026/08/15/rollout-...01a00480...slim.jsonl) and retained
+as implementation and failure evidence.
 
-Last updated: 2026-08-21 (canonical UI consolidation; legacy product path removed;
-Codex credential and app-server health invariants recorded).
+Last updated as a historical record: 2026-08-21.
 
-> **Current-source warning:** this handoff contains historical filenames and
-> failure notes below. The canonical contract is
-> [`docs/ui-game-goal-and-plan.md`](docs/ui-game-goal-and-plan.md).
-> `UiRuntime`, `Opus*Page`, `OpusVanillaTerminalOverlay`, external-browser
-> auto-open, and `OpusVirtualScreenManager` are retired; do not restore them
-> from the historical sections of this file.
+> **Current-source warning — September 15, 2026:** the active product authority
+> is [Decision 0008](docs/decisions/0008-opus-client-launcher-ui-first-mainline.md):
+> Opus Client + Opus Launcher, UI first. The detailed CEF/Svelte design,
+> filenames, implementation assumptions, and failure notes below are not a
+> current product contract and do not select a renderer. Do not restore or
+> package a historical UI path merely because it appears in this handoff.
 
 ## Objective
 

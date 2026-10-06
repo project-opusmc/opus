@@ -1,6 +1,12 @@
 # ADR 0004: Vanilla UI first, Core Mod only
 
-Status: **superseded by ADR 0005 — 2026-08-23**
+Status: **historical — superseded for the active product direction by
+Decision 0008 on September 15, 2026**
+
+> This ADR remains a record of the vanilla/Core-Mod stabilization phase and of
+> its artifact boundaries. It does not select the current Opus Client +
+> Launcher UI architecture. See
+> [Decision 0008](0008-opus-client-launcher-ui-first-mainline.md).
 
 This ADR remains as the stabilization record for the vanilla-only phase. It is
 not the current product UI direction.

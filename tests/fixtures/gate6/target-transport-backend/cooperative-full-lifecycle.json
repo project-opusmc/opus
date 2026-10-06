@@ -1,0 +1,154 @@
+{
+  "target_descriptor": {
+    "schema_version": "opus.m3.gate6.target-profile.v1",
+    "id": "generic-backend-cooperative",
+    "kind": "generic-client",
+    "architecture": "arm64",
+    "runtime": "cooperative-java-8",
+    "metadata": {
+      "test_fixture": true
+    }
+  },
+  "target_instance": {
+    "identity": "process:cooperative-java;instance:start-100",
+    "architecture": "arm64",
+    "runtime": "cooperative-java-8",
+    "metadata": {
+      "process_identity": "process:cooperative-java",
+      "instance_identity": "start:100"
+    }
+  },
+  "bootstrap_artifact": {
+    "artifact": "/test-fixtures/generic-backend-cooperative/libopus-bootstrap.dylib",
+    "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "version": "abi-v1"
+  },
+  "backend_binding": {
+    "schema_version": "opus.m3.gate6.target-transport-backend-binding.v1",
+    "profile": "generic-backend-cooperative",
+    "target_identity": "process:cooperative-java;instance:start-100",
+    "process_identity": "process:cooperative-java",
+    "instance_identity": "start:100",
+    "architecture": "arm64",
+    "runtime": "cooperative-java-8",
+    "backend_identity": "cooperative-native-control-plane",
+    "provider_identity": "badlion-native-control-plane-provider",
+    "run_id": "target-transport-backend-cooperative-pass",
+    "bootstrap_artifact": {
+      "artifact": "/test-fixtures/generic-backend-cooperative/libopus-bootstrap.dylib",
+      "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "version": "abi-v1"
+    }
+  },
+  "iterations": {
+    "requested": 25,
+    "completed": 25,
+    "stability_ladder": [
+      1,
+      3,
+      10,
+      25
+    ],
+    "completed_stages": [
+      1,
+      3,
+      10,
+      25
+    ]
+  },
+  "provider_operations": {
+    "revalidate_target": {
+      "code": "SUCCESS",
+      "message": "cooperative target instance matches the bound process instance",
+      "evidence": {
+        "source": "cooperative-target-revalidator"
+      },
+      "process_identity": "process:cooperative-java",
+      "instance_identity": "start:100",
+      "architecture": "arm64",
+      "runtime": "cooperative-java-8"
+    },
+    "prepare": {
+      "capability": "AVAILABLE",
+      "preparation": "READY",
+      "code": "SUCCESS",
+      "message": "cooperative target transport prepared",
+      "evidence": {
+        "source": "cooperative-native-control-plane"
+      }
+    },
+    "verify_artifact": {
+      "status": "PASS",
+      "code": "SUCCESS",
+      "message": "cooperative bootstrap artifact identity verified",
+      "evidence": {
+        "source": "cooperative-artifact-verifier"
+      },
+      "artifact": {
+        "artifact": "/test-fixtures/generic-backend-cooperative/libopus-bootstrap.dylib",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "version": "abi-v1"
+      }
+    },
+    "load": {
+      "status": "PASS",
+      "code": "SUCCESS",
+      "message": "cooperative bootstrap loaded",
+      "evidence": {
+        "source": "cooperative-loader"
+      }
+    },
+    "resolve_entrypoint": {
+      "status": "PASS",
+      "code": "SUCCESS",
+      "message": "cooperative bootstrap entrypoint resolved",
+      "evidence": {
+        "source": "cooperative-entrypoint"
+      }
+    },
+    "start": {
+      "status": "PASS",
+      "code": "SUCCESS",
+      "message": "cooperative bootstrap started",
+      "evidence": {
+        "source": "cooperative-start"
+      },
+      "nonce": "0x4f50555347415436",
+      "nonce_mode": "deterministic-counter"
+    },
+    "verify_handshake": {
+      "status": "PASS",
+      "code": "SUCCESS",
+      "message": "cooperative handshake verified",
+      "evidence": {
+        "source": "cooperative-handshake"
+      },
+      "expected_nonce": "0x4f50555347415436",
+      "observed_nonce": "0x4f50555347415436"
+    },
+    "stop": {
+      "status": "PASS",
+      "code": "SUCCESS",
+      "message": "cooperative bootstrap stopped",
+      "evidence": {
+        "source": "cooperative-stop"
+      }
+    },
+    "cleanup": {
+      "status": "PASS",
+      "code": "SUCCESS",
+      "message": "cooperative cleanup completed",
+      "evidence": {
+        "source": "cooperative-cleanup"
+      }
+    },
+    "check_health": {
+      "status": "PASS",
+      "code": "SUCCESS",
+      "message": "cooperative target remains healthy",
+      "evidence": {
+        "source": "cooperative-health"
+      }
+    }
+  }
+}

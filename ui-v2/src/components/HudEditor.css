@@ -1,0 +1,30 @@
+/* The actual game is the editor canvas. No wallpaper, tint, blur or panel. */
+.route-shell[data-opus-route="hud_editor"]::before { content: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: transparent !important; }
+.route-shell[data-opus-route="hud_editor"] .route-main { padding: 0; overflow: hidden; position: static; }
+.hud-editor { position: absolute; inset: 0; pointer-events: none; user-select: none; color: #f3f3f5; }
+.hud-editor__center { position: absolute; left: 50%; top: 47%; transform: translate(-50%,-50%); width: 216px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.hud-editor__center img { object-fit: contain; filter: drop-shadow(0 2px 10px rgba(0,0,0,.28)); }
+.hud-editor__wordmark { font-size: 24px; font-weight: 600; letter-spacing: .3em; padding-left: .3em; text-shadow: 0 2px 8px rgba(0,0,0,.65); }
+.hud-editor__mode { margin: 0 0 12px; font-size: 10px; font-weight: 500; letter-spacing: .17em; text-transform: uppercase; color: #d4d4dc; text-shadow: 0 1px 4px #111; }
+.hud-editor button { pointer-events: auto; color: inherit; border: 1px solid rgba(255,255,255,.2); border-radius: 9px; background: rgba(21,22,26,.84); cursor: pointer; font: inherit; transition: background-color 120ms ease, border-color 120ms ease; }
+.hud-editor button:hover { background: rgba(49,50,55,.94); border-color: rgba(255,255,255,.4); }
+.hud-editor button:focus-visible { outline: 2px solid #d6d6dd; outline-offset: 3px; }
+.hud-editor__mods { display: grid; grid-template-columns: 16px 1fr 16px; align-items: center; gap: 12px; width: 216px; min-height: 46px; padding: 12px 18px; font-size: 14px !important; text-align: left; }
+.hud-editor__mods svg { color: #b8b8c2; }
+.hud-editor__done { position: absolute; right: 20px; top: 20px; display: flex; align-items: center; gap: 16px; min-height: 38px; padding: 8px 12px; font-size: 12px !important; }
+.hud-editor__done kbd { font: inherit; font-size: 10px; color: #b8b8c2; border-left: 1px solid rgba(255,255,255,.18); padding-left: 12px; }
+.hud-editor__help { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 14px; max-width: calc(100% - 32px); width: max-content; padding: 10px 16px; border-radius: 9px; background: rgba(21,22,26,.82); color: #d2d2da; font-size: 11px; }
+.hud-editor__help > span { display: flex; gap: 7px; align-items: center; white-space: nowrap; }
+.hud-editor__help svg { width: 13px; height: 13px; color: #b1b1bd; }
+.hud-editor__help small { font-size: inherit; color: #a0a0ad; }
+@media (max-height: 420px) {
+  .hud-editor__center { gap: 5px; }
+  .hud-editor__center img { width: 52px; height: 52px; }
+  .hud-editor__wordmark { font-size: 17px; }
+  .hud-editor__mode { font-size: 9px; margin-bottom: 4px; }
+  .hud-editor__mods { width: 180px; min-height: 36px; padding: 8px 12px; font-size: 12px !important; }
+  .hud-editor__done { top: 10px; right: 10px; min-height: 32px; }
+  .hud-editor__help { bottom: 10px; padding: 6px 10px; font-size: 10px; gap: 10px; }
+  .hud-editor__help > span:nth-child(n+2), .hud-editor__help small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .hud-editor button { transition: none; } }

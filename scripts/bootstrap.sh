@@ -3,12 +3,17 @@ set -euo pipefail
 
 opus_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-for required_command in git cargo node npm java; do
+for required_command in git cargo rustfmt node npm java javac cmake; do
   if ! command -v "${required_command}" >/dev/null 2>&1; then
     echo "Missing required command: ${required_command}" >&2
     exit 1
   fi
 done
+
+if ! cargo clippy --version >/dev/null 2>&1; then
+  echo "Missing Cargo Clippy component. Install it with: rustup component add clippy" >&2
+  exit 1
+fi
 
 git -C "${opus_root}" submodule sync --recursive
 git -C "${opus_root}" submodule update --init --recursive

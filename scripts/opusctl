@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+import argparse
+import json
+import os
+import sys
+import time
+from pathlib import Path
+
+ROOT = Path(os.environ.get("OPUSCTL_ROOT", str(Path.home() / ".opus-launcher")))
+LOGS = ROOT / "logs"
+SESSIONS = ROOT / "sessions"
+
+
+def pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
+def active_session(explicit: str | None) -> str:
+    if explicit:
+        return explicit
+    candidates = []
+    if LOGS.is_dir():
+        for pid_file in LOGS.glob("*/game.pid"):
+            try:
+                pid = int(pid_file.read_text().strip())
+            except (OSError, ValueError):
+                continue
+            if pid_alive(pid):
+                candidates.append((pid_file.stat().st_mtime_ns, pid_file.parent.name))
+    if not candidates:
+        raise SystemExit("opusctl: no running Opus Minecraft session found")
+    return max(candidates)[1]
+
+
+def load_json(path: Path) -> dict:
+    try:
+        value = json.loads(path.read_text())
+        return value if isinstance(value, dict) else {}
+    except (OSError, json.JSONDecodeError):
+        return {}
+
+
+def next_revision(control: Path, status: Path) -> int:
+    previous = max(
+        int(load_json(control).get("revision", -1)),
+        int(load_json(status).get("revision", -1)),
+    )
+    return max(int(time.time() * 1000), previous + 1)
+
+
+def atomic_write(path: Path, payload: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name("." + path.name + ".part")
+    fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as stream:
+            json.dump(payload, stream, indent=2, sort_keys=True)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary.exists():
+            temporary.unlink()
+
+
+def send(session: str, action: str, route: dict | None, timeout: float) -> dict:
+    directory = SESSIONS / session
+    control = directory / "control.json"
+    status = directory / "control.status.json"
+    revision = next_revision(control, status)
+    payload = {
+        "schemaVersion": 1,
+        "revision": revision,
+        "action": action,
+    }
+    if route is not None:
+        payload["route"] = route
+    atomic_write(control, payload)
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        current = load_json(status)
+        if int(current.get("revision", -1)) == revision:
+            state = current.get("state")
+            if state in {"ready", "error"}:
+                return current
+        time.sleep(0.05)
+    raise SystemExit(
+        f"opusctl: timed out after {timeout:.1f}s waiting for revision {revision}"
+    )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        prog="opusctl",
+        description="Semantic Opus Client control plane; never sends mouse or keyboard input.",
+    )
+    parser.add_argument("--session", help="explicit Opus session id")
+    parser.add_argument("--timeout", type=float, default=8.0)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("status")
+    sub.add_parser("metrics")
+    sub.add_parser("reload-ui")
+    route_parser = sub.add_parser("route")
+    route_parser.add_argument(
+        "route",
+        choices=[
+            "title", "singleplayer", "multiplayer", "settings", "accounts",
+            "game_menu", "quick_hub", "mods_catalog", "module_detail", "hud_editor",
+        ],
+    )
+    route_parser.add_argument("--module-id")
+    route_parser.add_argument("--settings-section", choices=["game", "interface"])
+
+    args = parser.parse_args()
+    session = active_session(args.session)
+    route = None
+    action = args.command
+    if args.command == "route":
+        route = {"id": args.route}
+        params = {}
+        if args.module_id:
+            params["moduleId"] = args.module_id
+        if args.settings_section:
+            params["settingsSection"] = args.settings_section
+        if args.route == "module_detail" and not args.module_id:
+            parser.error("route module_detail requires --module-id")
+        if params:
+            route["params"] = params
+    result = send(session, action, route, args.timeout)
+    print(json.dumps(result, indent=2, sort_keys=True))
+    return 0 if result.get("state") == "ready" else 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

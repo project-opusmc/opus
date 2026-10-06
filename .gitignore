@@ -1,5 +1,10 @@
 /output/
+/injector/target/
 /.DS_Store
 /tools/gl-probe/*.class
 **/__pycache__/
 *.py[cod]
+hs_err_pid*.log
+/.codex-stub-probe/
+/runtime-java/build/
+/runtime-java/.gradle/

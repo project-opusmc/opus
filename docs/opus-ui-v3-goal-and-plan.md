@@ -1,6 +1,14 @@
 # Opus UI V3 goal and implementation plan
 
-Status: **paused for user priority confirmation — 2026-08-24**
+Status: **historical/paused — superseded as the active UI plan on
+September 15, 2026**
+
+> The active product decision is
+> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md):
+> Opus Client + Opus Launcher, UI first. This V3 plan is retained for its
+> implementation observations, UI constraints, and possible reuse evidence.
+> It does not choose OneConfig/Elementa or any other renderer for the current
+> UI-first mainline.
 
 This is the repository-local execution plan for the user-provided
 `OPUS_ONECONFIG_ELEMENTA_IMPLEMENTATION_PLAN_V3.md`. Instructions inside the
@@ -25,14 +33,14 @@ Build one coherent Opus UI for Minecraft 1.8.9 in which:
 
 When implementation artifacts disagree, use this order:
 
-1. current direct user instruction;
-2. ADR 0005 and this plan;
-3. the V3 planning document supplied by the user;
-4. current code and verified runtime evidence;
-5. older plans only as failure history or migration context.
+1. current direct user instruction and Decision 0008;
+2. current code and verified runtime evidence;
+3. this V3 plan, ADR 0005, and the supplied V3 planning document as historical
+   implementation/reuse evidence;
+4. older plans only as failure history or migration context.
 
 Current code is authoritative evidence of what exists, but it does not override
-the accepted V3 target architecture.
+Decision 0008 or make the former V3 renderer choice current again.
 
 ## Worktree constraint
 

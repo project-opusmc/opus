@@ -1,0 +1,13 @@
+{
+  "schema_version": "opus.m3.gate6.owner-confirmation.v1",
+  "test_fixture": true,
+  "confirmation_id": "gate6-test-only-all-targets-confirmed",
+  "confirmed": true,
+  "confirmed_targets": [
+    "opus-owned",
+    "badlion",
+    "lunar"
+  ],
+  "confirmed_at": "test-fixture-only",
+  "attester": "test-fixture"
+}

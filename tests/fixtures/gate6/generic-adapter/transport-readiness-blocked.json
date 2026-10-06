@@ -1,0 +1,24 @@
+{
+  "record_kind": "General Gate 6 Generic Client transport-readiness fixture",
+  "intended_profile": "badlion",
+  "target": {
+    "pid": 7001,
+    "identity": "current-user Java Minecraft JVM with generic client hint",
+    "architecture": "arm64",
+    "target_resolved": "PASS"
+  },
+  "bootstrap_preflight": {
+    "artifact": "/test-fixtures/generic-client/libopus-bootstrap.dylib",
+    "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "architecture": "arm64",
+    "result": "PASS for architecture-only read-only preflight"
+  },
+  "native_task_port_probe": {
+    "result": "CAPABILITY_AVAILABLE",
+    "scope": "one selected PID; task port acquired and released"
+  },
+  "lifecycle": {
+    "target_resolved": "PASS",
+    "transport_ready": "BLOCKED"
+  }
+}
