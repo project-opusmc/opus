@@ -8,11 +8,11 @@
       "releaseState": "development-only",
       "launcher": {
         "version": "0.0.1",
-        "commit": "764ef3924657ca11f97be282d24fb32d43fb1501"
+        "commit": "405d52c69765391f955eb7599ff1d912ee6b912f"
       },
       "runtime": {
         "version": "0.0.1",
-        "commit": "6425f982c430869d775677ce420f43359352bcdd",
+        "commit": "34714870c4ccdc6e00025a0e3176e92027f1d3cc",
         "manifestSha256": "b5951843454caa60cc47bd3026a9ea797bc1123945827cf16178a8f00cbcf738"
       }
     },
