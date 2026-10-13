@@ -1,8 +1,21 @@
 {
   "schemaVersion": 2,
   "productVersion": "0.0.1",
-  "activeBuildProfile": "injector-development",
+  "activeBuildProfile": "client-cef",
   "buildProfiles": {
+    "client-cef": {
+      "kind": "forge-manifest",
+      "releaseState": "development-only",
+      "launcher": {
+        "version": "0.0.1",
+        "commit": "764ef3924657ca11f97be282d24fb32d43fb1501"
+      },
+      "runtime": {
+        "version": "0.0.1",
+        "commit": "b8660dc8e0359fe5df6fdbbace84808463b0dd2e",
+        "manifestSha256": "b5951843454caa60cc47bd3026a9ea797bc1123945827cf16178a8f00cbcf738"
+      }
+    },
     "injector-development": {
       "kind": "injector-runtime-payload",
       "releaseState": "foundation-only",

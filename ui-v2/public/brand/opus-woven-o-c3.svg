@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <title>Opus woven O · Cut depth</title>
+  <desc>Two interwoven blue, lilac and rose bands with solid cut edges, recessed return faces and a bevel around the open centre.</desc>
+  <defs>
+    <linearGradient id="return-colour" gradientUnits="userSpaceOnUse" x1="16" y1="236" x2="236" y2="20">
+      <stop stop-color="#293247"/>
+      <stop offset=".32" stop-color="#4B5871"/>
+      <stop offset=".51" stop-color="#737494"/>
+      <stop offset=".69" stop-color="#39475E"/>
+      <stop offset="1" stop-color="#283449"/>
+    </linearGradient>
+    <linearGradient id="blue-colour" gradientUnits="userSpaceOnUse" x1="18" y1="228" x2="232" y2="28">
+      <stop stop-color="#536580"/>
+      <stop offset=".16" stop-color="#7AA6C9"/>
+      <stop offset=".29" stop-color="#91C5DE"/>
+      <stop offset=".39" stop-color="#C9C3EE"/>
+      <stop offset=".45" stop-color="#F4E4F8"/>
+      <stop offset=".50" stop-color="#BECDED"/>
+      <stop offset=".59" stop-color="#779ABC"/>
+      <stop offset=".70" stop-color="#ADA7D9"/>
+      <stop offset=".77" stop-color="#E9C1DA"/>
+      <stop offset=".82" stop-color="#D2E5F5"/>
+      <stop offset=".88" stop-color="#7A9EC4"/>
+      <stop offset="1" stop-color="#62748F"/>
+    </linearGradient>
+    <linearGradient id="silver-colour" gradientUnits="userSpaceOnUse" x1="15" y1="32" x2="241" y2="231">
+      <stop stop-color="#91A2BE"/>
+      <stop offset=".16" stop-color="#CCD8EE"/>
+      <stop offset=".30" stop-color="#EDE8FC"/>
+      <stop offset=".39" stop-color="#C3B1E3"/>
+      <stop offset=".46" stop-color="#B2C2DA"/>
+      <stop offset=".53" stop-color="#F5EDFC"/>
+      <stop offset=".60" stop-color="#EAC7DE"/>
+      <stop offset=".67" stop-color="#BDCADE"/>
+      <stop offset=".76" stop-color="#DDE7F5"/>
+      <stop offset=".86" stop-color="#9AABC5"/>
+      <stop offset="1" stop-color="#71849F"/>
+    </linearGradient>
+    <linearGradient id="side-colour" gradientUnits="userSpaceOnUse" x1="53" y1="64" x2="207" y2="246">
+      <stop stop-color="#66718E"/>
+      <stop offset=".24" stop-color="#414E6B"/>
+      <stop offset=".54" stop-color="#29354D"/>
+      <stop offset=".78" stop-color="#56647F"/>
+      <stop offset="1" stop-color="#253045"/>
+    </linearGradient>
+    <linearGradient id="upper-cut" gradientUnits="userSpaceOnUse" x1="49" y1="48" x2="140" y2="74">
+      <stop stop-color="#6E829C"/>
+      <stop offset=".5" stop-color="#63708F"/>
+      <stop offset="1" stop-color="#303A54"/>
+    </linearGradient>
+    <linearGradient id="lower-cut" gradientUnits="userSpaceOnUse" x1="116" y1="193" x2="219" y2="225">
+      <stop stop-color="#30374E"/>
+      <stop offset=".46" stop-color="#66718B"/>
+      <stop offset="1" stop-color="#435571"/>
+    </linearGradient>
+    <linearGradient id="bevel-light" gradientUnits="userSpaceOnUse" x1="33" y1="32" x2="221" y2="217">
+      <stop stop-color="#F4F1FF" stop-opacity=".75"/>
+      <stop offset=".4" stop-color="#DCE3FA" stop-opacity=".58"/>
+      <stop offset="1" stop-color="#DCE3FA" stop-opacity=".1"/>
+    </linearGradient>
+    <linearGradient id="bevel-shade" gradientUnits="userSpaceOnUse" x1="40" y1="42" x2="217" y2="229">
+      <stop stop-color="#304463" stop-opacity=".05"/>
+      <stop offset=".55" stop-color="#304463" stop-opacity=".3"/>
+      <stop offset="1" stop-color="#26374F" stop-opacity=".58"/>
+    </linearGradient>
+    <linearGradient id="lip-light" gradientUnits="userSpaceOnUse" x1="49" y1="48" x2="215" y2="219">
+      <stop stop-color="#F3EEFF" stop-opacity=".8"/>
+      <stop offset=".55" stop-color="#D8DEF3" stop-opacity=".55"/>
+      <stop offset="1" stop-color="#C1CAE6" stop-opacity=".28"/>
+    </linearGradient>
+    <path id="woven-ring" fill-rule="evenodd" clip-rule="evenodd" d="M128 20C188 20 240 67 240 128C240 188 190 236 128 236C64 236 14 188 14 128C14 68 64 20 128 20ZM140 64C159 79 176 101 178 125C181 144 175 162 163 173C148 181 130 185 113 191C95 175 83 161 79 150C73 132 77 111 89 94C102 81 120 71 140 64Z"/>
+    <clipPath id="woven-o"><use href="#woven-ring"/></clipPath>
+    <path id="blue-front-a" d="M49 56C80 38 111 42 140 64C120 72 101 81 89 94C57 133 23 153 30 173C16 157 10 141 14 123C16 96 25 73 49 56Z"/>
+    <path id="blue-front-b" d="M216 65C244 101 249 150 227 177C214 202 194 222 158 231C146 221 129 210 113 191C134 185 154 179 172 172C198 155 228 132 216 65Z"/>
+    <path id="silver-front-a" d="M49 56C68 27 98 15 128 20C162 19 193 36 206 54C210 111 195 145 172 172C182 143 177 119 164 97C157 83 149 73 140 64C106 36 79 37 49 56Z"/>
+    <path id="silver-front-b" d="M89 94C73 122 54 149 58 181C65 207 82 222 104 233C136 244 184 234 217 203C184 235 147 224 113 191C96 176 84 162 79 150C73 132 77 111 89 94Z"/>
+    <mask id="blue-top-bevel" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <g fill="white"><use href="#blue-front-a"/><use href="#blue-front-b"/></g>
+      <g fill="black" transform="translate(1.5 2)"><use href="#blue-front-a"/><use href="#blue-front-b"/></g>
+    </mask>
+    <mask id="silver-top-bevel" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <g fill="white"><use href="#silver-front-a"/><use href="#silver-front-b"/></g>
+      <g fill="black" transform="translate(1.5 2)"><use href="#silver-front-a"/><use href="#silver-front-b"/></g>
+    </mask>
+    <mask id="blue-bottom-bevel" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <g fill="white"><use href="#blue-front-a"/><use href="#blue-front-b"/></g>
+      <g fill="black" transform="translate(-1.3 -1.8)"><use href="#blue-front-a"/><use href="#blue-front-b"/></g>
+    </mask>
+    <mask id="silver-bottom-bevel" maskUnits="userSpaceOnUse" x="0" y="0" width="256" height="256">
+      <g fill="white"><use href="#silver-front-a"/><use href="#silver-front-b"/></g>
+      <g fill="black" transform="translate(-1.3 -1.8)"><use href="#silver-front-a"/><use href="#silver-front-b"/></g>
+    </mask>
+  </defs>
+  <g id="cut-sidewalls" fill="url(#side-colour)">
+    <use href="#woven-ring" transform="translate(6 8)"/>
+    <use href="#woven-ring" transform="translate(5.25 7)"/>
+    <use href="#woven-ring" transform="translate(4.5 6)"/>
+    <use href="#woven-ring" transform="translate(3.75 5)"/>
+    <use href="#woven-ring" transform="translate(3 4)"/>
+    <use href="#woven-ring" transform="translate(2.25 3)"/>
+    <use href="#woven-ring" transform="translate(1.5 2)"/>
+    <use href="#woven-ring" transform="translate(.75 1)"/>
+  </g>
+  <g clip-path="url(#woven-o)">
+    <path fill="url(#return-colour)" d="M0 0H256V256H0Z"/>
+    <use href="#blue-front-a" fill="url(#blue-colour)"/>
+    <use href="#blue-front-b" fill="url(#blue-colour)"/>
+    <g id="blue-face-bevels">
+      <path d="M0 0H256V256H0Z" fill="url(#bevel-light)" mask="url(#blue-top-bevel)"/>
+      <path d="M0 0H256V256H0Z" fill="url(#bevel-shade)" mask="url(#blue-bottom-bevel)"/>
+    </g>
+    <g id="woven-cut-edges">
+      <path fill="url(#upper-cut)" d="M49 56C79 37 106 36 140 64L144 71C110 43 83 44 53 63Z"/>
+      <path fill="url(#lower-cut)" d="M217 203C184 235 147 224 113 191L117 198C151 231 188 242 221 210Z"/>
+    </g>
+    <use href="#silver-front-a" fill="url(#silver-colour)"/>
+    <use href="#silver-front-b" fill="url(#silver-colour)"/>
+    <g id="silver-face-bevels">
+      <path d="M0 0H256V256H0Z" fill="url(#bevel-light)" mask="url(#silver-top-bevel)"/>
+      <path d="M0 0H256V256H0Z" fill="url(#bevel-shade)" mask="url(#silver-bottom-bevel)"/>
+    </g>
+    <g id="cut-lips" stroke="url(#lip-light)" stroke-width=".9" stroke-linecap="round">
+      <path d="M49 56C79 37 106 36 140 64"/>
+      <path d="M217 203C184 235 147 224 113 191"/>
+      <path d="M140 64C159 79 176 101 178 125C181 144 175 162 163 173C148 181 130 185 113 191"/>
+    </g>
+  </g>
+</svg>

@@ -153,7 +153,11 @@ function assertSourceFile(opusRoot, sourcePath, label) {
 
 function parseLegacyForgeMetadata(profile, label, expectedReleaseState) {
   const record = assertRecord(profile, label);
-  if (expectedReleaseState && record.releaseState !== expectedReleaseState) {
+  if (
+    expectedReleaseState &&
+    (record.releaseState !== expectedReleaseState ||
+      !["release-ready", "rollback-only", "development-only"].includes(record.releaseState))
+  ) {
     throw new Error(`${label}.releaseState must be ${expectedReleaseState}`);
   }
 
@@ -178,7 +182,7 @@ function parseLegacyForgeMetadata(profile, label, expectedReleaseState) {
   return { launcher, runtime };
 }
 
-function verifyLegacyForgeCheckout(opusRoot, legacyProfile, requireManifest) {
+function verifyLegacyForgeCheckout(opusRoot, legacyProfile, requireManifest, allowDirty = false) {
   const componentFailures = [];
   for (const componentName of ["launcher", "runtime"]) {
     const expectedCommit = legacyProfile[componentName].commit;
@@ -199,9 +203,9 @@ function verifyLegacyForgeCheckout(opusRoot, legacyProfile, requireManifest) {
       ["-C", componentRoot, "status", "--porcelain=v1", "--untracked-files=all"],
       { encoding: "utf8" },
     ).trim();
-    if (worktreeStatus !== "") {
+    if (!allowDirty && worktreeStatus !== "") {
       componentFailures.push(
-        `${componentName} worktree is dirty; a legacy Forge release lock cannot represent uncommitted artifacts`,
+        `${componentName} worktree is dirty; a locked Forge artifact set cannot represent uncommitted artifacts`,
       );
     }
   }
@@ -217,7 +221,7 @@ function verifyLegacyForgeCheckout(opusRoot, legacyProfile, requireManifest) {
     "runtime",
     "runtime-manifest.json",
   );
-  if (requireManifest || existsSync(manifestPath)) {
+  if (requireManifest || (!allowDirty && existsSync(manifestPath))) {
     if (!existsSync(manifestPath)) {
       throw new Error("Runtime manifest is required but missing");
     }
@@ -424,10 +428,11 @@ if (lock.schemaVersion === 1) {
         `buildProfiles.${profileName}`,
       );
     } else if (profileRecord.kind === "forge-manifest") {
+      const expectedReleaseState = profileName === "client-cef" ? "development-only" : "rollback-only";
       parseLegacyForgeMetadata(
         profileRecord,
         `buildProfiles.${profileName}`,
-        "rollback-only",
+        expectedReleaseState,
       );
     } else {
       throw new Error(`buildProfiles.${profileName}.kind is unsupported`);
@@ -441,6 +446,7 @@ if (lock.schemaVersion === 1) {
       releaseState: profile.releaseState,
     };
   } else {
+    const expectedReleaseState = selectedProfileName === "client-cef" ? "development-only" : "rollback-only";
     selectedProfile = {
       name: selectedProfileName,
       kind: profile.kind,
@@ -448,7 +454,7 @@ if (lock.schemaVersion === 1) {
       legacyProfile: parseLegacyForgeMetadata(
         profile,
         `buildProfiles.${selectedProfileName}`,
-        "rollback-only",
+        expectedReleaseState,
       ),
     };
   }
@@ -463,7 +469,10 @@ if (options.printProfile) {
 
 if (options.requirePackageable) {
   const packageableStates = new Set(["release-ready", "rollback-only"]);
-  if (!packageableStates.has(selectedProfile.releaseState)) {
+  if (
+    selectedProfile.releaseState === "development-only" ||
+    !packageableStates.has(selectedProfile.releaseState)
+  ) {
     throw new Error(
       `Profile ${selectedProfile.name} is ${selectedProfile.releaseState}; it cannot be packaged`,
     );
@@ -475,6 +484,7 @@ if (selectedProfile.kind === "forge-manifest") {
     options.opusRoot,
     selectedProfile.legacyProfile,
     options.requireManifest,
+    selectedProfile.name === "client-cef",
   );
 } else if (options.requireManifest) {
   throw new Error(

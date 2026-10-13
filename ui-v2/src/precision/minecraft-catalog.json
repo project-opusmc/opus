@@ -1,0 +1,1589 @@
+{
+  "pages": {
+    "overview": [
+      "General",
+      "Your view, world preferences and game menus."
+    ],
+    "display": [
+      "Video settings",
+      "Rendering, frame rate and the in-game display."
+    ],
+    "details": [
+      "Details",
+      "The sky, weather, fog and world detail."
+    ],
+    "quality": [
+      "Quality",
+      "Textures, filtering and resource pack features."
+    ],
+    "performance": [
+      "Performance",
+      "How Minecraft renders and updates the world."
+    ],
+    "animations": [
+      "Animations",
+      "Animated textures and individual particle effects."
+    ],
+    "shaders": [
+      "Shaders",
+      "Shader packs, lighting and render quality."
+    ],
+    "other": [
+      "Other video settings",
+      "Diagnostics, fullscreen and singleplayer options."
+    ],
+    "audio": [
+      "Music & sounds",
+      "Master volume and all Minecraft sound channels."
+    ],
+    "controls": [
+      "Controls",
+      "Mouse preferences and every game key binding."
+    ],
+    "chat": [
+      "Chat",
+      "Visibility, links, size and the debug display."
+    ],
+    "language": [
+      "Language",
+      "Choose a language and Minecraft\u2019s font rendering."
+    ],
+    "packs": [
+      "Resource packs",
+      "Choose your packs and their loading order."
+    ],
+    "skin": [
+      "Skin customization",
+      "Choose which layers of your skin are visible."
+    ],
+    "privacy": [
+      "Privacy",
+      "Minecraft\u2019s machine information collection."
+    ],
+    "legacy": [
+      "Legacy settings",
+      "Broadcasting and retained compatibility options."
+    ],
+    "search": [
+      "Find a setting",
+      "Search every Minecraft and OptiFine preference."
+    ],
+    "shader-options": [
+      "Shader options",
+      "Options supplied by the selected shader pack."
+    ]
+  },
+  "options": [
+    {
+      "page": "overview",
+      "section": "View",
+      "id": "fov",
+      "label": "Field of view",
+      "nativeKey": "fov",
+      "enums": [
+        "FOV"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "overview",
+      "section": "World",
+      "id": "difficulty",
+      "label": "Difficulty",
+      "nativeKey": "WorldInfo.difficulty",
+      "enums": [],
+      "type": "select"
+    },
+    {
+      "page": "overview",
+      "section": "World",
+      "id": "difficultyLocked",
+      "label": "Lock difficulty",
+      "nativeKey": "WorldInfo.difficultyLocked",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "overview",
+      "section": "Online",
+      "id": "realmsNotifications",
+      "label": "Realms notifications",
+      "nativeKey": "realmsNotifications",
+      "enums": [
+        "REALMS_NOTIFICATIONS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "display",
+      "section": "Rendering",
+      "id": "graphics",
+      "label": "Graphics",
+      "nativeKey": "fancyGraphics",
+      "enums": [
+        "GRAPHICS"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "display",
+      "section": "Rendering",
+      "id": "renderDistance",
+      "label": "Render distance",
+      "nativeKey": "renderDistance",
+      "enums": [
+        "RENDER_DISTANCE"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "display",
+      "section": "Rendering",
+      "id": "smoothLighting",
+      "label": "Smooth lighting",
+      "nativeKey": "ao",
+      "enums": [
+        "AMBIENT_OCCLUSION"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "display",
+      "section": "Rendering",
+      "id": "smoothLightingLevel",
+      "label": "Smooth lighting level",
+      "nativeKey": "ofAoLevel",
+      "enums": [
+        "AO_LEVEL"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "display",
+      "section": "Frame rate",
+      "id": "frameLimit",
+      "label": "Max frame rate",
+      "nativeKey": "maxFps",
+      "enums": [
+        "FRAMERATE_LIMIT"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "display",
+      "section": "Frame rate",
+      "id": "vsync",
+      "label": "VSync",
+      "nativeKey": "enableVsync",
+      "enums": [
+        "ENABLE_VSYNC"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "display",
+      "section": "Frame rate",
+      "id": "vbo",
+      "label": "Use VBOs",
+      "nativeKey": "useVbo",
+      "enums": [
+        "USE_VBO"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "display",
+      "section": "Interface & camera",
+      "id": "guiScale",
+      "label": "GUI scale",
+      "nativeKey": "guiScale",
+      "enums": [
+        "GUI_SCALE"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "display",
+      "section": "Interface & camera",
+      "id": "brightness",
+      "label": "Brightness",
+      "nativeKey": "gamma",
+      "enums": [
+        "GAMMA"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "display",
+      "section": "Interface & camera",
+      "id": "viewBobbing",
+      "label": "View bobbing",
+      "nativeKey": "bobView",
+      "enums": [
+        "VIEW_BOBBING"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "display",
+      "section": "Interface & camera",
+      "id": "dynamicFov",
+      "label": "Dynamic FOV",
+      "nativeKey": "ofDynamicFov",
+      "enums": [
+        "DYNAMIC_FOV"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "display",
+      "section": "Lighting",
+      "id": "dynamicLights",
+      "label": "Dynamic lights",
+      "nativeKey": "ofDynamicLights",
+      "enums": [
+        "DYNAMIC_LIGHTS"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "display",
+      "section": "Textures",
+      "id": "alternateBlocks",
+      "label": "Alternate blocks",
+      "nativeKey": "allowBlockAlternatives",
+      "enums": [
+        "BLOCK_ALTERNATIVES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "Sky & weather",
+      "id": "clouds",
+      "label": "Clouds",
+      "nativeKey": "ofClouds",
+      "enums": [
+        "CLOUDS",
+        "RENDER_CLOUDS"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "details",
+      "section": "Sky & weather",
+      "id": "cloudHeight",
+      "label": "Cloud height",
+      "nativeKey": "ofCloudsHeight",
+      "enums": [
+        "CLOUD_HEIGHT"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "details",
+      "section": "Sky & weather",
+      "id": "rain",
+      "label": "Rain & snow",
+      "nativeKey": "ofRain",
+      "enums": [
+        "RAIN"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "details",
+      "section": "Sky & weather",
+      "id": "sky",
+      "label": "Sky",
+      "nativeKey": "ofSky",
+      "enums": [
+        "SKY"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "Sky & weather",
+      "id": "stars",
+      "label": "Stars",
+      "nativeKey": "ofStars",
+      "enums": [
+        "STARS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "Sky & weather",
+      "id": "sunMoon",
+      "label": "Sun & moon",
+      "nativeKey": "ofSunMoon",
+      "enums": [
+        "SUN_MOON"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "trees",
+      "label": "Trees",
+      "nativeKey": "ofTrees",
+      "enums": [
+        "TREES"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "fog",
+      "label": "Fog",
+      "nativeKey": "ofFogType",
+      "enums": [
+        "FOG_FANCY"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "fogStart",
+      "label": "Fog start",
+      "nativeKey": "ofFogStart",
+      "enums": [
+        "FOG_START"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "translucentBlocks",
+      "label": "Translucent blocks",
+      "nativeKey": "ofTranslucentBlocks",
+      "enums": [
+        "TRANSLUCENT_BLOCKS"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "droppedItems",
+      "label": "Dropped items",
+      "nativeKey": "ofDroppedItems",
+      "enums": [
+        "DROPPED_ITEMS"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "vignette",
+      "label": "Vignette",
+      "nativeKey": "ofVignette",
+      "enums": [
+        "VIGNETTE"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "ofAlternateBlocks",
+      "label": "Alternate block textures",
+      "nativeKey": "ofAlternateBlocks",
+      "enums": [
+        "ALTERNATE_BLOCKS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "swampColors",
+      "label": "Swamp colors",
+      "nativeKey": "ofSwampColors",
+      "enums": [
+        "SWAMP_COLORS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "World detail",
+      "id": "smoothBiomes",
+      "label": "Smooth biomes",
+      "nativeKey": "ofSmoothBiomes",
+      "enums": [
+        "SMOOTH_BIOMES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "Entities & items",
+      "id": "capes",
+      "label": "Show capes",
+      "nativeKey": "ofShowCapes",
+      "enums": [
+        "SHOW_CAPES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "Entities & items",
+      "id": "itemTooltips",
+      "label": "Held item tooltips",
+      "nativeKey": "heldItemTooltips",
+      "enums": [
+        "HELD_ITEM_TOOLTIPS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "details",
+      "section": "Entities & items",
+      "id": "entityShadows",
+      "label": "Entity shadows",
+      "nativeKey": "entityShadows",
+      "enums": [
+        "ENTITY_SHADOWS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Filtering",
+      "id": "mipmapLevels",
+      "label": "Mipmap levels",
+      "nativeKey": "mipmapLevels",
+      "enums": [
+        "MIPMAP_LEVELS"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "quality",
+      "section": "Filtering",
+      "id": "mipmapType",
+      "label": "Mipmap type",
+      "nativeKey": "ofMipmapType",
+      "enums": [
+        "MIPMAP_TYPE"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "quality",
+      "section": "Filtering",
+      "id": "anisotropic",
+      "label": "Anisotropic filtering",
+      "nativeKey": "ofAfLevel",
+      "enums": [
+        "AF_LEVEL"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "quality",
+      "section": "Filtering",
+      "id": "antialiasing",
+      "label": "Antialiasing",
+      "nativeKey": "ofAaLevel",
+      "enums": [
+        "AA_LEVEL"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "quality",
+      "section": "World textures",
+      "id": "clearWater",
+      "label": "Clear water",
+      "nativeKey": "ofClearWater",
+      "enums": [
+        "CLEAR_WATER"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "World textures",
+      "id": "betterGrass",
+      "label": "Better grass",
+      "nativeKey": "ofBetterGrass",
+      "enums": [
+        "BETTER_GRASS"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "quality",
+      "section": "World textures",
+      "id": "betterSnow",
+      "label": "Better snow",
+      "nativeKey": "ofBetterSnow",
+      "enums": [
+        "BETTER_SNOW"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "World textures",
+      "id": "connectedTextures",
+      "label": "Connected textures",
+      "nativeKey": "ofConnectedTextures",
+      "enums": [
+        "CONNECTED_TEXTURES"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "quality",
+      "section": "World textures",
+      "id": "naturalTextures",
+      "label": "Natural textures",
+      "nativeKey": "ofNaturalTextures",
+      "enums": [
+        "NATURAL_TEXTURES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Resource pack features",
+      "id": "randomEntities",
+      "label": "Random entities",
+      "nativeKey": "ofRandomEntities",
+      "enums": [
+        "RANDOM_ENTITIES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Resource pack features",
+      "id": "customFonts",
+      "label": "Custom fonts",
+      "nativeKey": "ofCustomFonts",
+      "enums": [
+        "CUSTOM_FONTS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Resource pack features",
+      "id": "customColors",
+      "label": "Custom colors",
+      "nativeKey": "ofCustomColors",
+      "enums": [
+        "CUSTOM_COLORS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Resource pack features",
+      "id": "customSky",
+      "label": "Custom sky",
+      "nativeKey": "ofCustomSky",
+      "enums": [
+        "CUSTOM_SKY"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Resource pack features",
+      "id": "customItems",
+      "label": "Custom items",
+      "nativeKey": "ofCustomItems",
+      "enums": [
+        "CUSTOM_ITEMS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Resource pack features",
+      "id": "customEntityModels",
+      "label": "Custom entity models",
+      "nativeKey": "ofCustomEntityModels",
+      "enums": [
+        "CUSTOM_ENTITY_MODELS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Resource pack features",
+      "id": "customGuis",
+      "label": "Custom GUIs",
+      "nativeKey": "ofCustomGuis",
+      "enums": [
+        "CUSTOM_GUIS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "quality",
+      "section": "Resource pack features",
+      "id": "emissiveTextures",
+      "label": "Emissive textures",
+      "nativeKey": "ofEmissiveTextures",
+      "enums": [
+        "EMISSIVE_TEXTURES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "Rendering",
+      "id": "smoothFps",
+      "label": "Smooth FPS",
+      "nativeKey": "ofSmoothFps",
+      "enums": [
+        "SMOOTH_FPS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "Rendering",
+      "id": "smoothWorld",
+      "label": "Smooth world",
+      "nativeKey": "ofSmoothWorld",
+      "enums": [
+        "SMOOTH_WORLD"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "Rendering",
+      "id": "fastRender",
+      "label": "Fast render",
+      "nativeKey": "ofFastRender",
+      "enums": [
+        "FAST_RENDER"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "Rendering",
+      "id": "fastMath",
+      "label": "Fast math",
+      "nativeKey": "ofFastMath",
+      "enums": [
+        "FAST_MATH"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "Rendering",
+      "id": "renderRegions",
+      "label": "Render regions",
+      "nativeKey": "ofRenderRegions",
+      "enums": [
+        "RENDER_REGIONS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "Rendering",
+      "id": "smartAnimations",
+      "label": "Smart animations",
+      "nativeKey": "ofSmartAnimations",
+      "enums": [
+        "SMART_ANIMATIONS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "World updates",
+      "id": "dynamicUpdates",
+      "label": "Dynamic updates",
+      "nativeKey": "ofChunkUpdatesDynamic",
+      "enums": [
+        "CHUNK_UPDATES_DYNAMIC"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "World updates",
+      "id": "lazyChunks",
+      "label": "Lazy chunk loading",
+      "nativeKey": "ofLazyChunkLoading",
+      "enums": [
+        "LAZY_CHUNK_LOADING"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "performance",
+      "section": "World updates",
+      "id": "chunkUpdates",
+      "label": "Chunk updates",
+      "nativeKey": "ofChunkUpdates",
+      "enums": [
+        "CHUNK_UPDATES"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "waterAnimation",
+      "label": "Water",
+      "nativeKey": "ofAnimatedWater",
+      "enums": [
+        "ANIMATED_WATER"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "lavaAnimation",
+      "label": "Lava",
+      "nativeKey": "ofAnimatedLava",
+      "enums": [
+        "ANIMATED_LAVA"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "fireAnimation",
+      "label": "Fire",
+      "nativeKey": "ofAnimatedFire",
+      "enums": [
+        "ANIMATED_FIRE"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "portalAnimation",
+      "label": "Portal",
+      "nativeKey": "ofAnimatedPortal",
+      "enums": [
+        "ANIMATED_PORTAL"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "redstoneAnimation",
+      "label": "Redstone",
+      "nativeKey": "ofAnimatedRedstone",
+      "enums": [
+        "ANIMATED_REDSTONE"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "explosionAnimation",
+      "label": "Explosion",
+      "nativeKey": "ofAnimatedExplosion",
+      "enums": [
+        "ANIMATED_EXPLOSION"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "flameAnimation",
+      "label": "Flame",
+      "nativeKey": "ofAnimatedFlame",
+      "enums": [
+        "ANIMATED_FLAME"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "smokeAnimation",
+      "label": "Smoke",
+      "nativeKey": "ofAnimatedSmoke",
+      "enums": [
+        "ANIMATED_SMOKE"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "terrainAnimation",
+      "label": "Terrain",
+      "nativeKey": "ofAnimatedTerrain",
+      "enums": [
+        "ANIMATED_TERRAIN"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Animated textures",
+      "id": "textureAnimation",
+      "label": "Textures",
+      "nativeKey": "ofAnimatedTextures",
+      "enums": [
+        "ANIMATED_TEXTURES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Particles",
+      "id": "particles",
+      "label": "Particle density",
+      "nativeKey": "particles",
+      "enums": [
+        "PARTICLES"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "animations",
+      "section": "Particles",
+      "id": "voidParticles",
+      "label": "Void",
+      "nativeKey": "ofVoidParticles",
+      "enums": [
+        "VOID_PARTICLES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Particles",
+      "id": "waterParticles",
+      "label": "Water",
+      "nativeKey": "ofWaterParticles",
+      "enums": [
+        "WATER_PARTICLES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Particles",
+      "id": "rainSplash",
+      "label": "Rain splash",
+      "nativeKey": "ofRainSplash",
+      "enums": [
+        "RAIN_SPLASH"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Particles",
+      "id": "portalParticles",
+      "label": "Portal",
+      "nativeKey": "ofPortalParticles",
+      "enums": [
+        "PORTAL_PARTICLES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Particles",
+      "id": "potionParticles",
+      "label": "Potion",
+      "nativeKey": "ofPotionParticles",
+      "enums": [
+        "POTION_PARTICLES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Particles",
+      "id": "dripping",
+      "label": "Dripping water / lava",
+      "nativeKey": "ofDrippingWaterLava",
+      "enums": [
+        "DRIPPING_WATER_LAVA"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "animations",
+      "section": "Particles",
+      "id": "fireworks",
+      "label": "Fireworks",
+      "nativeKey": "ofFireworkParticles",
+      "enums": [
+        "FIREWORK_PARTICLES"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Diagnostics",
+      "id": "lagometer",
+      "label": "Lagometer",
+      "nativeKey": "ofLagometer",
+      "enums": [
+        "LAGOMETER"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Diagnostics",
+      "id": "profiler",
+      "label": "Debug profiler",
+      "nativeKey": "ofProfiler",
+      "enums": [
+        "PROFILER"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Diagnostics",
+      "id": "showFps",
+      "label": "Show OptiFine FPS",
+      "nativeKey": "ofShowFps",
+      "enums": [
+        "SHOW_FPS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Diagnostics",
+      "id": "advancedTooltips",
+      "label": "Advanced tooltips",
+      "nativeKey": "advancedItemTooltips",
+      "enums": [
+        "ADVANCED_TOOLTIPS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Diagnostics",
+      "id": "glErrors",
+      "label": "Show GL errors",
+      "nativeKey": "ofShowGlErrors",
+      "enums": [
+        "SHOW_GL_ERRORS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Singleplayer",
+      "id": "weather",
+      "label": "Weather",
+      "nativeKey": "ofWeather",
+      "enums": [
+        "WEATHER"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Singleplayer",
+      "id": "time",
+      "label": "Time",
+      "nativeKey": "ofTime",
+      "enums": [
+        "TIME"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "other",
+      "section": "Singleplayer",
+      "id": "autosave",
+      "label": "Autosave interval",
+      "nativeKey": "ofAutoSaveTicks",
+      "enums": [
+        "AUTOSAVE_TICKS"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "other",
+      "section": "Window & capture",
+      "id": "fullscreen",
+      "label": "Fullscreen",
+      "nativeKey": "fullscreen",
+      "enums": [
+        "USE_FULLSCREEN"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Window & capture",
+      "id": "fullscreenMode",
+      "label": "Fullscreen mode",
+      "nativeKey": "ofFullscreenMode",
+      "enums": [
+        "FULLSCREEN_MODE"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "other",
+      "section": "Window & capture",
+      "id": "anaglyph",
+      "label": "3D anaglyph",
+      "nativeKey": "anaglyph3d",
+      "enums": [
+        "ANAGLYPH"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "other",
+      "section": "Window & capture",
+      "id": "screenshotSize",
+      "label": "Screenshot size",
+      "nativeKey": "ofScreenshotSize",
+      "enums": [
+        "SCREENSHOT_SIZE"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "controls",
+      "section": "Mouse",
+      "id": "sensitivity",
+      "label": "Sensitivity",
+      "nativeKey": "mouseSensitivity",
+      "enums": [
+        "SENSITIVITY"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "controls",
+      "section": "Mouse",
+      "id": "invertMouse",
+      "label": "Invert mouse",
+      "nativeKey": "invertYMouse",
+      "enums": [
+        "INVERT_MOUSE"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "controls",
+      "section": "Mouse",
+      "id": "touchscreen",
+      "label": "Touchscreen mode",
+      "nativeKey": "touchscreen",
+      "enums": [
+        "TOUCHSCREEN"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "chat",
+      "section": "Visibility",
+      "id": "chatVisibility",
+      "label": "Chat",
+      "nativeKey": "chatVisibility",
+      "enums": [
+        "CHAT_VISIBILITY"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "chat",
+      "section": "Visibility",
+      "id": "chatColors",
+      "label": "Colors",
+      "nativeKey": "chatColors",
+      "enums": [
+        "CHAT_COLOR"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "chat",
+      "section": "Links",
+      "id": "chatLinks",
+      "label": "Web links",
+      "nativeKey": "chatLinks",
+      "enums": [
+        "CHAT_LINKS"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "chat",
+      "section": "Links",
+      "id": "chatPrompt",
+      "label": "Prompt on links",
+      "nativeKey": "chatLinksPrompt",
+      "enums": [
+        "CHAT_LINKS_PROMPT"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "chat",
+      "section": "Appearance",
+      "id": "chatOpacity",
+      "label": "Opacity",
+      "nativeKey": "chatOpacity",
+      "enums": [
+        "CHAT_OPACITY"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "chat",
+      "section": "Appearance",
+      "id": "chatScale",
+      "label": "Scale",
+      "nativeKey": "chatScale",
+      "enums": [
+        "CHAT_SCALE"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "chat",
+      "section": "Dimensions",
+      "id": "chatWidth",
+      "label": "Width",
+      "nativeKey": "chatWidth",
+      "enums": [
+        "CHAT_WIDTH"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "chat",
+      "section": "Dimensions",
+      "id": "chatFocused",
+      "label": "Focused height",
+      "nativeKey": "chatHeightFocused",
+      "enums": [
+        "CHAT_HEIGHT_FOCUSED"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "chat",
+      "section": "Dimensions",
+      "id": "chatUnfocused",
+      "label": "Unfocused height",
+      "nativeKey": "chatHeightUnfocused",
+      "enums": [
+        "CHAT_HEIGHT_UNFOCUSED"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "chat",
+      "section": "Debug",
+      "id": "reducedDebug",
+      "label": "Reduced debug info",
+      "nativeKey": "reducedDebugInfo",
+      "enums": [
+        "REDUCED_DEBUG_INFO"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "language",
+      "section": "Font",
+      "id": "unicode",
+      "label": "Force Unicode font",
+      "nativeKey": "forceUnicodeFont",
+      "enums": [
+        "FORCE_UNICODE_FONT"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "skin",
+      "section": "Skin layers",
+      "id": "skin_cape",
+      "label": "Cape",
+      "nativeKey": "modelPart_cape",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "skin",
+      "section": "Skin layers",
+      "id": "skin_hat",
+      "label": "Hat",
+      "nativeKey": "modelPart_hat",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "skin",
+      "section": "Skin layers",
+      "id": "skin_jacket",
+      "label": "Jacket",
+      "nativeKey": "modelPart_jacket",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "skin",
+      "section": "Skin layers",
+      "id": "skin_left_sleeve",
+      "label": "Left sleeve",
+      "nativeKey": "modelPart_left_sleeve",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "skin",
+      "section": "Skin layers",
+      "id": "skin_right_sleeve",
+      "label": "Right sleeve",
+      "nativeKey": "modelPart_right_sleeve",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "skin",
+      "section": "Skin layers",
+      "id": "skin_left_pants_leg",
+      "label": "Left pants leg",
+      "nativeKey": "modelPart_left_pants_leg",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "skin",
+      "section": "Skin layers",
+      "id": "skin_right_pants_leg",
+      "label": "Right pants leg",
+      "nativeKey": "modelPart_right_pants_leg",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "privacy",
+      "section": "Collection",
+      "id": "snooper",
+      "label": "Allow snooper",
+      "nativeKey": "snooperEnabled",
+      "enums": [
+        "SNOOPER_ENABLED"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "shaders",
+      "section": "Rendering",
+      "id": "shaderAA",
+      "label": "Antialiasing",
+      "nativeKey": "shaders.properties:antialiasingLevel",
+      "enums": [],
+      "type": "select"
+    },
+    {
+      "page": "shaders",
+      "section": "Lighting",
+      "id": "normalMap",
+      "label": "Normal map",
+      "nativeKey": "shaders.properties:normalMapEnabled",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "shaders",
+      "section": "Lighting",
+      "id": "specularMap",
+      "label": "Specular map",
+      "nativeKey": "shaders.properties:specularMapEnabled",
+      "enums": [],
+      "type": "toggle"
+    },
+    {
+      "page": "shaders",
+      "section": "Rendering",
+      "id": "renderQuality",
+      "label": "Render quality",
+      "nativeKey": "shaders.properties:renderResMul",
+      "enums": [],
+      "type": "select"
+    },
+    {
+      "page": "shaders",
+      "section": "Rendering",
+      "id": "shadowQuality",
+      "label": "Shadow quality",
+      "nativeKey": "shaders.properties:shadowResMul",
+      "enums": [],
+      "type": "select"
+    },
+    {
+      "page": "shaders",
+      "section": "Rendering",
+      "id": "handDepth",
+      "label": "Hand depth",
+      "nativeKey": "shaders.properties:handDepthMul",
+      "enums": [],
+      "type": "select"
+    },
+    {
+      "page": "shaders",
+      "section": "Lighting",
+      "id": "oldHandLight",
+      "label": "Old hand light",
+      "nativeKey": "shaders.properties:oldHandLight",
+      "enums": [],
+      "type": "select"
+    },
+    {
+      "page": "shaders",
+      "section": "Lighting",
+      "id": "oldLighting",
+      "label": "Old lighting",
+      "nativeKey": "shaders.properties:oldLighting",
+      "enums": [],
+      "type": "select"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast quality",
+      "id": "streamQuality",
+      "label": "Quality",
+      "nativeKey": "streamBytesPerPixel",
+      "enums": [
+        "STREAM_BYTES_PER_PIXEL"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast quality",
+      "id": "streamBandwidth",
+      "label": "Bandwidth",
+      "nativeKey": "streamKbps",
+      "enums": [
+        "STREAM_KBPS"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast quality",
+      "id": "streamFps",
+      "label": "Frame rate",
+      "nativeKey": "streamFps",
+      "enums": [
+        "STREAM_FPS"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast quality",
+      "id": "streamCompression",
+      "label": "Compression",
+      "nativeKey": "streamCompression",
+      "enums": [
+        "STREAM_COMPRESSION"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast audio",
+      "id": "streamMic",
+      "label": "Mic volume",
+      "nativeKey": "streamMicVolume",
+      "enums": [
+        "STREAM_VOLUME_MIC"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast audio",
+      "id": "streamSystem",
+      "label": "System volume",
+      "nativeKey": "streamSystemVolume",
+      "enums": [
+        "STREAM_VOLUME_SYSTEM"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast audio",
+      "id": "streamPush",
+      "label": "Push to",
+      "nativeKey": "streamMicToggleBehavior",
+      "enums": [
+        "STREAM_MIC_TOGGLE_BEHAVIOR"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast chat",
+      "id": "streamMetadata",
+      "label": "Send metadata",
+      "nativeKey": "streamSendMetadata",
+      "enums": [
+        "STREAM_SEND_METADATA"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast chat",
+      "id": "streamChat",
+      "label": "Enable chat",
+      "nativeKey": "streamChatEnabled",
+      "enums": [
+        "STREAM_CHAT_ENABLED"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "legacy",
+      "section": "Broadcast chat",
+      "id": "streamFilter",
+      "label": "User filter",
+      "nativeKey": "streamChatUserFilter",
+      "enums": [
+        "STREAM_CHAT_USER_FILTER"
+      ],
+      "type": "select"
+    },
+    {
+      "page": "legacy",
+      "section": "Retained compatibility",
+      "id": "fbo",
+      "label": "Enable FBOs",
+      "nativeKey": "fboEnable",
+      "enums": [
+        "FBO_ENABLE"
+      ],
+      "type": "toggle"
+    },
+    {
+      "page": "legacy",
+      "section": "Retained compatibility",
+      "id": "saturation",
+      "label": "Saturation",
+      "nativeKey": "saturation",
+      "enums": [
+        "SATURATION"
+      ],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Overall volume",
+      "id": "volume_master",
+      "label": "Master volume",
+      "nativeKey": "soundCategory_master",
+      "enums": [],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Sound channels",
+      "id": "volume_music",
+      "label": "Music",
+      "nativeKey": "soundCategory_music",
+      "enums": [],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Sound channels",
+      "id": "volume_record",
+      "label": "Jukebox/Noteblocks",
+      "nativeKey": "soundCategory_record",
+      "enums": [],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Sound channels",
+      "id": "volume_weather",
+      "label": "Weather",
+      "nativeKey": "soundCategory_weather",
+      "enums": [],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Sound channels",
+      "id": "volume_hostile",
+      "label": "Hostile creatures",
+      "nativeKey": "soundCategory_hostile",
+      "enums": [],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Sound channels",
+      "id": "volume_neutral",
+      "label": "Friendly creatures",
+      "nativeKey": "soundCategory_neutral",
+      "enums": [],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Sound channels",
+      "id": "volume_player",
+      "label": "Players",
+      "nativeKey": "soundCategory_player",
+      "enums": [],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Sound channels",
+      "id": "volume_block",
+      "label": "Blocks",
+      "nativeKey": "soundCategory_block",
+      "enums": [],
+      "type": "range"
+    },
+    {
+      "page": "audio",
+      "section": "Sound channels",
+      "id": "volume_ambient",
+      "label": "Ambient/Environment",
+      "nativeKey": "soundCategory_ambient",
+      "enums": [],
+      "type": "range"
+    }
+  ]
+}

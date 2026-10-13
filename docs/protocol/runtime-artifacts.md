@@ -1,7 +1,7 @@
 # Runtime Artifact Contract
 
-The current Forge 1.8.9 release contract is schema v1 and contains exactly
-seven JAR roles. The machine-readable source of truth is
+The current Forge 1.8.9 Runtime contract is schema v1 and contains exactly
+five active JAR roles. The machine-readable source of truth is
 [`runtime-artifact-roles.json`](runtime-artifact-roles.json).
 
 ```text
@@ -9,11 +9,9 @@ build/runtime/
 |- artifacts/
 |  |- opus-bootstrap-<version>.jar
 |  |- opus-runtime-legacy-1.8.9-<version>.jar
+|  |- opus-standalone-loader-<version>.jar
 |  |- opus-lwjgl-macos-compat-2.9.2-nightly-20140822.jar
-|  |- opus-native-ui-1.8.9-0.1.0.jar
-|  |- opus-oneconfig-1.8.9-forge-0.2.2-alpha228-full.jar
-|  |- opus-elementa-762.jar
-|  `- opus-universalcraft-1.8.9-forge-516.jar
+|  `- opus-native-ui-1.8.9-0.1.0.jar
 |- runtime-manifest.json
 `- runtime-checksums.json
 ```
@@ -22,11 +20,9 @@ build/runtime/
 | --- | --- | --- |
 | `bootstrap` | Launcher classpath | Starts the bounded Forge bootstrap protocol. |
 | `runtime-legacy-1.8.9` | Game `mods/` | Legacy OPUS Core Mod integration. |
-| `lwjgl-macos-compat` | Game `mods/` | Locked macOS LWJGL compatibility support. |
-| `native-ui` | Game `mods/` | Legacy Forge UI bridge. |
-| `opusconfig` | Game `mods/` | Frozen OneConfig-based configuration/UI dependency. |
-| `elementa` | Game `mods/` | Elementa shell dependency. |
-| `universalcraft` | Game `mods/` | UniversalCraft dependency. |
+| `standalone-loader` | Game classpath | LaunchWrapper/OpusTweaker loader for the standalone client mode. |
+| `lwjgl-macos-compat` | Game classpath | Locked macOS LWJGL compatibility support. |
+| `native-ui` | Game `mods/` | React/CEF in-game client JAR; the role and filename are retained compatibility aliases. |
 
 The manifest records Runtime version, protocol version, Minecraft version,
 artifact role, filename, byte size, and SHA-256. The checksum file duplicates

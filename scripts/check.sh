@@ -15,6 +15,20 @@ else
 fi
 
 case "${selected_profile}" in
+  client-cef)
+    node "${opus_root}/scripts/check-runtime-artifact-contract.mjs"
+    "${opus_root}/scripts/submodule-status.sh" --profile "${selected_profile}"
+    (cd "${opus_root}/ui-v2" && npm run check && npm run build && node --test test/*.test.mjs)
+    (cd "${opus_root}/launcher" && ./scripts/check.sh)
+    (cd "${opus_root}/runtime" && ./scripts/check.sh)
+    "${opus_root}/runtime/web-surface-v2/scripts/run-w6.sh"
+    node "${opus_root}/scripts/verify-release-lock.mjs" \
+      "${opus_root}" \
+      --profile "${selected_profile}" \
+      --require-manifest
+    node "${opus_root}/tests/verify-release-lock.mjs"
+    "${opus_root}/scripts/audit-naming.sh"
+    ;;
   injector-development)
     node "${opus_root}/scripts/check-runtime-artifact-contract.mjs"
     cargo fmt --manifest-path "${opus_root}/injector/Cargo.toml" -- --check

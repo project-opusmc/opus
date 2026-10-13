@@ -1,7 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { KeyboardEvent } from "react";
-import type { ModuleSetting, OpusModule } from "../bridge/types";
+import type { ModuleSetting, OpusModule, UiSettings } from "../bridge/types";
+import { FpsSettings } from "./FpsSettings";
+import { buildFpsResetOperations } from "./fpsSettingsModel";
 import { UiIcon } from "./ui/UiIcon";
+import { OPUS_LOGO } from "../precision/PrecisionFrame";
 
 interface Props {
   modules: OpusModule[];
@@ -14,6 +17,10 @@ interface Props {
   onRefresh: () => Promise<void>;
   onHud: () => void;
   onClose: () => void;
+  initialPage?: "overview" | "modules" | "detail";
+  settings: UiSettings | null;
+  onUiSettings: (settings: UiSettings) => Promise<void>;
+  onMinecraft: () => void;
 }
 
 function Switch({ label, checked, disabled, onChange }: {
@@ -79,7 +86,10 @@ function EnumOption({ setting, disabled, onSave }: {
 // Every control belongs to a module/setting supplied by the runtime. No local
 // profile catalog, simulated mods, or preferences without a persistence API.
 export function OpusControlCenter({ modules, loading, unconfirmed, initialModuleId, preview,
-  onToggle, onSetting, onRefresh, onHud, onClose }: Props) {
+  onToggle, onSetting, onRefresh, onHud, onClose, initialPage = "overview", settings, onUiSettings, onMinecraft }: Props) {
+  const [page, setPage] = useState<string>(initialPage);
+  useEffect(()=>{setPage(initialPage);},[initialPage]);
+  const [onlyEnabled, setOnlyEnabled] = useState(false);
   const [selectedId, setSelectedId] = useState(initialModuleId ?? "");
   const [search, setSearch] = useState("");
   const [pending, setPending] = useState<string | null>(null);
@@ -104,9 +114,16 @@ export function OpusControlCenter({ modules, loading, unconfirmed, initialModule
     return () => window.cancelAnimationFrame(frame);
   }, [loading]);
   useEffect(() => { root.current?.focus({ preventScroll: true }); }, []);
-  useEffect(() => { if (initialModuleId) setSelectedId(initialModuleId); }, [initialModuleId]);
+  useEffect(() => {
+    if (!initialModuleId) return;
+    setSelectedId(initialModuleId);
+    setPage("detail");
+  }, [initialModuleId]);
   const module = modules.find(item => item.id === selectedId) ?? modules[0];
-  const filtered = modules.filter(item => `${item.name} ${item.description}`.toLowerCase().includes(search.trim().toLowerCase()));
+  const displaySettings = (module?.settings ?? []).filter(item => !["enabled", "anchor", "offsetX", "offsetY"].includes(item.key)
+    && (module?.id !== "fps" || item.key === "opacity"));
+  const fpsModule = modules.find(item => item.id === "fps");
+  const filtered = modules.filter(item => (!onlyEnabled || item.enabled) && `${item.name} ${item.description}`.toLowerCase().includes(search.trim().toLowerCase()));
   const disabled = loading || pending !== null || unconfirmed;
   async function save(label: string, operation: () => Promise<void>, success?: string): Promise<boolean> {
     if (pendingRef.current) return false;
@@ -138,52 +155,40 @@ export function OpusControlCenter({ modules, loading, unconfirmed, initialModule
       event.preventDefault(); last?.focus();
     } else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
   }
-  return <section ref={root} tabIndex={-1} className="control-center" data-opus-control-center
+  async function resetFpsAppearance() {
+    if (!fpsModule) return;
+    const operations = buildFpsResetOperations(fpsModule.settings ?? []);
+    if (!operations.length) return;
+    await save("Reset FPS appearance", () => onSetting(fpsModule.id, "resetAppearance", "1"), preview ? "Preview FPS appearance reset." : "FPS appearance reset to defaults.");
+  }
+
+  return <section ref={root} tabIndex={-1} className="client-window precision-client" data-opus-control-center
     role="dialog" aria-modal="true" aria-label="Client settings" onKeyDown={containFocus}
-    onFocusCapture={event => {
-      if (event.target instanceof HTMLElement && event.target !== root.current) lastFocusedControl.current = event.target;
-    }}>
-    <header className="control-center__header">
-      <div className="control-center__identity">
-        <img src="/brand/opus-mark-user.png" alt="Opus" width="36" height="36" />
-        <span><strong>OPUS</strong><small>Client controls</small></span>
-      </div>
-      <button className="control-center__close" type="button" aria-label="Close client settings"
-        title="Close client settings (Esc)" onClick={onClose}><span>Esc</span><UiIcon name="close" /></button>
-    </header>
-    <div className="control-center__body">
-      <aside className="control-center__library" aria-label="Module library">
-        <div className="control-center__library-heading"><span>Modules</span><small>{modules.length}</small></div>
-        <label className="control-center__search"><UiIcon name="search" /><input type="search"
-          aria-label="Search modules" placeholder="Search modules" value={search} onChange={event => setSearch(event.target.value)} /></label>
-        <nav className="control-center__list" aria-label="Installed modules">
-          {filtered.map(item => <button type="button" key={item.id} data-opus-module-id={item.id}
-            aria-label={`${item.name}, ${item.enabled ? "Enabled" : "Disabled"}`}
-            className="control-module" aria-pressed={item.id === module?.id} onClick={() => { setSelectedId(item.id); setFeedback(null); }}>
-            <UiIcon name={item.id === "fps" ? "activity" : item.id === "keystrokes" ? "keyboard" : "hud"} />
-            <span><strong>{item.name}</strong><small>{item.enabled ? "Enabled" : "Disabled"}</small></span>
-            <i aria-hidden="true" data-enabled={item.enabled} />
-          </button>)}
-          {!loading && filtered.length === 0 && <p className="control-center__empty">{modules.length ? "No matching modules." : "No modules received from the client."}</p>}
-          {loading && <p className="control-center__empty">Reading client modules…</p>}
-        </nav>
-        <button type="button" className="control-center__hud" onClick={onHud} disabled={pending !== null}
-          aria-label="Edit HUD layout"><UiIcon name="hud" /><span>Edit HUD layout</span><UiIcon name="chevron" /></button>
-      </aside>
-      <div className="control-center__detail">
-        {module && <>
-          <header className="control-center__module-heading">
+    onFocusCapture={event => { if(event.target instanceof HTMLElement&&event.target!==root.current)lastFocusedControl.current=event.target; }}>
+    <header className="client-window-heading"><div className="client-window-brand"><img src={OPUS_LOGO} alt=""/><span><strong>OPUS</strong>Client settings</span></div><nav><button type="button" className="text-button client-header-hud" aria-label="Edit HUD layout" onClick={onHud}>HUD layout</button><button type="button" className="text-button" onClick={onMinecraft}>Minecraft settings</button></nav><button type="button" className="client-window-close" aria-label="Close client settings" onClick={onClose}>×</button></header>
+    <div className="client-layout"><aside className="client-rail"><nav className="client-nav" aria-label="Client sections">
+      <span className="nav-category">CLIENT</span>{["overview","interface","modules"].map(id=><button type="button" key={id} className="nav-button" aria-current={page===id?"page":undefined} onClick={()=>setPage(id)}>{id==="overview"?"Overview":id==="interface"?"Interface":"All modules"}</button>)}
+      <span className="nav-category">HUD MODULES</span>{modules.map(item=><button type="button" key={item.id} className="nav-button" data-accent="modules" data-opus-module-id={item.id} aria-label={`${item.name}, ${item.enabled?"Enabled":"Disabled"}`} aria-current={page==="detail"&&module?.id===item.id?"page":undefined} onClick={()=>{setSelectedId(item.id);setPage("detail");}}>{item.name}<i className={`module-line-state${item.enabled?" is-on":""}`}/></button>)}
+    </nav><div className="client-rail-bottom"><button type="button" className="client-hud-link" aria-label="Edit HUD layout" onClick={onHud}>Edit HUD layout <kbd>RSHIFT</kbd></button><button type="button" className="settings-owner-link" onClick={onMinecraft}>Minecraft settings →</button><span>CLIENT / 1.8.9</span></div></aside>
+    <main className="control-center__detail client-main">
+      {page==="overview"&&<><header className="client-main-heading"><div><span className="client-breadcrumb">OPUS CLIENT</span><h1 className="holo-text">Your setup</h1><p>Client preferences and the modules on your HUD.</p></div></header><div className="client-body client-overview"><div className="client-overview-main"><section className="client-section"><h2>Preferences</h2><button type="button" className="preference-link" onClick={()=>setPage("interface")}><span><strong>Interface</strong><small>Scale, density and motion.</small></span><span>→</span></button><button type="button" className="preference-link" onClick={onMinecraft}><span><strong>Minecraft settings</strong><small>Video, sound, controls and resource packs.</small></span><span>→</span></button></section><section className="client-section"><div className="section-heading"><h2>On your HUD</h2><span>{modules.filter(item=>item.enabled).length} enabled</span></div>{modules.map(item=><button type="button" key={item.id} className="preference-link" onClick={()=>{setSelectedId(item.id);setPage("detail");}}><span><strong>{item.name}</strong><small>{item.description}</small></span><span className="preference-current">{item.enabled?"On":"Off"} →</span></button>)}</section></div><aside className="client-context"><div className="client-context-heading"><h2>HUD layout</h2></div><p className="context-copy">Arrange your enabled modules directly over the game. The frame and its content resize together.</p><button className="button button--primary" data-accent="modules" type="button" onClick={onHud}>Edit HUD layout <kbd>RSHIFT</kbd></button></aside></div></>}
+      {page==="interface"&&<><header className="client-main-heading"><div><span className="client-breadcrumb">OPUS CLIENT / PREFERENCES</span><h1>Interface</h1><p>Keep the client comfortable on your display.</p></div></header><div className="client-body client-control-scroll"><div className="settings-group"><h2>APPEARANCE</h2>{settings&&<><div className="control-option"><span>Reduce motion</span><Switch label="Reduce motion" checked={settings.reduceMotion} disabled={disabled} onChange={()=>void save("Reduce motion",()=>onUiSettings({...settings,reduceMotion:!settings.reduceMotion}))}/></div><div className="control-option"><span>Compact spacing</span><Switch label="Compact spacing" checked={settings.compactMode} disabled={disabled} onChange={()=>void save("Compact spacing",()=>onUiSettings({...settings,compactMode:!settings.compactMode}))}/></div></>}</div></div></>}
+      {page==="modules"&&<><header className="client-main-heading"><div><span className="client-breadcrumb">OPUS CLIENT / MODULES</span><h1 className="accent-text" data-accent="modules">Modules</h1><p>Only modules installed in your client.</p></div></header><div className="module-library-toolbar"><div className="segments"><button type="button" aria-pressed={!onlyEnabled} onClick={()=>setOnlyEnabled(false)}>All</button><button type="button" aria-pressed={onlyEnabled} onClick={()=>setOnlyEnabled(true)}>Enabled</button></div><label className="search-field"><input type="search" aria-label="Search modules" placeholder="Find a module" value={search} onChange={event=>setSearch(event.target.value)}/></label></div><div className="client-body module-grid" data-accent="modules">{filtered.map(item=><article key={item.id} className="module-card"><h2>{item.name}</h2><p>{item.description}</p><div className="module-card-actions"><button type="button" className="text-button" onClick={()=>{setSelectedId(item.id);setPage("detail");}}>Settings →</button><Switch label={`Enable ${item.name}`} checked={item.enabled} disabled={disabled} onChange={()=>void save(item.name,()=>onToggle(item.id,!item.enabled))}/></div></article>)}{!filtered.length&&<p className="section-copy">{loading?"Reading modules…":"No modules match your filter."}</p>}</div></>}
+        {page === "detail" && module && <>
+          <header className="client-main-heading control-center__module-heading">
             <div><span className="control-center__eyebrow">{module.category === "visual" ? "HUD MODULE" : "CLIENT MODULE"}</span><h1>{module.name}</h1></div>
             <div className="control-center__enable"><span>{module.enabled ? "Enabled" : "Disabled"}</span>
               <Switch label={`Enable ${module.name}`} checked={module.enabled} disabled={disabled}
                 onChange={() => void save(module.name, () => onToggle(module.id, !module.enabled))} /></div>
           </header>
-          <p className="control-center__description">{module.description}</p>
-          <div className="control-center__options" aria-label={`${module.name} options`}>
-            <h2>Display &amp; placement</h2>
-            {(module.settings ?? []).filter(item => item.key !== "enabled").map(setting => <div className="control-option" key={`${module.id}:${setting.key}`}>
+          <div className="client-control-scroll"><p className="section-copy">{module.description}</p>
+          {module.id === "fps" && <FpsSettings module={module} disabled={disabled} onReset={resetFpsAppearance}
+            onSave={(label, key, value) => save(label, () => onSetting(module.id, key, value))} />}
+          {<div className="control-center__options" aria-label={`${module.name} options`}>
+            <h2>{module.id === "fps" ? "Opacity" : "Display"}</h2>
+            {displaySettings.map(setting => <div className="control-option" key={`${module.id}:${setting.key}`}>
               <div className="control-option__label"><span>{setting.label}</span>
-                {setting.type === "integer" && <small>{setting.key === "scale" || setting.key === "opacity" ? "Percent" : "Pixels from anchor"}</small>}
+                {setting.type === "integer" && (setting.key === "scale" || setting.key === "opacity") && <small>Percent</small>}
               </div>
               {setting.type === "boolean" && <Switch label={setting.label} checked={setting.value === "1" || setting.value === "true"} disabled={disabled}
                 onChange={() => void save(setting.label, () => onSetting(module.id, setting.key, setting.value === "1" || setting.value === "true" ? "0" : "1"))} />}
@@ -192,19 +197,13 @@ export function OpusControlCenter({ modules, loading, unconfirmed, initialModule
               {setting.type === "enum" && <EnumOption setting={setting} disabled={disabled}
                 onSave={value => void save(setting.label, () => onSetting(module.id, setting.key, value))} />}
             </div>)}
-            {!module.settings?.some(item => item.key !== "enabled") && <p className="control-center__empty">This runtime provides an enable switch only.</p>}
-          </div>
-        </>}
-        {!module && !loading && <div className="control-center__unavailable"><UiIcon name="modules" /><h1>Module library unavailable</h1>
+            {!displaySettings.length && <p className="control-center__empty">Arrange this module in the HUD editor.</p>}
+          </div>}
+        </div></>}
+        {page === "detail" && !module && !loading && <div className="control-center__unavailable"><UiIcon name="modules" /><h1>Module library unavailable</h1>
           <p>Refresh to read the modules installed in your client.</p></div>}
         <div className="control-center__feedback" role={feedback?.error || unconfirmed ? "alert" : "status"}>
           {pending ? `${pending}…` : feedback?.message ?? (unconfirmed ? "Values are unconfirmed. Refresh before editing again." : preview ? "Browser preview · runtime-compatible controls" : "Values read from your client. Changes save automatically.")}
         </div>
-      </div>
-    </div>
-    <footer className="control-center__footer"><span>{modules.filter(item => item.enabled).length} of {modules.length} modules enabled</span>
-      <button type="button" disabled={pending !== null || loading} onClick={() => void save("Refreshing values", onRefresh,
-        preview ? "Preview values refreshed." : "Values refreshed from client.")}
-        aria-label="Refresh module values"><UiIcon name="refresh" /><span>Refresh values</span></button></footer>
-  </section>;
+    <footer className="client-main-footer"><span>{modules.filter(item => item.enabled).length} / {modules.length} modules enabled</span><button type="button" className="text-button" disabled={pending !== null || loading} onClick={() => void save("Refreshing values", onRefresh)} aria-label="Refresh module values">Refresh values</button></footer></main></div></section>;
 }

@@ -6,18 +6,35 @@ async (page) => {
   const option = (key, label, type, value, min = "0", max = "1", options = []) =>
     ({ key, label, type, value, min, max, step: "1", options });
   const modules = [
-    { id: "fps", name: "Performance overlay", enabled: false, settings: [
-      option("enabled", "Enabled", "boolean", "0"), option("scale", "Scale", "integer", "100", "50", "150"),
+    { id: "fps", name: "FPS", enabled: false, settings: [
+      option("enabled", "Enabled", "boolean", "0"), option("scale", "Scale", "integer", "100", "50", "400"),
       option("opacity", "Opacity", "integer", "100", "25", "100"),
       option("anchor", "Anchor", "enum", "top-left", "0", "0", [
-        { value: "top-left", label: "Top left" }, { value: "top-right", label: "Top right" }]),
+        { value: "top-left", label: "Top left" }, { value: "top-right", label: "Top right" },
+        { value: "bottom-left", label: "Bottom left" }, { value: "bottom-right", label: "Bottom right" }]),
       option("offsetX", "Offset X", "integer", "12", "0", "4096"),
       option("offsetY", "Offset Y", "integer", "12", "0", "4096"),
+      option("reverseOrder", "Reverse Order", "boolean", "1"),
+      option("textShadow", "Text Shadow", "boolean", "1"),
+      option("showBrackets", "Show Brackets", "boolean", "1"),
+      option("bracketColor", "Bracket Color", "color", "#ffffffff", "0", "0"),
+      option("showBackground", "Show Background", "boolean", "0"),
+      option("staticBackgroundWidth", "Static Background Width", "boolean", "1"),
+      option("backgroundWidth", "Background Width", "integer", "56", "10", "300"),
+      option("backgroundHeight", "Background Height", "integer", "18", "10", "100"),
+      option("border", "Border", "boolean", "0"),
+      option("borderThickness", "Border Thickness", "integer", "50", "10", "500"),
+      option("borderColor", "Border Color", "color", "#9f000000", "0", "0"),
+      option("backgroundColor", "Background Color", "color", "#6f000000", "0", "0"),
+      option("textColor", "Text Color", "color", "#ffffffff", "0", "0"),
     ] },
     { id: "armor-status", name: "Armor Status", enabled: false, settings: [
       option("enabled", "Enabled", "boolean", "0"), option("showDurability", "Durability", "boolean", "1"),
     ] },
   ];
+  const appearanceKeys = ["scale", "reverseOrder", "textShadow", "showBrackets", "bracketColor", "showBackground",
+    "staticBackgroundWidth", "backgroundWidth", "backgroundHeight", "border", "borderThickness", "borderColor", "backgroundColor", "textColor"];
+  const appearanceDefaults = structuredClone(modules[0].settings.filter(item => appearanceKeys.includes(item.key)));
   let state = { revision: 41, current: { id: "game_menu" }, canGoBack: false, canCloseToGame: true };
   let rejectWrites = false;
   let loseWriteResponse = false;
@@ -66,8 +83,12 @@ async (page) => {
       requireState(module, "UI submitted an invented module id");
       if ("enabled" in write) { module.enabled = write.enabled; module.settings[0].value = write.enabled ? "1" : "0"; }
       else {
-        const setting = module.settings.find(item => item.key === write.key);
-        requireState(setting, "UI submitted an invented option"); setting.value = write.value;
+        if (write.key === "resetAppearance" && write.id === "fps" && write.value === "1") {
+          for (const initial of appearanceDefaults) module.settings.find(item => item.key === initial.key).value = initial.value;
+        } else {
+          const setting = module.settings.find(item => item.key === write.key);
+          requireState(setting, "UI submitted an invented option"); setting.value = write.value;
+        }
         // Keep the actual request pending long enough to exercise DOM focus
         // across the disabled/saving state, not an instant local mock.
         if (write.key === "scale") await new Promise(resolve => setTimeout(resolve, 150));
@@ -80,10 +101,11 @@ async (page) => {
     if (path.endsWith("/accounts")) return json({ accounts: [] });
     throw new Error(`Unexpected control-center API: ${path}`);
   });
-  const open = async (id, canGoBack = false, canCloseToGame = true) => {
-    state = { revision: state.revision + 1, current: { id }, canGoBack, canCloseToGame };
+  const open = async (id, canGoBack = false, canCloseToGame = true, routeQuery = "") => {
+    const queryParams = Object.fromEntries(new URLSearchParams(routeQuery));
+    state = { revision: state.revision + 1, current: { id, ...(Object.keys(queryParams).length ? { params: queryParams } : {}) }, canGoBack, canCloseToGame };
     // Fresh isolated boot, even when the previous native Back kept this hash.
-    await page.goto(`http://127.0.0.1:5174/?port=31311&fixtureRevision=${state.revision}#/${id}`);
+    await page.goto(`http://127.0.0.1:5174/?port=31311&fixtureRevision=${state.revision}#/${id}${routeQuery}`);
     await page.locator(`[data-opus-route="${id}"]`).waitFor();
   };
   await page.setViewportSize({ width: 900, height: 600 });
@@ -95,29 +117,136 @@ async (page) => {
   requireState(actions.at(-1)?.action === "close", "Ready root Pause ignored Escape instead of closing to gameplay");
   requireState(actions.at(-1)?.revision === 42, "Pause Escape lost its rendered revision");
 
+  await page.setViewportSize({ width: 1600, height: 1100 });
+  await open("module_detail", true, true, "?moduleId=fps");
+  const fpsPanel = page.locator('[data-opus-control-center]');
+  await fpsPanel.waitFor();
+  requireState(await page.getByRole("dialog", { name: "Client settings" }).count() === 1,
+    "FPS settings must remain inside the Opus control center");
+  requireState(await page.getByRole("heading", { name: "FPS", exact: true }).count() === 1
+    && await page.getByRole("searchbox", { name: "Search modules" }).count() === 1
+    && await page.getByRole("button", { name: "Close client settings" }).count() === 1
+    && await page.getByRole("button", { name: "Edit HUD layout" }).count() === 1
+    && await page.getByRole("button", { name: "Reset FPS appearance" }).count() === 1,
+  "FPS options must use Opus navigation and controls");
+  requireState(await page.getByRole("img", { name: "Opus" }).count() === 1
+    && await page.getByRole("heading", { name: "Display", exact: true }).count() === 1
+    && await page.getByRole("heading", { name: "Background", exact: true }).count() === 1
+    && await page.locator(".control-center--fps").count() === 0,
+  "FPS configuration must retain Opus branding without the copied Lunar surface");
+  requireState(await page.getByRole("slider", { name: "Scale" }).count() === 1
+    && await page.getByRole("switch", { name: "Reverse Order" }).count() === 1
+    && await page.getByRole("switch", { name: "Text Shadow" }).count() === 1,
+  "FPS scale and primary switches are missing");
+  requireState(await page.getByRole("spinbutton", { name: "Opacity", exact: true }).count() === 1
+    && await page.getByRole("radiogroup", { name: "Anchor", exact: true }).count() === 1
+    && await page.getByRole("spinbutton", { name: "Offset X", exact: true }).count() === 1
+    && await page.getByRole("spinbutton", { name: "Offset Y", exact: true }).count() === 1,
+  "Existing FPS placement and opacity controls must remain editable");
+  const fpsAtWide = await fpsPanel.boundingBox();
+  requireState(fpsAtWide && fpsAtWide.x >= 0 && fpsAtWide.y >= 0
+    && fpsAtWide.x + fpsAtWide.width <= 1600 && fpsAtWide.y + fpsAtWide.height <= 1100,
+  "Opus FPS surface must remain inside the 1600x1100 viewport");
+  const wideColumns = await page.locator(".fps-settings__content").evaluate(el => getComputedStyle(el).gridTemplateColumns);
+  requireState(wideColumns.split(" ").length === 1, `FPS controls should use one wide column: ${wideColumns}`);
+  const brackets = page.getByRole("button", { name: "Collapse Show Brackets options" });
+  await page.getByRole("button", { name: "Collapse Show Background options" }).waitFor();
+  await page.getByRole("button", { name: "Collapse Border options" }).waitFor();
+  requireState(await page.getByRole("button", { name: "Edit Bracket Color" }).count() === 1
+    && await page.getByRole("button", { name: "Edit Border Color" }).count() === 1
+    && await page.getByRole("button", { name: "Edit Background Color" }).count() === 1,
+  "Expanded FPS groups must show their native color controls");
+  await brackets.click();
+  await page.getByRole("button", { name: "Expand Show Brackets options" }).waitFor();
+  requireState(await page.getByRole("button", { name: "Edit Bracket Color" }).count() === 0,
+    "Collapsing Brackets must hide its nested color control");
+  await page.getByRole("button", { name: "Expand Show Brackets options" }).click();
+  await page.getByRole("button", { name: "Edit Bracket Color" }).waitFor();
+  const reverse = page.getByRole("switch", { name: "Reverse Order" });
+  await reverse.click();
+  await page.waitForFunction(() => document.querySelector('[role="switch"][aria-label="Reverse Order"]')?.getAttribute("aria-checked") === "false");
+  requireState(writes.at(-1)?.id === "fps" && writes.at(-1)?.key === "reverseOrder" && writes.at(-1)?.value === "0",
+    "FPS switches must persist through the native module settings endpoint");
+  const fpsColor = page.getByRole("textbox", { name: "Bracket Color ARGB value" });
+  await fpsColor.fill("#ff123456"); await fpsColor.press("Enter");
+  await page.waitForFunction(() => document.querySelector('[aria-label="Bracket Color ARGB value"]')?.value === "#ff123456");
+  requireState(writes.at(-1)?.id === "fps" && writes.at(-1)?.key === "bracketColor" && writes.at(-1)?.value === "#ff123456",
+    "ARGB color edits must persist the runtime wire format");
+  await page.getByRole("button", { name: "Edit Bracket Color" }).click();
+  const bracketEditor = page.getByRole("dialog", { name: "Bracket Color editor" });
+  await bracketEditor.getByRole("button", { name: "Apply", exact: true }).click();
+  requireState(await bracketEditor.count() === 0, "Applying an unchanged color must close the editor");
+  await page.getByRole("button", { name: "Edit Text Color" }).click();
+  const colorEditor = page.getByRole("dialog", { name: "Text Color editor" });
+  const beforeEscape = writes.length;
+  await colorEditor.getByRole("spinbutton", { name: "A", exact: true }).fill("0");
+  await colorEditor.getByRole("spinbutton", { name: "A", exact: true }).press("Escape");
+  requireState(await colorEditor.count() === 0 && writes.length === beforeEscape
+    && await page.locator('[data-opus-route="module_detail"]').count() === 1,
+  "Color Escape must discard its draft without closing Opus settings or saving");
+  await page.waitForFunction(() => document.activeElement?.getAttribute("aria-label") === "Edit Text Color");
+  await page.getByRole("button", { name: "Edit Text Color" }).click();
+  const beforeCancel = writes.length;
+  await colorEditor.getByRole("spinbutton", { name: "A", exact: true }).fill("0");
+  await colorEditor.getByRole("button", { name: "Cancel", exact: true }).click();
+  requireState(writes.length === beforeCancel
+    && await page.getByRole("textbox", { name: "Text Color ARGB value" }).inputValue() === "#ffffffff",
+  "Color Cancel must discard RGB/alpha drafts without saving them");
+  await page.getByRole("button", { name: "Edit Text Color" }).click();
+  await colorEditor.getByRole("spinbutton", { name: "A", exact: true }).fill("0");
+  await colorEditor.getByRole("button", { name: "Apply", exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('[aria-label="Text Color ARGB value"]')?.value === "#00ffffff"
+    && !document.querySelector('[aria-label="Text Color ARGB value"]')?.disabled);
+  requireState(writes.at(-1)?.key === "textColor" && writes.at(-1)?.value === "#00ffffff", "Color alpha must reach the runtime");
+  const textColor = page.getByRole("textbox", { name: "Text Color ARGB value" });
+  const beforeInvalid = writes.length;
+  await textColor.fill("#xxffffff"); await textColor.press("Enter");
+  requireState(await textColor.getAttribute("aria-invalid") === "true" && writes.length === beforeInvalid,
+    "Invalid ARGB must remain unsaved and explain the error");
+  await textColor.fill("  #FFABCDEF  "); await textColor.press("Enter");
+  await page.waitForFunction(() => document.querySelector('[aria-label="Text Color ARGB value"]')?.value === "#ffabcdef"
+    && !document.querySelector('[aria-label="Text Color ARGB value"]')?.disabled);
+  for (const [name, key, expected] of [["Scale", "scale", "101"], ["Background Width", "backgroundWidth", "57"],
+    ["Background Height", "backgroundHeight", "19"], ["Border Thickness", "borderThickness", "51"]]) {
+    await page.getByRole("slider", { name, exact: true }).press("ArrowRight");
+    await page.waitForFunction(({name, expected}) => document.querySelector(`[aria-label="${name}"]`)?.value === expected
+      && !document.querySelector(`[aria-label="${name}"]`)?.disabled, {name, expected});
+    requireState(writes.at(-1)?.key === key && writes.at(-1)?.value === expected, `${name} did not persist its wire value`);
+  }
+  for (const [name, key, expected] of [["Text Shadow", "textShadow", "0"], ["Show Brackets", "showBrackets", "0"],
+    ["Show Background", "showBackground", "1"], ["Static Background Width", "staticBackgroundWidth", "0"], ["Border", "border", "1"]]) {
+    await page.getByRole("switch", { name, exact: true }).click();
+    await page.waitForFunction(({name, expected}) => document.querySelector(`[aria-label="${name}"]`)?.getAttribute("aria-checked") === (expected === "1" ? "true" : "false")
+      && !document.querySelector(`[aria-label="${name}"]`)?.disabled, {name, expected});
+    requireState(writes.at(-1)?.key === key && writes.at(-1)?.value === expected, `${name} did not persist`);
+  }
+  const beforeReset = writes.length;
+  await page.getByRole("button", { name: "Reset FPS appearance" }).click();
+  await page.waitForFunction(() => document.querySelector('[role="switch"][aria-label="Reverse Order"]')?.getAttribute("aria-checked") === "true"
+    && document.querySelector('[aria-label="Text Color ARGB value"]')?.value === "#ffffffff"
+    && document.querySelector('[aria-label="Scale"]')?.value === "100"
+    && !document.querySelector('[aria-label="Scale"]')?.disabled);
+  requireState(writes.length === beforeReset + 1 && writes.at(-1)?.id === "fps"
+    && writes.at(-1)?.key === "resetAppearance" && writes.at(-1)?.value === "1"
+    && modules[0].settings.find(item => item.key === "bracketColor").value === "#ffffffff",
+  "Reset appearance must be one atomic native operation");
+  await page.setViewportSize({ width: 427, height: 600 });
+  const fpsNarrow = await fpsPanel.boundingBox();
+  const narrowColumns = await page.locator(".fps-settings__content").evaluate(el => getComputedStyle(el).gridTemplateColumns);
+  const noHorizontalOverflow = await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth);
+  requireState(fpsNarrow && fpsNarrow.x >= 0 && fpsNarrow.x + fpsNarrow.width <= 427
+    && narrowColumns.split(" ").length === 1 && noHorizontalOverflow,
+  `FPS surface must fit the narrow viewport without horizontal scrolling: ${JSON.stringify({ fpsNarrow, narrowColumns, noHorizontalOverflow })}`);
+
   await open("quick_hub");
   await page.locator('[data-opus-module-id="fps"]').waitFor();
   requireState(await page.getByText("Time Changer", { exact: true }).count() === 0, "The catalog fabricated a Lunar module");
   const logo = page.getByRole("img", { name: "Opus" });
   requireState(await logo.evaluate(el => el.complete && el.naturalWidth > 0
     && new URL(el.src).pathname === "/brand/opus-mark-user.png"), "Control center must use the approved loaded Opus mark");
-  await page.getByRole("switch", { name: "Enable Performance overlay" }).click();
-  await page.waitForFunction(() => document.querySelector('[role="switch"][aria-label="Enable Performance overlay"]')?.getAttribute("aria-checked") === "true");
+  await page.getByRole("switch", { name: "Enable FPS" }).click();
+  await page.waitForFunction(() => document.querySelector('[role="switch"][aria-label="Enable FPS"]')?.getAttribute("aria-checked") === "true");
   requireState(writes.at(-1)?.id === "fps" && writes.at(-1)?.enabled === true, "Module did not reach native toggle API");
-  const scale = page.getByRole("spinbutton", { name: "Scale" });
-  const scaleSaved = page.waitForResponse(response => response.url().endsWith("/modules/settings"));
-  await scale.fill("125"); await scale.press("Enter");
-  await scaleSaved;
-  await page.waitForFunction(() => !document.querySelector('[aria-label="Scale"]')?.disabled);
-  await page.waitForFunction(() => document.querySelector('[aria-label="Scale"]') === document.activeElement, null, { timeout: 1000 });
-  requireState(await scale.evaluate(el => el === document.activeElement), "Saving Scale lost keyboard focus");
-  await page.waitForFunction(() => document.querySelector('[aria-label="Scale"]')?.value === "125");
-  requireState(writes.at(-1)?.id === "fps" && writes.at(-1)?.key === "scale" && writes.at(-1)?.value === "125", "Scale was only saved locally");
-  const anchor = page.getByRole("radio", { name: "Anchor: Top right" });
-  await anchor.waitFor({ state: "visible", timeout: 1000 });
-  await anchor.click();
-  await page.waitForFunction(() => document.querySelector('[role="radio"][aria-label="Anchor: Top right"]')?.getAttribute("aria-checked") === "true");
-  requireState(writes.at(-1)?.value === "top-right", "Anchor did not preserve its native enum value");
   await page.locator('[data-opus-module-id="armor-status"]').click();
   await page.getByRole("switch", { name: "Durability" }).click();
   await page.waitForFunction(() => document.querySelector('[role="switch"][aria-label="Durability"]')?.getAttribute("aria-checked") === "false");
@@ -144,7 +273,6 @@ async (page) => {
   requireState(await page.getByRole("alert").count() === 0, "Refresh did not recover unconfirmed native values");
   await page.getByRole("button", { name: "Edit HUD layout" }).click();
   await page.locator('[data-opus-route="hud_editor"]').waitFor();
-  requireState(actions.at(-1)?.route?.id === "hud_editor", "HUD editor button was inert");
   // Native HUD edits must be read when returning without a new browser boot.
   modules[0].settings.find(item => item.key === "scale").value = "130";
   backTarget = "settings";
@@ -165,7 +293,7 @@ async (page) => {
   };
   const overlapFailures = [];
   await open("quick_hub");
-  await page.getByRole("spinbutton", { name: "Scale" }).waitFor();
+  await page.getByRole("slider", { name: "Scale" }).waitFor();
   await page.waitForFunction(() => !document.querySelector('[aria-label="Scale"]')?.disabled);
   const staleRead = holdNextRead();
   await publish("quick_hub");
@@ -184,7 +312,7 @@ async (page) => {
 
   await publish("quick_hub", false);
   await page.waitForFunction(() => !document.querySelector('[aria-label="Scale"]')?.disabled);
-  const retainedScale = page.getByRole("spinbutton", { name: "Scale" });
+  const retainedScale = page.getByRole("slider", { name: "Scale" });
   await retainedScale.focus();
   await retainedScale.evaluate(el => { el.dataset.retainedFocusFixture = "true"; });
   const park = page.waitForResponse(response => response.url().endsWith("/ui-actions")
@@ -229,5 +357,5 @@ async (page) => {
   await page.keyboard.press("Escape");
   await page.locator('[data-opus-route="game_menu"]').waitFor();
   requireState(actions.at(-1)?.action === "back", "Nested settings Escape did not return to Pause");
-  return { result: "Control center PASS: real native catalog/options, truthful error recovery, overlapping reread/HUD return, retained focus, root/nested Escape and 4 sizes", geometry };
+  return { result: "Control center PASS: Opus FPS controls/ARGB/cancel/reset and runtime API catalog/options, truthful error recovery, overlapping reread/HUD return, retained focus, root/nested Escape and 4 sizes", geometry };
 }

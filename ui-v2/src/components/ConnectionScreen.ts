@@ -1,101 +1,48 @@
-import { createElement } from "react";
-import type { ConnectionState } from "../bridge/types";
+import { createElement as el } from 'react';
+import type { ConnectionState } from '../bridge/types';
 
 export interface ConnectionScreenProps {
   connection: ConnectionState;
   canGoBack: boolean;
   onBack: () => void;
 }
+const phases = [
+  {id:'network',label:'Connect to server',owner:'Network'},
+  {id:'session',label:'Authenticate session',owner:'Account'},
+  {id:'terrain',label:'Load terrain',owner:'World'},
+] as const;
 
-type ConnectionAction = { kind: "cancel" | "back"; label: "Cancel" | "Back" } | null;
-
-function connectionAction(connection: ConnectionState, canGoBack: boolean): ConnectionAction {
-  if (connection.phase === "loading") return null;
-  if (connection.phase === "connecting" && connection.canCancel) {
-    return { kind: "cancel", label: "Cancel" };
-  }
-  if (canGoBack || connection.phase === "disconnected") {
-    return { kind: "back", label: "Back" };
-  }
-  return null;
-}
-
-/** Simple animated spinner — three dots rotating, Lunar-style */
-function Spinner({ phase }: { phase: ConnectionState["phase"] }) {
-  if (phase === "disconnected") {
-    return createElement("svg", {
-      className: "conn__icon-svg",
-      width: 32, height: 32, viewBox: "0 0 32 32", fill: "none",
-      stroke: "currentColor", strokeWidth: 1.75, strokeLinecap: "round",
-      "aria-hidden": true,
-    },
-      createElement("rect", { x: 4, y: 5, width: 24, height: 9, rx: 2.5 }),
-      createElement("rect", { x: 4, y: 18, width: 24, height: 9, rx: 2.5 }),
-      createElement("path", { d: "M8 9.5h.01M8 22.5h.01M13 9.5h8M13 22.5h8" }),
-      createElement("line", { x1: 6, y1: 4, x2: 26, y2: 28, stroke: "currentColor", strokeWidth: 2.25, className: "conn__slash" }),
-    );
-  }
-  // Connecting / loading: spinning arc
-  return createElement("svg", {
-    className: "conn__icon-svg",
-    width: 32, height: 32, viewBox: "0 0 32 32", fill: "none",
-    "aria-hidden": true,
-  },
-    // ghost track
-    createElement("circle", { cx: 16, cy: 16, r: 13, stroke: "currentColor", strokeWidth: 2, opacity: 0.12, fill: "none" }),
-    // spinning arc
-    createElement("circle", {
-      cx: 16, cy: 16, r: 13,
-      stroke: "currentColor",
-      strokeWidth: 2.5,
-      strokeLinecap: "round",
-      strokeDasharray: "22 60",
-      fill: "none",
-      className: "conn__arc",
-    }),
-  );
-}
-
-export function ConnectionScreen({ connection, canGoBack, onBack }: ConnectionScreenProps) {
-  const action = connectionAction(connection, canGoBack);
-  const hasDetail = connection.detail.trim().length > 0;
-  const serverName = connection.serverName.trim();
-  const serverAddress = connection.serverAddress.trim();
-  const isDisconnected = connection.phase === "disconnected";
-
-  return createElement("section", {
-    className: "conn",
-    "data-opus-connection-phase": connection.phase,
-    "aria-labelledby": "conn-title",
-    "aria-live": isDisconnected ? "assertive" : "polite",
-  },
-    // Icon
-    createElement("div", { className: "conn__icon", "aria-hidden": true },
-      createElement(Spinner, { phase: connection.phase })),
-
-    // Title
-    createElement("div", { className: "conn__text" },
-      createElement("h1", { id: "conn-title", className: "conn__title" }, connection.title),
-      (serverName || serverAddress) && createElement("p", { className: "conn__server" },
-        serverAddress || serverName),
+export function ConnectionScreen({connection,canGoBack,onBack}:ConnectionScreenProps) {
+  const disconnected = connection.phase==='disconnected';
+  const stage = connection.stage ?? (connection.phase==='loading'?'terrain':'network');
+  const resources=stage==='resources';
+  const world=stage==='world';
+  const steps:ReadonlyArray<{id:string;label:string;owner:string}>=resources?[{id:'resources',label:'Apply resources',owner:'Minecraft'}]:world?[{id:'world',label:'Load world',owner:'Minecraft'}]:phases;
+  const current = steps.findIndex(item=>item.id===stage);
+  const action = connection.phase==='loading' ? null : connection.phase==='connecting' && connection.canCancel ? 'cancel' : canGoBack || disconnected ? 'back' : null;
+  const detail = connection.detail.trim();
+  return el('section',{className:'screen connection-screen','data-opus-connection-phase':connection.phase,'aria-labelledby':'conn-title','aria-live':disconnected?'assertive':'polite'},
+    el('section',{className:'connection-pane material content-material','data-accent':'server'},
+      el('div',{className:'connection-identity'},el('div',null,
+        el('p',{className:'eyebrow'},`${resources?'MINECRAFT':world?'SINGLEPLAYER':'MULTIPLAYER'}${connection.serverName.trim()?` / ${connection.serverName.trim()}`:''}`),
+        el('h1',{id:'conn-title'},disconnected?(world?"Couldn't load world":"Couldn't reach server"):resources?(connection.title||'Loading resources'):world?(connection.title||'Loading world'):connection.phase==='loading'?'Loading terrain':'Connecting to server'),
+        el('p',null,connection.serverAddress.trim()),
+      )),
+      disconnected ? el('div',{className:'connection-error'},
+        el('div',null,connection.title || 'Disconnected'),
+        el('p',{'data-opus-connection-detail':true,'data-opus-connection-detail-empty':!detail,'aria-hidden':!detail||undefined},detail || 'The connection was closed.'),
+      ) : el('div',{className:'phase-list','aria-label':'Connection phases'},
+        steps.map((phase,index)=>el('div',{key:phase.id,className:`phase-item${index===current?' is-active':index<current?' is-done':''}`,'data-stage':phase.id,'aria-current':index===current?'step':undefined},
+          el('span',{className:'phase-marker','aria-hidden':true},index<current?'✓':index+1),
+          el('span',null,phase.label),el('span',{className:'phase-description'},phase.owner),
+        )),
+      ),
+      el('div',{className:'connection-bottom'},
+        el('p',{'data-opus-connection-detail':disconnected?undefined:true,'data-opus-connection-detail-empty':disconnected?undefined:!detail,'aria-hidden':!disconnected&&!detail?true:undefined},
+          disconnected?(world?'You can return to your worlds.':'You can return to your saved servers.'):detail || (world?'Minecraft is preparing this world.':stage==='session'?'Authenticating your Minecraft session.':stage==='terrain'?'Waiting for the server to send the world.':'Contacting the server.'),
+        ),
+        action && el('button',{type:'button',className:'button',onClick:onBack,'data-opus-connection-action':action},action==='cancel'?'Cancel':'Back'),
+      ),
     ),
-
-    // Keep the action position stable when native progress briefly has no text.
-    createElement("div", {
-      className: `conn__detail${hasDetail ? "" : " conn__detail--empty"}`,
-      tabIndex: hasDetail ? 0 : undefined,
-      "aria-label": hasDetail ? "Connection details" : undefined,
-      "aria-hidden": hasDetail ? undefined : true,
-      "data-opus-connection-detail": true,
-      "data-opus-connection-detail-empty": !hasDetail,
-    }, hasDetail ? createElement("p", null, connection.detail) : null),
-
-    // Action button
-    action && createElement("button", {
-      type: "button",
-      className: "conn__btn",
-      onClick: onBack,
-      "data-opus-connection-action": action.kind,
-    }, action.label),
   );
 }

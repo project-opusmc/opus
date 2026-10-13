@@ -79,3 +79,31 @@ test("loading terrain has no action even if stale navigation says back is availa
   assert.doesNotMatch(markup, /data-opus-connection-action=/);
   assert.doesNotMatch(markup, /<button/);
 });
+
+test('connection uses the approved phase pane and a native session stage without a spinner', async () => {
+  const markup = await renderConnection({phase:'connecting',stage:'session',title:'Authorizing…',detail:'',serverName:'Axora',serverAddress:'play.rankedbw.com',canCancel:true},true);
+  assert.match(markup,/class="screen connection-screen"/);
+  assert.match(markup,/connection-pane material content-material/);
+  assert.match(markup,/MULTIPLAYER \/ Axora/);
+  assert.match(markup,/data-stage="session" aria-current="step"/);
+  assert.match(markup,/Connect to server/);
+  assert.match(markup,/Authenticate session/);
+  assert.match(markup,/Load terrain/);
+  assert.doesNotMatch(markup,/conn__icon|spinner/i);
+});
+
+test('resource loading shows the actual Minecraft task without inventing network stages or a Cancel action', async () => {
+  const markup=await renderConnection({phase:'loading',stage:'resources',title:'Downloading resource pack',detail:'Resource pack · 37%',serverName:'Axora',serverAddress:'play.example.net',canCancel:false},true);
+  assert.match(markup,/Downloading resource pack/);
+  assert.match(markup,/Resource pack · 37%/);
+  assert.match(markup,/data-stage="resources" aria-current="step"/);
+  assert.doesNotMatch(markup,/data-stage="network"|data-opus-connection-action=/);
+});
+
+test('singleplayer loading names the selected world without network or account phases', async () => {
+  const markup = await renderConnection({phase:'loading',stage:'world',title:'Loading world',detail:'',serverName:'Opus test world',serverAddress:'',canCancel:false},true);
+  assert.match(markup,/SINGLEPLAYER \/ Opus test world/);
+  assert.match(markup,/data-stage="world" aria-current="step"/);
+  assert.match(markup,/Loading world/);
+  assert.doesNotMatch(markup,/data-stage="network"|data-stage="session"|Authenticate session|Contacting the server|data-opus-connection-action=/);
+});

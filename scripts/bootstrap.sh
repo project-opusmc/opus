@@ -26,4 +26,5 @@ for component_name in launcher runtime; do
 done
 
 npm ci --prefix "${opus_root}/launcher/desktop"
+npm ci --prefix "${opus_root}/ui-v2"
 "${opus_root}/scripts/submodule-status.sh"

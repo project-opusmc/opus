@@ -1,17 +1,12 @@
 # Build And Release
 
-> **Current product direction — September 15, 2026:** Opus Client + Opus
-> Launcher, UI first, is the active mainline under
-> [Decision 0008](decisions/0008-opus-client-launcher-ui-first-mainline.md).
-> The injector/injection track and its release lock are frozen R&D, preserved
-> for a later explicit resumption. This page records the current technical
-> build/release contract; it does not describe the active product delivery
-> roadmap or claim a new Client/Launcher artifact contract.
+The active local build profile is `client-cef`, pinned to the checked-out
+Launcher and Runtime gitlinks and the generated five-role Runtime manifest.
+Its `development-only` state blocks packaging until release signing and
+physical in-game acceptance are complete.
 
-The checked-in `release/opus.lock.json` profile is
-`injector-development`. It represents retained Injector → native runtime → Java
-payload R&D and is deliberately **foundation-only**. It must not be described
-as a distributable OPUS client release.
+The `injector-development` profile remains frozen foundation R&D; it is not
+this checkout's default check or build path.
 
 ## Prerequisites
 
@@ -22,43 +17,28 @@ as a distributable OPUS client release.
 - CMake 3.24 or later
 - macOS for the current native-runtime foundation and legacy Forge client lane
 
-## Retained R&D development commands
+## Active Client commands
 
 ```bash
 ./scripts/bootstrap.sh
 ./scripts/check.sh
 ./scripts/build.sh
+./scripts/package.sh
 ```
 
-These commands remain technical verification entry points for the retained R&D
-lane. They are not an instruction to resume injector work.
+`bootstrap.sh` initializes the Launcher and Runtime submodules and installs the
+Launcher desktop and React UI dependencies. `check.sh` runs the UI typecheck,
+build, and contract tests; Launcher checks; Runtime checks; the W4 coordinate
+and input gates; and three consecutive W5 React/CEF production-route runs.
+`build.sh` rebuilds the five Runtime artifacts, verifies the locked manifest,
+stages the desktop assets and CEF helper, then builds the Launcher workspace
+and desktop frontend.
 
-`bootstrap.sh` initializes the rollback submodules and installs the Launcher
-frontend dependencies. `check.sh` validates the seven-role legacy artifact
-baseline, builds both native architecture slices, runs the controlled-JVM
-JNI/JVMTI proof, runs a three-cycle injector-owned JVM lifecycle proof,
-including logical restart in the same target JVM, runs a separately launched
-authorized-target load/unload/survival proof, repeats both lifecycle proofs
-against the pinned x86_64 Java 8 JDK, validates the schema-v2 lock, and audits
-product naming. It also tests the M3 authorized-client evidence verifier,
-which rejects fixture-only captures and validates the required repeated
-lifecycle shape for a future explicitly authorized client integration.
-
-`build.sh` builds the Rust `opus-injector` M3 preflight binary and the `arm64`
-and `x86_64` native-runtime foundation slices. The binary supports read-only
-process inspection, architecture preflight, typed handshake/transport status,
-the separate owned-JVM lifecycle proof, and the loopback-only authorized-target
-fixture proof. It intentionally does not stage Forge artifacts, perform
-OS-level remote process modification, build a desktop application, or create
-`opus-runtime.jar`.
-
-`./scripts/package.sh` intentionally exits with an error for the active
-foundation-only profile. Packaging becomes available only after the injector,
-native runtime, Java payload, version handshake, checksums, architecture
-selection, adapter certification, and lifecycle/reinjection gates are all
-implemented. In particular, M3 still requires a reviewed non-fixture client
-capture that passes
-[`m3-authorized-client-integration-evidence.md`](protocol/m3-authorized-client-integration-evidence.md).
+The `client-cef` profile remains `development-only`, so `package.sh` refuses
+packaging until release signing and physical in-game acceptance are complete.
+The separate `injector-development` profile is still available by explicitly
+setting `OPUS_BUILD_PROFILE=injector-development`; it remains frozen R&D and is
+not the default check/build path.
 
 ## Profile selection
 

@@ -7,6 +7,7 @@ import { DesignLab } from "./dev/DesignLab";
 import "./ui/tokens.css";
 import "./ui/primitives.css";
 import "./styles.css";
+import "./precision/precision.css";
 
 const params = new URLSearchParams(window.location.search);
 const showDesignLab = isStandalone && params.get("lab") === "1";

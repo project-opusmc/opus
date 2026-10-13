@@ -1,0 +1,185 @@
+/* Study 10: identity, destination and module accents have different jobs.
+   These pigments are static. The woven O remains the source of the brand palette. */
+:root {
+  --server-pigment: linear-gradient(108deg, #83a8e6 0%, #9abfee 27%, #bce5f1 40%, #e0f5f7 47%, #90d6dd 55%, #86b5e4 76%, #a2cde8 100%);
+  --server-wash: linear-gradient(108deg, rgba(88,125,175,.065) 0%, rgba(122,171,207,.035) 38%, rgba(142,216,220,.10) 68%, rgba(99,135,185,.045) 100%);
+  --module-pigment: linear-gradient(108deg, #b29ae3 0%, #bda5ed 23%, #d7bbed 38%, #f3e0f3 46%, #e8b4d2 55%, #cb9ddc 76%, #bea8e8 100%);
+  --module-wash: linear-gradient(108deg, rgba(154,116,181,.035) 0%, rgba(187,135,186,.08) 48%, rgba(213,151,182,.10) 74%, rgba(154,125,187,.04) 100%);
+  --world-pigment: linear-gradient(108deg, #c4a17d 0%, #e3b985 26%, #f1d3a9 40%, #fff0d6 47%, #edc58e 56%, #cfae94 77%, #e3c0a0 100%);
+  --world-wash: linear-gradient(108deg, rgba(156,116,77,.06) 0%, rgba(204,164,116,.035) 38%, rgba(223,185,134,.095) 70%, rgba(168,127,91,.04) 100%);
+  --ready-pigment: linear-gradient(108deg, #8ebda6 0%, #a5d8be 32%, #dfefe5 47%, #a8d4ca 61%, #92bfaf 100%);
+  --ready-color: #a5cfb9;
+  --task-pigment: var(--holo-pigment);
+  --task-wash: var(--holo-wash);
+  --task-color: #c9c3ee;
+  --task-edge: #c4cce3;
+  --task-ink: #202431;
+}
+
+[data-accent="server"] {
+  --task-pigment: var(--server-pigment);
+  --task-wash: var(--server-wash);
+  --task-color: #a2cde8;
+  --task-edge: #98bfdc;
+  --task-ink: #172432;
+}
+[data-accent="modules"] {
+  --task-pigment: var(--module-pigment);
+  --task-wash: var(--module-wash);
+  --task-color: #d3b5e6;
+  --task-edge: #cbb3de;
+  --task-ink: #2a2031;
+}
+[data-accent="world"] {
+  --task-pigment: var(--world-pigment);
+  --task-wash: var(--world-wash);
+  --task-color: #e3c0a0;
+  --task-edge: #dbc19e;
+  --task-ink: #30261e;
+}
+
+.accent-text {
+  color: var(--task-color);
+  width: fit-content;
+  max-width: 100%;
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .accent-text {
+    background-image: var(--task-pigment);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
+/* Brand emphasis stays on Play, the overview, Pause and the account identity.
+   Destination actions inherit their own pigment without adding glow or shadow. */
+[data-accent] .button--primary,
+.button--primary[data-accent] {
+  background: var(--task-pigment);
+  color: var(--task-ink);
+  border-color: var(--task-edge);
+}
+[data-accent] .button--primary:hover,
+.button--primary[data-accent]:hover {
+  background: var(--task-pigment);
+  border-color: #eeeeee;
+}
+.destination[data-accent]:hover { background: var(--task-wash), #222222; }
+.return-pane[data-accent="server"] {
+  background-image: var(--task-wash);
+  border-color: #3b4349;
+}
+.server-cover::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--server-wash);
+}
+.server-cover-identity { z-index: 1; }
+.server-row[aria-pressed="true"] {
+  background: var(--task-wash), #22272c;
+  border-color: #3e4d59;
+  box-shadow: inset 2px 0 0 #9abfee;
+}
+.server-row[aria-pressed="true"] .server-row-copy strong {
+  color: var(--task-color);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .server-row[aria-pressed="true"] .server-row-copy strong {
+    background-image: var(--task-pigment);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+.empty-worlds[data-accent="world"] { background-image: var(--task-wash); }
+
+/* Navigation and ordinary controls remain neutral. Color is reserved for
+   a destination selection or a module section, rather than every input. */
+.segments button[aria-pressed="true"] {
+  background: #2b2b2b;
+  border-color: #555555;
+  color: var(--ink);
+}
+.segments button[aria-pressed="true"][data-accent],
+[data-accent="modules"] .module-library-toolbar .segments button[aria-pressed="true"] {
+  background: var(--task-wash), #292729;
+  border-color: #555555;
+  color: var(--task-color);
+}
+.nav-button.is-active {
+  color: var(--ink);
+  background: #2b2b2b;
+  border-color: #404040;
+}
+.nav-button.is-active::before { background: #cecece; }
+.nav-button.is-active[data-accent="modules"] {
+  color: var(--task-color);
+  background: var(--task-wash), #292629;
+  border-color: #494049;
+}
+.nav-button.is-active[data-accent="modules"]::before { background: var(--task-pigment); }
+.client-main[data-accent="modules"] .client-main-heading { background: var(--task-wash); }
+.module-name:hover,
+.overview-module-list>button:hover { color: #d3b5e6; }
+.module-enable:has(.switch[aria-checked="true"])>span,
+.module-line-state.is-on,
+.nav-button .module-state-dot.is-on { color: var(--ready-color); }
+.module-line-state.is-on,
+.nav-button .module-state-dot.is-on { background: var(--ready-color); }
+.switch[aria-checked="true"]::before { background: #dedede; border-color: #dedede; }
+.switch[data-key="enabled"][aria-checked="true"]::before {
+  background: var(--ready-pigment);
+  border-color: #a5cfb9;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+  background: linear-gradient(#c5c5c5, #c5c5c5) left / var(--range-fill,50%) 100% no-repeat, #464646;
+}
+input[type="range"]::-moz-range-track {
+  background: linear-gradient(#c5c5c5, #c5c5c5) left / var(--range-fill,50%) 100% no-repeat, #464646;
+}
+.mc-video-tabs button[aria-current="page"]::after { background: #cecece; }
+
+.connection-pane[data-accent="server"] .phase-item.is-active {
+  background: var(--task-wash);
+}
+.connection-pane[data-accent="server"] .phase-item.is-active>span:nth-child(2) {
+  background: none;
+  color: var(--task-color);
+  -webkit-text-fill-color: currentColor;
+}
+@supports (background-clip: text) or (-webkit-background-clip: text) {
+  .connection-pane[data-accent="server"] .phase-item.is-active>span:nth-child(2) {
+    background-image: var(--task-pigment);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+.connection-pane[data-accent="server"] .phase-item.is-active .phase-marker { color: var(--task-color); }
+.phase-item.is-done .phase-marker { color: var(--ready-color); }
+
+/* Color never carries the only indication of a selected or enabled state. */
+@media (forced-colors: active) {
+  .accent-text,
+  .server-row[aria-pressed="true"] .server-row-copy strong,
+  .connection-pane[data-accent="server"] .phase-item.is-active>span:nth-child(2) {
+    background: none;
+    color: CanvasText;
+    -webkit-text-fill-color: currentColor;
+  }
+  [data-accent] .button--primary,
+  .button--primary[data-accent] { background: ButtonFace; color: ButtonText; border-color: ButtonText; }
+  .switch[aria-checked="true"]::before,
+  .switch[data-key="enabled"][aria-checked="true"]::before { background: Highlight; border-color: Highlight; }
+  .module-line-state.is-on,
+  .nav-button .module-state-dot.is-on { background: Highlight; }
+  .module-enable>span { color: CanvasText; }
+}

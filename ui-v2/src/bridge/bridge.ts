@@ -1,4 +1,4 @@
-import type { AccountSummary, GameOption, ModuleSetting, NavigationState, OpusBridge, OpusModule, RouteRef, ServerStatus, UiSettings } from "./types";
+import type { AccountSummary, GameOption, GameSettingChoice, ModuleSetting, NavigationState, OpusBridge, OpusModule, RouteRef, ServerStatus, UiSettings } from "./types";
 
 const search = new URLSearchParams(window.location.search);
 const port = Number(search.get("port"));
@@ -6,14 +6,14 @@ const hostMode = Number.isFinite(port) && port > 0;
 const base = hostMode ? `http://127.0.0.1:${port}` : "";
 
 const moduleDescriptions: Record<string, string> = {
-  fps: "Keep your frame rate in view without leaving the game.",
+  fps: "Display your FPS on the HUD.",
   "armor-status": "See equipped armor and its remaining durability at a glance.",
   keystrokes: "See movement, jump and mouse inputs using your current Minecraft key bindings.",
 };
 function mockHudSettings(): ModuleSetting[] {
   return [
     { key: "enabled", label: "Enabled", type: "boolean", value: "0", min: "0", max: "1", step: "1", options: [] },
-    { key: "scale", label: "Scale", type: "integer", value: "100", min: "50", max: "150", step: "1", options: [] },
+    { key: "scale", label: "Scale", type: "integer", value: "100", min: "50", max: "400", step: "1", options: [] },
     { key: "opacity", label: "Opacity", type: "integer", value: "100", min: "25", max: "100", step: "1", options: [] },
     { key: "anchor", label: "Anchor", type: "enum", value: "top-left", min: "0", max: "0", step: "1",
       options: ["top-left", "top-right", "bottom-left", "bottom-right"].map(value => ({ value, label: value.replace("-", " ") })) },
@@ -21,10 +21,37 @@ function mockHudSettings(): ModuleSetting[] {
     { key: "offsetY", label: "Offset Y", type: "integer", value: "12", min: "0", max: "4096", step: "1", options: [] },
   ];
 }
+function mockFpsSettings(): ModuleSetting[] {
+  const appearance: ModuleSetting[] = [
+    { key: "reverseOrder", label: "Reverse Order", type: "boolean", value: "1", min: "0", max: "1", step: "1", options: [] },
+    { key: "textShadow", label: "Text Shadow", type: "boolean", value: "1", min: "0", max: "1", step: "1", options: [] },
+    { key: "showBrackets", label: "Show Brackets", type: "boolean", value: "1", min: "0", max: "1", step: "1", options: [] },
+    { key: "bracketColor", label: "Bracket Color", type: "color", value: "#ffffffff", min: "0", max: "0", step: "1", options: [] },
+    { key: "showBackground", label: "Show Background", type: "boolean", value: "0", min: "0", max: "1", step: "1", options: [] },
+    { key: "staticBackgroundWidth", label: "Static Background Width", type: "boolean", value: "1", min: "0", max: "1", step: "1", options: [] },
+    { key: "backgroundWidth", label: "Background Width", type: "integer", value: "56", min: "10", max: "300", step: "1", options: [] },
+    { key: "backgroundHeight", label: "Background Height", type: "integer", value: "18", min: "10", max: "100", step: "1", options: [] },
+    { key: "border", label: "Border", type: "boolean", value: "0", min: "0", max: "1", step: "1", options: [] },
+    { key: "borderThickness", label: "Border Thickness", type: "integer", value: "50", min: "10", max: "500", step: "1", options: [] },
+    { key: "borderColor", label: "Border Color", type: "color", value: "#9f000000", min: "0", max: "0", step: "1", options: [] },
+    { key: "backgroundColor", label: "Background Color", type: "color", value: "#6f000000", min: "0", max: "0", step: "1", options: [] },
+    { key: "textColor", label: "Text Color", type: "color", value: "#ffffffff", min: "0", max: "0", step: "1", options: [] },
+  ];
+  return mockHudSettings().concat(appearance);
+}
+
+function isValidModuleSettingValue(setting: ModuleSetting, value: string): boolean {
+  if (setting.type === "boolean") return value === "0" || value === "1";
+  if (setting.type === "color") return /^#[0-9a-f]{8}$/i.test(value);
+  if (setting.type === "enum") return setting.options.some((option) => option.value === value);
+  const parsed = Number(value), min = Number(setting.min), max = Number(setting.max), step = Number(setting.step);
+  return value.trim() !== "" && Number.isSafeInteger(parsed) && parsed >= min && parsed <= max
+    && (step <= 0 || (parsed - min) % step === 0);
+}
 // Preview only mirrors capabilities implemented by ClientOverlayController.
 const mockModules: OpusModule[] = [
-  { id: "fps", name: "Performance overlay", description: moduleDescriptions.fps, category: "visual",
-    enabled: false, settings: mockHudSettings() },
+  { id: "fps", name: "FPS", description: moduleDescriptions.fps, category: "visual",
+    enabled: false, settings: mockFpsSettings() },
   { id: "armor-status", name: "Armor Status", description: moduleDescriptions["armor-status"], category: "visual",
     enabled: false, settings: mockHudSettings().map(setting => setting.key === "anchor" ? { ...setting, value: "top-right" } : setting).concat([
       { key: "showDurability", label: "Durability", type: "boolean", value: "1", min: "0", max: "1", step: "1", options: [] },
@@ -126,21 +153,24 @@ async function navigateRequest(
   });
 }
 
+let mockEditorState={editing:true,grid:false,snap:true,canUndo:false};
+
 const mockBridge: OpusBridge = {
   async getClient() {
     return {
       version: "0.1.0-dev",
       minecraft: "1.8.9",
       runtime: "Java 8 · macOS ARM64",
-      account: "zvwgvx",
-      accountKind: "official",
+      account: mockAccounts.find(item=>item.current)?.username??"zvwgvx",
+      accountKind: mockAccounts.find(item=>item.current)?.kind==="offline"?"unofficial":"official",
       session: "online",
     };
   },
   async getNavigationState() { return { revision: 1, current: { id: "title" }, canGoBack: false, canCloseToGame: false }; },
   async getAccounts() { return mockAccounts.map((account) => ({ ...account })); },
   async selectAccount(id) {
-    for (const account of mockAccounts) account.selected = account.id === id;
+    if(!mockAccounts.some(account=>account.id===id))throw new Error("Account unavailable");
+    for (const account of mockAccounts) {account.selected = account.id === id;account.current=account.id===id;}
     return mockAccounts.map((account) => ({ ...account }));
   },
   async ackNavigation() {},
@@ -167,6 +197,10 @@ const mockBridge: OpusBridge = {
   },
   async connectServer(address) { console.info(`[opus-v2] connect=${address}`); },
   async getGameOptions() { return mockGameOptions.map((option) => ({ ...option })); },
+  async getGameSettingChoices(kind) {
+    return kind === "language" ? [{id:"en_US",label:"English (US)",detail:"en_US",selected:true,order:0,compatible:true}] : kind === "shaders" ? [{id:"OFF",label:"Off",detail:"",selected:true,order:0,compatible:true}] : [];
+  },
+  async setGameSettingChoices() {},
   async adjustGameOption(key, delta) {
     const option = mockGameOptions.find((item) => item.key === key);
     if (option) option.value = option.type === "float"
@@ -179,6 +213,8 @@ const mockBridge: OpusBridge = {
   },
   async leaveWorld() { console.info("[opus-v2] leave-world"); },
   async reportHudEditorCanvas(revision, region) { console.info(`[opus-v2] hud-region=${revision}`, region); },
+  async getHudEditorState(){return {...mockEditorState};},
+  async updateHudEditor(){throw new Error('Native HUD canvas is unavailable in standalone mode');},
   async getModules() {
     return structuredClone(mockModules);
   },
@@ -190,8 +226,17 @@ const mockBridge: OpusBridge = {
     if (setting) setting.value = enabled ? "1" : "0";
   },
   async setModuleSetting(id, key, value) {
+    if (id === "fps" && key === "resetAppearance" && value === "1") {
+      const settings = mockModules.find(item => item.id === id)!.settings!;
+      for (const initial of mockFpsSettings().filter(item => item.key === "scale" || !mockHudSettings().some(common => common.key === item.key))) {
+        const target = settings.find(item => item.key === initial.key);
+        if (target) target.value = initial.value;
+      }
+      return;
+    }
     const setting = mockModules.find(item => item.id === id)?.settings?.find(item => item.key === key);
     if (!setting) throw new Error("Module option unavailable");
+    if (!isValidModuleSettingValue(setting, value)) throw new Error(`Invalid value for ${setting.label}`);
     setting.value = value;
   },
   async getUiSettings() {
@@ -201,6 +246,10 @@ const mockBridge: OpusBridge = {
     settings = { ...next };
   },
   async performAction(action) {
+    if(action==="hud-edit")mockEditorState.editing=true;
+    if(action==="hud-preview")mockEditorState.editing=false;
+    if(action==="hud-grid")mockEditorState.grid=!mockEditorState.grid;
+    if(action==="hud-snap")mockEditorState.snap=!mockEditorState.snap;
     console.info(`[opus-v2] action=${action}`);
   },
 };
@@ -212,11 +261,13 @@ const hostBridge: OpusBridge = {
       minecraft: string;
       session?: string;
       accountKind?: "official" | "unofficial";
+      canOpenLan?: string;
     }>("/api/v1/client");
     return {
       version: hello.version,
       minecraft: hello.minecraft,
       runtime: "Minecraft JVM",
+      canOpenLan: hello.canOpenLan === "true",
       account: hello.session || "Active account",
       accountKind: hello.accountKind ?? "unofficial",
       session: "online",
@@ -271,11 +322,18 @@ const hostBridge: OpusBridge = {
     await request<void>("/api/v1/client/servers/connect", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ address }) });
   },
   async getGameOptions() {
-    const data = await request<{ options: Array<{ key: string; label: string; type: "float" | "boolean" | "enum"; value: string; min: string; max: string; step: string }> }>("/api/v1/client/options");
+    const data = await request<{ options: Array<{ key: string; label: string; type: "float" | "boolean" | "enum"; value: string; min: string; max: string; step: string; formatted?: string; available?:boolean }> }>("/api/v1/client/options");
     return data.options.map((option) => ({
       key: option.key, label: option.label, type: option.type,
       value: Number(option.value), min: Number(option.min), max: Number(option.max), step: Number(option.step),
+      formatted: option.formatted, available:option.available,
     }));
+  },
+  async getGameSettingChoices(kind) {
+    const data = await request<{choices:GameSettingChoice[]}>(`/api/v1/client/options/choices?kind=${kind}`);return data.choices;
+  },
+  async setGameSettingChoices(kind,ids) {
+    await request<void>("/api/v1/client/options/choices",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({kind,ids})});
   },
   async adjustGameOption(key, delta) {
     await request<void>("/api/v1/client/options/adjust", {
@@ -296,6 +354,8 @@ const hostBridge: OpusBridge = {
       body: JSON.stringify({ revision, ...region }),
     });
   },
+  async getHudEditorState(){return request("/api/v1/client/hud/editor");},
+  async updateHudEditor(revision,operation,id,x=0,y=0){await request<void>("/api/v1/client/hud/editor",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision,operation,id,x,y})});},
   async getModules() {
     const response = await request<{ modules: Array<{ id: string; name: string; enabled: boolean; settings?: ModuleSetting[] }> }>(
       "/api/v1/client/modules",
@@ -322,13 +382,11 @@ const hostBridge: OpusBridge = {
       body: JSON.stringify({ id, key, value }),
     });
   },
-  async getUiSettings() {
-    return { ...settings };
-  },
+  async getUiSettings() { return request<UiSettings>("/api/v1/client/preferences"); },
   async setUiSettings(next) {
-    settings = { ...next };
+    await request<void>("/api/v1/client/preferences", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(next)});
   },
-  async performAction(action: "quit" | "minecraft-settings" | "create-world", revision?: number) {
+  async performAction(action: "quit" | "minecraft-settings" | "create-world" | "achievements" | "statistics" | "open-lan" | "hud-edit" | "hud-preview" | "hud-grid" | "hud-snap" | "hud-undo", revision?: number) {
     const body = action === "quit"
       ? { action }
       : { action, revision: renderedRevision(revision) };

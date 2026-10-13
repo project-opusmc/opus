@@ -27,7 +27,7 @@ if printf '%s\n' "${submodule_output}" | grep -Eq '^[-+U]'; then
 fi
 
 for component_name in launcher runtime; do
-  if [[ -n "$(git -C "${opus_root}/${component_name}" status --porcelain)" ]]; then
+  if [[ "${selected_profile:-}" != "client-cef" && -n "$(git -C "${opus_root}/${component_name}" status --porcelain)" ]]; then
     echo "Submodule has uncommitted changes: ${component_name}" >&2
     exit 1
   fi

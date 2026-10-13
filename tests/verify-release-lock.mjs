@@ -62,14 +62,14 @@ requireSuccess(currentProfile, "active profile validation");
 
 const printedProfile = runVerifier(opusRoot, "--print-profile");
 requireSuccess(printedProfile, "active profile selection");
-if (printedProfile.stdout.trim() !== "injector-development") {
+if (printedProfile.stdout.trim() !== "client-cef") {
   throw new Error(`Unexpected active profile: ${printedProfile.stdout}`);
 }
 
 requireFailure(
-  runVerifier(opusRoot, "--require-manifest"),
-  "does not provide a Forge runtime manifest",
-  "foundation manifest rejection",
+  runVerifier(opusRoot, "--require-packageable"),
+  "it cannot be packaged",
+  "development-only CEF packaging rejection",
 );
 
 const temporaryRoot = mkdtempSync(join(tmpdir(), "opus-release-lock-test-"));

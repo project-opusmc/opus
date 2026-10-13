@@ -84,7 +84,7 @@ for (const record of contract.roles) {
   );
   contractByRole.set(record.role, record);
 }
-requireCondition(contractByRole.size === 7, "Schema v1 must define exactly seven roles");
+requireCondition(contractByRole.size === 5, "Schema v1 must define exactly five roles");
 const expectedRoles = new Set(contractByRole.keys());
 
 const runtimeBuild = readFileSync(runtimeBuildPath, "utf8");
@@ -220,5 +220,5 @@ try {
 }
 
 console.log(
-  `Runtime artifact contract passed: ${expectedRoles.size} legacy Forge roles are aligned.`,
+  `Runtime artifact contract passed: ${expectedRoles.size} active CEF/Forge roles are aligned.`,
 );

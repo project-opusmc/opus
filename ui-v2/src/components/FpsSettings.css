@@ -1,0 +1,67 @@
+/* FPS shares the existing Opus control center's typography and switches. */
+.fps-settings { flex: none; min-width: 0; }
+.fps-settings__content { display: grid; grid-template-columns: minmax(0, 1fr); }
+.fps-settings__section { min-width: 0; border-top: 1px solid rgba(255,255,255,.09); }
+.fps-settings__section h2 { margin: 18px 0 6px; color: #a8a8b4; font-size: 11px; font-weight: 600; letter-spacing: .03em; }
+.fps-settings__row { position: relative; min-width: 0; min-height: 54px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: #dddde4; font-size: 13px; }
+.fps-settings__row-label { min-width: 0; line-height: 1.4; overflow-wrap: anywhere; }
+.fps-settings__switch-row { display: flex; align-items: center; gap: 12px; }
+.fps-settings__switch-row > .fps-settings__row-label { flex: 1; }
+.fps-settings__chevron, .fps-settings__row-reset { flex: none; width: 30px; height: 32px; display: grid; place-items: center; padding: 5px; border: 0; border-radius: 6px; color: #a9a9b5; background: transparent; cursor: pointer; }
+.fps-settings__chevron svg, .fps-settings__row-reset svg { width: 16px; height: 16px; }
+.fps-settings__chevron[aria-expanded="true"] svg { transform: rotate(90deg); }
+.fps-settings__chevron:hover, .fps-settings__row-reset:hover:not(:disabled) { background: #292a2f; color: #eeeef0; }
+.fps-settings__row-reset:disabled { opacity: .35; cursor: default; }
+.fps-settings__range-row { display: grid; grid-template-columns: minmax(140px, .65fr) 62px minmax(100px, 1fr) 30px; align-items: center; gap: 12px; }
+.fps-settings__range-row output { text-align: right; font-size: 11px; font-variant-numeric: tabular-nums; color: #b2b2be; white-space: nowrap; }
+.fps-settings__range-row input[type="range"] { width: 100%; min-width: 0; height: 32px; margin: 0; appearance: none; background: transparent; cursor: pointer; }
+.fps-settings__range-row input[type="range"]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(to right, #bcbcc7 var(--fps-range-progress), #37373f var(--fps-range-progress)); }
+.fps-settings__range-row input[type="range"]::-webkit-slider-thumb { appearance: none; width: 14px; height: 14px; margin-top: -5px; border: 1px solid #d2d2dc; border-radius: 50%; background: #bcbcc7; }
+.fps-settings__range-row input[type="range"]::-moz-range-track { height: 4px; border-radius: 2px; background: #37373f; }
+.fps-settings__range-row input[type="range"]::-moz-range-progress { height: 4px; background: #bcbcc7; }
+.fps-settings__range-row input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border: 1px solid #d2d2dc; border-radius: 50%; background: #bcbcc7; }
+.fps-settings__inset { min-width: 0; margin: 0 0 12px; padding-left: 16px; border-left: 1px solid #41414b; }
+.fps-settings__color-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.fps-color-control { min-width: 0; display: grid; grid-template-columns: 28px 104px 30px; align-items: center; gap: 8px; }
+.fps-color-control__swatch { width: 28px; height: 28px; padding: 0; border: 1px solid #858590; border-radius: 6px; cursor: pointer; }
+.fps-color-control__hex { min-width: 0; width: 104px; height: 32px; padding: 6px; border: 1px solid #41414b; border-radius: 6px; background: #202126; color: #e8e8ef; font: inherit; font-size: 11px; font-variant-numeric: tabular-nums; }
+.fps-color-control__hex[aria-invalid="true"] { border-color: #dd9999; }
+.fps-color-control__favorite { width: 30px; height: 32px; display: grid; place-items: center; padding: 6px; border: 0; border-radius: 6px; background: transparent; color: #858591; cursor: pointer; }
+.fps-color-control__favorite svg { width: 17px; height: 17px; stroke: currentColor; stroke-width: 1.5; }
+.fps-color-control__favorite[aria-pressed="true"] { color: #d4d4dc; }
+.fps-color-control__favorite:hover { color: #f4f4f5; background: #292a2f; }
+.fps-color-control__error { flex-basis: 100%; color: #edb0b0; font-size: 11px; }
+.fps-color-editor { flex-basis: 100%; min-width: 0; padding: 14px; display: grid; gap: 12px; border: 1px solid #41414b; border-radius: 8px; background: #202126; font-size: 11px; }
+.fps-color-editor__native, .fps-color-editor__alpha { display: flex; align-items: center; gap: 10px; }
+.fps-color-editor__native span, .fps-color-editor__alpha span { flex: none; width: 36px; color: #b2b2be; }
+.fps-color-editor__native input { width: 100%; min-width: 0; height: 30px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+.fps-color-editor__alpha input { flex: 1; min-width: 0; accent-color: #bcbcc7; }
+.fps-color-editor__alpha output { width: 24px; font-variant-numeric: tabular-nums; }
+.fps-color-editor__channels { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.fps-color-editor__channels label { min-width: 0; display: grid; gap: 5px; }
+.fps-color-editor__channels input { width: 100%; min-width: 0; height: 32px; padding: 5px; color: #e8e8ef; border: 1px solid #41414b; border-radius: 5px; background: #17181c; font: inherit; }
+.fps-color-editor__favorites { display: flex; gap: 8px; flex-wrap: wrap; }
+.fps-color-editor__favorites button { width: 28px; height: 28px; border: 1px solid #858590; border-radius: 5px; cursor: pointer; }
+.fps-color-editor__actions, .fps-settings__actions { display: flex; justify-content: flex-end; gap: 8px; }
+.fps-settings__actions { margin-top: 16px; }
+.fps-color-editor__actions button, .fps-settings__actions button { min-height: 34px; padding: 6px 10px; display: flex; align-items: center; gap: 8px; color: #c3c3cd; border: 1px solid #41414b; border-radius: 6px; background: #202126; font: inherit; font-size: 11px; cursor: pointer; }
+.fps-settings__actions svg { width: 14px; height: 14px; }
+.fps-color-editor__actions button:hover:not(:disabled), .fps-settings__actions button:hover:not(:disabled) { background: #292a2f; color: #f4f4f5; }
+.fps-settings button:disabled { opacity: .5; cursor: default; }
+.fps-settings__empty { color: #edb0b0; font-size: 11px; line-height: 1.5; }
+@media (max-width: 1000px) {
+  .fps-settings__range-row { grid-template-columns: minmax(0, 1fr) 62px 30px; column-gap: 8px; }
+  .fps-settings__range-row input[type="range"] { grid-column: 1 / 3; grid-row: 2; }
+  .fps-settings__range-row > button, .fps-settings__range-row > span { grid-column: 3; grid-row: 2; }
+  .fps-settings__range-row output { grid-column: 2 / 4; }
+}
+@media (max-width: 540px), (max-height: 380px) {
+  .fps-settings__row { font-size: 11px; gap: 8px; }
+  .fps-settings__inset { padding-left: 8px; }
+  .fps-color-control { grid-template-columns: 24px minmax(0, 104px) 24px; gap: 5px; }
+  .fps-color-control__hex { width: 100%; }
+  .fps-color-control__swatch { width: 24px; height: 24px; }
+  .fps-color-control__favorite { width: 24px; padding: 4px; }
+  .fps-color-editor { padding: 8px; }
+  .fps-color-editor__channels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -1,4 +1,4 @@
-/* The actual game is the editor canvas. No wallpaper, tint, blur or panel. */
+/* The game is the canvas; native Minecraft applies scene blur before this transparent chrome. */
 .route-shell[data-opus-route="hud_editor"]::before { content: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: transparent !important; }
 .route-shell[data-opus-route="hud_editor"] .route-main { padding: 0; overflow: hidden; position: static; }
 .hud-editor { position: absolute; inset: 0; pointer-events: none; user-select: none; color: #f3f3f5; }

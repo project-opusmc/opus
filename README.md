@@ -38,25 +38,25 @@ cd opus
 ./scripts/build.sh
 ```
 
-The retained `injector-development` profile is intentionally foundation-only
-experimental R&D:
-`check.sh` validates the Rust M3 preflight boundary, native foundation,
-repeatable owned-JVM lifecycle proof, and a separately launched,
-loopback-only authorized-target survival proof. It also tests the evidence
-gate that prevents that fixture from being presented as a real client
-integration. `build.sh` creates
-`opus-injector` plus architecture-specific native slices. It does not create
-a production transport-capable injector/payload bundle or a package.
-`package.sh` remains blocked until the payload artifact contract and adapter
-certification gates pass.
+The default profile is `client-cef`: a development-only React/CEF Client build
+on the pinned Forge + OptiFine 1.8.9 reference host. `check.sh` verifies the UI,
+Launcher, Runtime contract, W4 input path, and repeated W5 CEF routes; `build.sh`
+rebuilds and stages the five Runtime artifacts and CEF helper before building
+the Launcher. Packaging remains disabled until signing and physical acceptance
+are complete.
 
-The active product direction is documented in
-[Decision 0008](docs/decisions/0008-opus-client-launcher-ui-first-mainline.md):
-build a transparent, RBW-first Client + Launcher experience, starting with a
-coherent UI foundation. The existing Forge + OptiFine 1.8.9 lane is the initial
-reference host; a renderer has not been selected. No existing Runtime or
-Launcher artifact contract changes merely because of this roadmap decision.
+The `injector-development` profile is still available for explicit frozen R&D
+verification with `OPUS_BUILD_PROFILE=injector-development`. It is not the
+product check/build default and still creates no packageable payload.
 
+The active profile is `client-cef`, a development-only React/CEF Client build on
+the pinned Forge + OptiFine 1.8.9 reference host. Packaging remains blocked
+until release signing and physical in-game acceptance are complete.
+
+The existing Forge rollback profile remains separately selectable as
+`legacy-forge-rollback` from a clean checkout at its exact locked component
+revisions. The retained `injector-development` profile remains frozen R&D and
+is not the default check or build path.
 The injector records remain available as R&D evidence. The current General
 Gate 6 project-state source is the
 [September 15 policy record](docs/protocol/m3-general-gate-6-current-policy-status-2026-09-15.md):
@@ -72,3 +72,12 @@ product roadmap.
 
 See [docs/architecture.md](docs/architecture.md) and
 [docs/build-and-release.md](docs/build-and-release.md).
+
+## Authors
+
+| Giang Truong Vu | Vu Nguyen Minh Anh | 0x7A766E39 |
+| --- | --- | --- |
+| [![zvwgvx](https://avatars.githubusercontent.com/u/190599945?v=4&s=64)](https://github.com/zvwgvx) | [![minanhhvu](https://avatars.githubusercontent.com/u/339979715?v=4&s=64)](https://github.com/minanhhvu) | [![svyatopolk](https://avatars.githubusercontent.com/u/254288239?v=4&s=64)](https://github.com/svyatopolk) |
+| [@zvwgvx](https://github.com/zvwgvx) | [@minanhhvu](https://github.com/minanhhvu) | [@svyatopolk](https://github.com/svyatopolk) |
+
+See [AUTHORS.md](AUTHORS.md) for commit attribution.

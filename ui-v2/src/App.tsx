@@ -6,8 +6,15 @@ import type { AccountCatalogStatus, AccountFeedbackState, AccountView } from "./
 import { UiIcon } from "./components/ui/UiIcon";
 import type { UiIconName } from "./components/ui/UiIcon";
 import { ConnectionScreen } from "./components/ConnectionScreen";
+import { FPS_SETTING_DEFAULTS } from "./components/fpsSettingsModel";
 import { OpusControlCenter } from "./components/OpusControlCenter";
 import { HudEditor } from "./components/HudEditor";
+import { PrecisionFrame } from "./precision/PrecisionFrame";
+import { PrecisionHome } from "./precision/PrecisionHome";
+import { PrecisionLibrary } from "./precision/PrecisionLibrary";
+import { PrecisionPause } from "./precision/PrecisionPause";
+import { SurfaceProbe } from "./precision/SurfaceProbe";
+import { MinecraftSettings } from "./precision/MinecraftSettings";
 import { HomeScene } from "./components/HomeScene";
 import { ActionRow, Button, Modal, Panel, ScrollArea, SearchField, Toggle } from "./components/ui";
 import type {
@@ -68,6 +75,27 @@ const validRoutes: readonly RouteId[] = [
 
 const showBootPreview = isStandalone
   && new URLSearchParams(window.location.search).get("preview") === "boot";
+const harnessMode = new URLSearchParams(window.location.search).has("opusHarness");
+
+function harnessMarkerColor(route: string): string {
+  switch (route) {
+    case "title": return "#00ff00";
+    case "singleplayer": return "#0000ff";
+    case "multiplayer": return "#ff0000";
+    case "game_menu": return "#ff00ff";
+    case "settings": return "#ffff00";
+    default: return "#00ffff";
+  }
+}
+
+function HarnessMarker({ route }: { route: string }) {
+  if (!harnessMode) return null;
+  return <div
+    aria-hidden="true"
+    data-opus-harness-marker={route}
+    style={{ position: "fixed", zIndex: 2147483647, top: 2, left: 2, width: 8, height: 8, backgroundColor: harnessMarkerColor(route) }}
+  />;
+}
 
 function bootPreviewProgress(): number {
   const raw = Number(new URLSearchParams(window.location.search).get("progress"));
@@ -448,6 +476,7 @@ export default function App() {
 
   useEffect(() => {
     document.body.dataset.route = showBootPreview ? "boot" : route.id;
+    if (harnessMode) console.info(`OPUS_HARNESS_ROUTE=${route.id}`);
     if (route.params?.moduleId) setSelectedModuleId(route.params.moduleId);
   }, [route]);
 
@@ -609,7 +638,7 @@ export default function App() {
 
   const selectedWorld = worlds.find((world) => world.id === selectedWorldId) ?? null;
   const selectedServer = servers.find((server) => server.id === selectedServerId) ?? null;
-  // A next-launch selection must never replace the actual session identity.
+  // Render only the identity confirmed by the running Minecraft session.
   const currentAccount = client
     ? accounts.find(account => account.username === client.account
       && account.kind === (client.accountKind === "official" ? "microsoft" : "offline")) ?? null
@@ -644,15 +673,16 @@ export default function App() {
     }
   }
 
-  async function launchWorld() {
-    if (!selectedWorld) return;
+  async function launchWorld(id?: string) {
+    const target = id ? worlds.find(world => world.id === id) : selectedWorld;
+    if (!target) return;
     setError(null);
     if (isStandalone) {
-      setBoundary({ kind: "load-world", subject: selectedWorld.name });
+      setBoundary({ kind: "load-world", subject: target.name });
       return;
     }
     try {
-      await bridge.loadWorld(selectedWorld.id);
+      await bridge.loadWorld(target.id);
     } catch {
       setError("Minecraft could not load that world. The selected world is still available.");
     }
@@ -718,16 +748,12 @@ export default function App() {
 
   async function performMinecraftSettings() {
     if (leaveWorldInFlight.current) return;
-    setError(null);
-    if (isStandalone) {
-      setBoundary({ kind: "minecraft-settings" });
-      return;
-    }
-    try {
-      await bridge.performAction("minecraft-settings", hostRouteRevision);
-    } catch {
-      setError("Minecraft Settings could not open from the current client state.");
-    }
+    await goRoute("settings", { settingsSection: "game" });
+  }
+
+  async function performPauseAction(action: string) {
+    try { await bridge.performAction(action as "achievements" | "statistics" | "open-lan", hostRouteRevision); }
+    catch { setError("Minecraft could not open this screen in the current game."); }
   }
 
   async function performQuit() {
@@ -780,7 +806,9 @@ export default function App() {
     if (moduleOperationInFlight.current) throw new Error("A module change is already in progress.");
     if (moduleValuesUnconfirmed) throw new Error("Refresh module values before editing again.");
     const module = modules.find(item => item.id === id);
-    if (!module || (key !== "enabled" && !module.settings?.some(item => item.key === key))) {
+    const appearanceReset = id === "fps" && key === "resetAppearance" && value === "1"
+      && FPS_SETTING_DEFAULTS.every(expected => module?.settings?.some(item => item.key === expected.key));
+    if (!module || (!appearanceReset && key !== "enabled" && !module.settings?.some(item => item.key === key))) {
       throw new Error("This module option is unavailable in your current runtime.");
     }
     moduleOperationInFlight.current = true;
@@ -788,6 +816,8 @@ export default function App() {
       setModules(next);
       setModuleValuesUnconfirmed(false);
       const saved = next.find(item => item.id === id);
+      if (appearanceReset) return FPS_SETTING_DEFAULTS.every(expected =>
+        saved?.settings?.some(item => item.key === expected.key && item.value === expected.value));
       return key === "enabled" ? saved?.enabled === (value === "1")
         : saved?.settings?.find(item => item.key === key)?.value === value;
     };
@@ -832,46 +862,41 @@ export default function App() {
   }
 
   async function updateSettings(next: UiSettings) {
-    if (!isStandalone) {
-      setError("Client setting persistence is not available through the embedded host yet.");
-      return;
-    }
     setError(null);
-    setSettings(next);
-    applyUiSettings(next);
     try {
       await bridge.setUiSettings(next);
-    } catch {
-      setError("The browser fixture could not save that client setting.");
-    }
+      const confirmed=await bridge.getUiSettings();
+      setSettings(confirmed);applyUiSettings(confirmed);
+    } catch { setError("Could not confirm that client preference. Try again."); }
   }
 
   async function selectAccount(id: string) {
     if (accountOperationInFlight.current || accountsLoading || accountsCatalog !== "ready") return;
     const account = accounts.find(item => item.id === id);
-    if (!account || account.selected) return;
+    if (!account || account.current) return;
     accountOperationInFlight.current = true;
-    setAccountFeedback({ pendingId: id, message: `Saving ${account.username} for the next launch…`, error: null });
+    setAccountFeedback({ pendingId: id, message: `Switching to ${account.username}…`, error: null });
     const confirm = (next: AccountSummary[]) => {
       setAccounts(next);
       setAccountsCatalog("ready");
-      const saved = next.find(item => item.id === id && item.selected);
+      const saved = next.find(item => item.id === id && item.current);
       setAccountFeedback(saved
-        ? { pendingId: null, message: `${saved.username} is selected for the next launch. Your current session stays unchanged.`, error: null }
-        : { pendingId: null, message: null, error: "Could not confirm that selection. Saved accounts were refreshed; choose an account and try again." });
+        ? { pendingId: null, message: `${saved.username} is now active. No restart needed.`, error: null }
+        : { pendingId: null, message: null, error: "Could not change account. Disconnect first, or reconnect this account in Opus Launcher." });
     };
     try {
       const next = await bridge.selectAccount(id);
-      if (!next.some(item => item.id === id && item.selected)) throw new Error("Selection not confirmed");
+      if (!next.some(item => item.id === id && item.current)) throw new Error("Selection not confirmed");
       confirm(next);
+      setClient(await bridge.getClient());
     } catch {
       // A lost response does not mean the write failed. Read persisted state
       // before asserting a result; keep duplicate submissions blocked meanwhile.
-      try { confirm(await bridge.getAccounts()); }
+      try { confirm(await bridge.getAccounts()); setClient(await bridge.getClient()); }
       catch {
         setAccountsCatalog("unconfirmed");
         setAccountFeedback({ pendingId: null, message: null,
-          error: "Could not confirm which account was saved. Refresh saved accounts before choosing again. Your current session stays unchanged." });
+          error: "Could not confirm the current account. Refresh saved accounts before choosing again." });
       }
     } finally {
       accountOperationInFlight.current = false;
@@ -896,130 +921,46 @@ export default function App() {
   }
 
   if (showBootPreview) {
-    return <BootScreen progress={bootPreviewProgress()} client={client}
-      active={surfaceActive} reduceMotion={settings?.reduceMotion ?? false} />;
+    return <><BootScreen progress={bootPreviewProgress()} client={client}
+      active={surfaceActive} reduceMotion={settings?.reduceMotion ?? false} /><HarnessMarker route="boot" /></>;
   }
 
-  if (route.id === "title") {
-    return (
-      <>
-        <Home
-          client={client}
-          account={currentAccount}
-          accounts={accounts}
-          accountsCatalog={accountsCatalog}
-          accountsLoading={accountsLoading}
-          accountFeedback={accountFeedback}
-          active={surfaceActive}
-          reduceMotion={settings?.reduceMotion ?? false}
-          onRoute={(id, params) => void goRoute(id, params)}
-          onAccountSelect={(id) => void selectAccount(id)}
-          onAccountManage={(view) => { setAccountsView(view); void goRoute("accounts"); }}
-          onMinecraftSettings={() => void performMinecraftSettings()}
-          onQuit={() => void performQuit()}
-        />
-        {boundary && <DevelopmentBoundaryDialog boundary={boundary} onDismiss={() => setBoundary(null)} />}
-      </>
-    );
-  }
-
-  const inGameRoute = canCloseToGame
-    || route.id === "quick_hub"
-    || route.id === "game_menu"
-    || route.id === "hud_editor"
-    || route.id === "settings"
-    || route.id === "mods_catalog";
-
-  return (
-    <div
-      className="route-shell"
-      data-opus-route={route.id}
-      data-opus-in-game={inGameRoute ? "true" : undefined}
-    >
-      {!inGameRoute && (
-        <HomeScene active={surfaceActive} reduceMotion={settings?.reduceMotion ?? false} isInnerRoute />
-      )}
-      {route.id !== "game_menu" && route.id !== "connection" && route.id !== "quick_hub" && route.id !== "hud_editor" && route.id !== "settings" && route.id !== "mods_catalog" && route.id !== "module_detail" && (
-        <RouteHeader title={routeTitles[route.id]} canGoBack={hasBack} onBack={() => void goBack()} client={client} />
-      )}
-      <main className="route-main">
-        {error && <InlineError message={error} onDismiss={() => setError(null)} />}
-        {route.id === "connection" && (
-          <ConnectionScreen
-            connection={connection ?? {
-              phase: "connecting",
-              title: "Connecting to server…",
-              detail: "",
-              serverName: "",
-              serverAddress: "",
-              canCancel: hasBack,
-            }}
-            canGoBack={hasBack}
-            onBack={() => void goBack()}
-          />
-        )}
-        {route.id === "singleplayer" && (
-          <SingleplayerRoute
-            worlds={worlds}
-            loading={loading}
-            refreshing={worldsRefreshing}
-            openingCreateWorld={openingCreateWorld}
-            selectedWorldId={selectedWorldId}
-            onSelect={setSelectedWorldId}
-            onLaunch={() => void launchWorld()}
-            onRefresh={() => void refreshWorlds()}
-            onCreate={() => void createWorld()}
-          />
-        )}
-        {route.id === "multiplayer" && (
-          <MultiplayerRoute
-            servers={servers}
-            serverStatuses={serverStatuses}
-            loading={loading}
-            refreshing={serversRefreshing}
-            savingServer={savingServer}
-            selectedServerId={selectedServerId}
-            onSelect={setSelectedServerId}
-            onConnect={(server) => void connectServer(server)}
-            onDirectConnect={(server) => void connectServer(server)}
-            onAddServer={addServer}
-            onRefresh={() => void refreshServers()}
-          />
-        )}
-        {(route.id === "settings" || route.id === "quick_hub" || route.id === "mods_catalog" || route.id === "module_detail") && (
-          <OpusControlCenter
-            modules={modules}
-            loading={loading || moduleValuesRefreshing}
-            unconfirmed={moduleValuesUnconfirmed}
-            preview={isStandalone}
-            initialModuleId={route.params?.moduleId}
-            onToggle={(id, enabled) => saveModuleValue(id, "enabled", enabled ? "1" : "0")}
-            onSetting={saveModuleValue}
-            onRefresh={refreshModules}
-            onHud={() => void goRoute("hud_editor")}
-            onClose={() => void dismissOverlay()}
-          />
-        )}
-        {route.id === "accounts" && (
-          <AccountsRoute client={client} account={currentAccount} accounts={accounts} catalog={accountsCatalog} loading={accountsLoading}
-            feedback={accountFeedback} onSelect={(id) => void selectAccount(id)} view={accountsView}
-            onView={setAccountsView} onRefresh={() => void refreshAccounts()} />
-        )}
-        {route.id === "hud_editor" && <HudEditor revision={hostRouteRevision}
-          onMods={() => void goRoute("mods_catalog")} onDone={() => void dismissOverlay()} />}
-        {route.id === "game_menu" && (
-          <PauseMenuRoute
-            leavingWorld={leavingWorld}
-            onResume={() => void closeToGameplay()}
-            onClientSettings={() => void goRoute("settings", { settingsSection: "interface" })}
-            onMinecraftSettings={() => void performMinecraftSettings()}
-            onDisconnect={() => void leaveWorld()}
-          />
-        )}
-      </main>
-      {boundary && <DevelopmentBoundaryDialog boundary={boundary} onDismiss={() => setBoundary(null)} />}
-    </div>
-  );
+  const inGameRoute = canCloseToGame || ["game_menu", "quick_hub", "hud_editor"].includes(route.id);
+  const frameProps = {client, account:currentAccount, accounts, catalog:accountsCatalog, loading:accountsLoading,
+    feedback:accountFeedback, active:surfaceActive, onSelect:(id:string)=>void selectAccount(id),
+    onManage:(view:AccountView)=>{setAccountsView(view);void goRoute("accounts");},
+    onHome:()=>void goRoute("title"), onSettings:()=>void goRoute("settings",{settingsSection:"interface"})};
+  const library = <PrecisionLibrary worlds={worlds} servers={servers} statuses={serverStatuses}
+    isWorlds={route.id==="singleplayer"} loading={loading||worldsRefreshing||serversRefreshing||openingCreateWorld||savingServer}
+    onBack={()=>void goBack()} onWorlds={()=>void goRoute("singleplayer")} onServers={()=>void goRoute("multiplayer")}
+    onLoad={id=>void launchWorld(id)} onJoin={server=>void connectServer(server)} onCreate={()=>void createWorld()}
+    onAdd={addServer} onRefresh={()=>void (route.id==="singleplayer"?refreshWorlds():refreshServers())}/>;
+  return <div className="route-shell" data-opus-route={route.id} data-opus-in-game={inGameRoute?"true":undefined}>
+    {!inGameRoute&&<HomeScene active={surfaceActive} reduceMotion={settings?.reduceMotion??false} isInnerRoute={route.id!=="title"}/>}
+    {route.id==="title"&&<PrecisionFrame title="Play" {...frameProps}><PrecisionHome client={client} server={servers[0]}
+      status={servers[0]?serverStatuses[serverStatusKey(servers[0].address)]:undefined}
+      onWorlds={()=>void goRoute("singleplayer")} onServers={()=>void goRoute("multiplayer")}
+      onOptions={()=>void performMinecraftSettings()} onModules={()=>void goRoute("mods_catalog")}
+      onJoin={server=>void connectServer(server)} onQuit={()=>void performQuit()}/></PrecisionFrame>}
+    {(route.id==="singleplayer"||route.id==="multiplayer")&&<PrecisionFrame title={route.id==="singleplayer"?"Worlds":"Servers"} {...frameProps}>{library}</PrecisionFrame>}
+    {route.id==="connection"&&<PrecisionFrame title="Connecting" {...frameProps} navigationLocked><ConnectionScreen connection={connection??{phase:"connecting",title:"Connecting to server",detail:"",serverName:"",serverAddress:"",canCancel:hasBack}} canGoBack={hasBack} onBack={()=>void goBack()}/></PrecisionFrame>}
+    {route.id==="settings"&&route.params?.settingsSection==="game"&&<MinecraftSettings onClose={()=>void dismissOverlay()} onClient={()=>void goRoute("settings",{settingsSection:"interface"})}/>}
+    {(["settings","quick_hub","mods_catalog","module_detail"].includes(route.id)&&!(route.id==="settings"&&route.params?.settingsSection==="game"))&&<div className="precision-overlay"><OpusControlCenter modules={modules} loading={loading||moduleValuesRefreshing} unconfirmed={moduleValuesUnconfirmed}
+      preview={isStandalone} initialModuleId={route.params?.moduleId} initialPage={route.id==="settings"?"overview":route.id==="module_detail"?"detail":"modules"}
+      settings={settings} onUiSettings={updateSettings} onMinecraft={()=>void performMinecraftSettings()}
+      onToggle={(id,enabled)=>saveModuleValue(id,"enabled",enabled?"1":"0")} onSetting={saveModuleValue} onRefresh={refreshModules}
+      onHud={()=>void goRoute("hud_editor")} onClose={()=>void dismissOverlay()}/></div>}
+    {route.id==="hud_editor"&&<HudEditor revision={hostRouteRevision} modules={modules} onToggle={(id,enabled)=>saveModuleValue(id,"enabled",enabled?"1":"0")}
+      onMods={()=>void goRoute("mods_catalog")} onModuleSettings={id=>void goRoute("module_detail",{moduleId:id})} onDone={()=>void dismissOverlay()}/>}
+    {route.id==="game_menu"&&<PrecisionFrame title="Pause" {...frameProps} onHome={()=>void closeToGameplay()}><PrecisionPause canOpenLan={client?.canOpenLan} leaving={leavingWorld} onResume={()=>void closeToGameplay()} onOptions={()=>void performMinecraftSettings()}
+      onModules={()=>void goRoute("mods_catalog")} onHud={()=>void goRoute("hud_editor")} onDisconnect={()=>void leaveWorld()} onAction={action=>void performPauseAction(action)}/></PrecisionFrame>}
+    {route.id==="accounts"&&<PrecisionFrame title="Accounts" {...frameProps}><AccountsRoute client={client} account={currentAccount} accounts={accounts} catalog={accountsCatalog} loading={accountsLoading} feedback={accountFeedback}
+      onSelect={id=>void selectAccount(id)} view={accountsView} onView={setAccountsView} onRefresh={()=>void refreshAccounts()}/></PrecisionFrame>}
+    {error&&<div className="precision-error" role="alert">{error}<button className="text-button" onClick={()=>setError(null)} type="button">Dismiss</button></div>}
+    {boundary&&<DevelopmentBoundaryDialog boundary={boundary} onDismiss={()=>setBoundary(null)}/>}
+    <HarnessMarker route={route.id}/>
+    <SurfaceProbe route={route.id} revision={hostRouteRevision}/>
+  </div>;
 }
 
 function Home({

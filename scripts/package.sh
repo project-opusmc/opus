@@ -15,8 +15,11 @@ else
 fi
 
 if [[ "${selected_profile}" == "injector-development" ]]; then
-  echo "The ${selected_profile} profile is foundation-only and cannot be packaged." >&2
-  echo "Build and checksum-lock the injector, native runtime, and Java payload before enabling packaging." >&2
+  echo "The ${selected_profile} profile is frozen R&D and is not a package workflow." >&2
+  exit 1
+fi
+if [[ "${selected_profile}" == "client-cef" ]]; then
+  echo "The client-cef profile is development-only: physical in-game acceptance and release signing are still open." >&2
   exit 1
 fi
 
