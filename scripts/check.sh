@@ -16,11 +16,16 @@ fi
 
 case "${selected_profile}" in
   client-cef)
-    node "${opus_root}/scripts/check-runtime-artifact-contract.mjs"
     "${opus_root}/scripts/submodule-status.sh" --profile "${selected_profile}"
     (cd "${opus_root}/ui-v2" && npm run check && npm run build && node --test test/*.test.mjs)
-    (cd "${opus_root}/launcher" && ./scripts/check.sh)
+    # A fresh checkout has no generated manifest or Launcher resources. Build
+    # and verify Runtime before checking its artifacts or compiling the desktop.
     (cd "${opus_root}/runtime" && ./scripts/check.sh)
+    node "${opus_root}/scripts/check-runtime-artifact-contract.mjs"
+    node "${opus_root}/launcher/scripts/stage-runtime-artifacts.mjs" \
+      "${opus_root}/runtime/build/runtime" \
+      "${opus_root}/launcher/desktop/src-tauri/resources/bootstrap"
+    (cd "${opus_root}/launcher" && ./scripts/check.sh)
     "${opus_root}/runtime/web-surface-v2/scripts/run-w6.sh"
     node "${opus_root}/scripts/verify-release-lock.mjs" \
       "${opus_root}" \
